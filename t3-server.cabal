@@ -19,9 +19,13 @@ library
                      Import.NoFoundation
                      Settings
                      Settings.StaticFiles
+                     Respond
                      Handler.Common
                      Handler.Home
                      Handler.Comment
+                     Handler.Create
+                     Handler.Start
+                     Handler.Play
 
                      T3.Game
                      T3.Game.Core
@@ -33,6 +37,11 @@ library
                      T3.Comm.Types
 
                      T3.Web
+
+                     T3.Session
+                     T3.Session.Types
+                     
+                     T3.Server
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
@@ -90,6 +99,8 @@ library
                  , time
                  , case-insensitive
                  , wai
+                 , async
+                 , mtl
 
 executable         t3-server
     if flag(library-only)

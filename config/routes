@@ -6,3 +6,6 @@
 / HomeR GET POST
 
 /comments CommentR POST
+/create CreateR GET POST
+/api/start StartR POST
+/api/play/#GameId/#GameToken PlayR POST
