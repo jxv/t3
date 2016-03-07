@@ -1,11 +1,10 @@
 module T3.Session
   ( runSession
-  , UserStart
+  , UserInit
   , Callback
   ) where
 
 import Prelude
-import Control.Concurrent.Chan
 import T3.Game
 import T3.Comm.Types
 import T3.Comm.Class
@@ -16,7 +15,7 @@ import Control.Monad.State.Strict
 type Callback = Board -> IO ()
 
 data SessionData = SessionData
-  { sessReq :: XO -> Chan (Loc, Callback)
+  { sessReq :: XO -> IO (Loc, Callback)
   , sessRespX :: Callback
   , sessRespO :: Callback
   , sessLog :: Win XO -> Lose XO -> Board -> IO ()
@@ -26,18 +25,22 @@ data SessionData = SessionData
 newtype Session a = Session { unSession :: StateT SessionData IO a }
   deriving (Functor, Applicative, Monad, MonadIO, MonadState SessionData)
 
-type UserStart = (UserId, Callback, Chan (Loc, Callback))
+type UserInit = (UserId, Callback, IO (Loc, Callback))
 
-runSession :: UserStart -> UserStart -> (Win UserId -> Lose UserId -> Board -> IO ()) -> IO ()
-runSession (xUI, xCB, xChan) (oUI, oCB, oChan) logger = let
-  chan X = xChan
-  chan O = oChan
+runSession
+    :: UserInit
+    -> UserInit
+    -> (Win UserId -> Lose UserId -> Board -> IO ())
+    -> IO ()
+runSession (xUI, xCB, xReq) (oUI, oCB, oReq) logger = let
+  req X = xReq
+  req O = oReq
   cb X = xCB
   cb O = oCB
   ui X = xUI
   ui O = oUI
   b = emptyBoard
-  sessDat = SessionData chan (cb X) (cb O) (\w l -> logger (fmap ui w) (fmap ui l)) b
+  sessDat = SessionData req (cb X) (cb O) (\w l -> logger (fmap ui w) (fmap ui l)) b
   in evalStateT (unSession $ run b) sessDat
 
 instance Comm Session where
@@ -45,8 +48,8 @@ instance Comm Session where
     s <- get
     liftIO $ (respXO xo s) (sessBoard s)
   recvMove xo = do
-    chan <- gets (flip sessReq xo)
-    (loc, resp) <- liftIO $ readChan chan
+    req <- gets (flip sessReq xo)
+    (loc, resp) <- liftIO req
     updateResp resp
     return loc
     where

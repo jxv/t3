@@ -3,6 +3,7 @@ module T3.Game.Core
   , Loc(..)
   , Result(..)
   , Board
+  , yinYang
   , emptyBoard
   , boardMap
   , boardList
@@ -35,6 +36,10 @@ data Result
   | Tie
   | Winner XO
   deriving (Show, Eq)
+
+yinYang :: XO -> XO
+yinYang X = O
+yinYang O = X
 
 emptyBoard :: Board
 emptyBoard = Board M.empty 3

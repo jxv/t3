@@ -1,34 +1,39 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module T3.Game.Instance where
 
 import Prelude
+import Control.Monad.Trans
 import Safe
 import T3.Game
 
 -- Try it in the REPL
 
-instance Game IO where
+newtype Terminal a = Terminal { unTerminal :: IO a }
+    deriving (Functor, Applicative, Monad, MonadIO)
+
+instance Game Terminal where
   move xo = do
-    putStrLn $ "Turn: " ++ show xo
-    str <- getLine
+    liftIO $ putStrLn $ "Turn: " ++ show xo
+    str <- liftIO $ getLine
     case readMay str of
       Nothing -> do
-        putStrLn "Try again."
+        liftIO $ putStrLn "Try again."
         move xo
       Just (x,y) ->
         return $ Loc x y
   forfeit (Win w) (Lose l) = do
-    putStrLn $ show l ++ " forfeited."
-    putStrLn $ show w ++ " won."
+    liftIO $ putStrLn $ show l ++ " forfeited."
+    liftIO $ putStrLn $ show w ++ " won."
   end (Win w) (Lose l) = do
-    putStrLn $ show w ++ " won, and " ++ show l ++ " lost."
-  tie = putStrLn "Tie game!"
+    liftIO $ putStrLn $ show w ++ " won, and " ++ show l ++ " lost."
+  tie = liftIO $ putStrLn "Tie game!"
   step b = do
     let d = boardList b
     let cell :: Maybe XO -> String
         cell mcell = maybe " " show mcell
-    putStrLn $ cell (d !! 0) ++ "|" ++  cell (d !! 1) ++ "|" ++ cell (d !! 2)
-    putStrLn "-+-+-"
-    putStrLn $ cell (d !! 3) ++ "|" ++  cell (d !! 4) ++ "|" ++ cell (d !! 5)
-    putStrLn "-+-+-"
-    putStrLn $ cell (d !! 6) ++ "|" ++  cell (d !! 7) ++ "|" ++ cell (d !! 8)
+    liftIO $ putStrLn $ cell (d !! 0) ++ "|" ++  cell (d !! 1) ++ "|" ++ cell (d !! 2)
+    liftIO $ putStrLn "-+-+-"
+    liftIO $ putStrLn $ cell (d !! 3) ++ "|" ++  cell (d !! 4) ++ "|" ++ cell (d !! 5)
+    liftIO $ putStrLn "-+-+-"
+    liftIO $ putStrLn $ cell (d !! 6) ++ "|" ++  cell (d !! 7) ++ "|" ++ cell (d !! 8)

@@ -1,21 +1,11 @@
 module T3.Web where
 
 import Prelude
+import Control.Monad
+import Data.Aeson
 import Data.Text (Text)
-import T3.Session.Types
-import T3.Comm.Types
-
-data Resp = Resp
-
-type UserKey = Text
-
-class Monad w => Web w where
-  start :: UserKey -> w Resp
-  play :: GameId -> UserKey -> GameToken -> w Resp
-
-instance Web IO where
-  play _gameId _userKey _gameToken = return Resp
-
+import T3.Game.Core
+import Control.Monad.Except
 {-
 import Prelude
 
@@ -39,7 +29,6 @@ instance FromJSON XO where
     then mzero
     else maybe mzero pure (parseXO $ T.head s)
   parseJSON _ = mzero
-
 
 data Player = Player {
   pId :: Int64,

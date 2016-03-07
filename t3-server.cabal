@@ -19,7 +19,6 @@ library
                      Import.NoFoundation
                      Settings
                      Settings.StaticFiles
-                     Respond
                      Handler.Common
                      Handler.Home
                      Handler.Comment
@@ -27,21 +26,22 @@ library
                      Handler.Start
                      Handler.Play
 
-                     T3.Game
-                     T3.Game.Core
-                     T3.Game.Class
-                     T3.Game.Instance
-
-                     T3.Comm.Game
-                     T3.Comm.Class
-                     T3.Comm.Types
-
                      T3.Web
+                     T3.Web.Instance
 
+                     T3.Service
+                     T3.Service.Dispatch
+                     T3.Service.Lobby
+
+                     T3.Comm.Class
+                     T3.Comm.Game
+                     T3.Comm.Types
+                     T3.Game
+                     T3.Game.Class
+                     T3.Game.Core
+                     T3.Game.Instance
+                     T3.Game.Types
                      T3.Session
-                     T3.Session.Types
-                     
-                     T3.Server
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
@@ -101,6 +101,8 @@ library
                  , wai
                  , async
                  , mtl
+                 , stm
+                 , random
 
 executable         t3-server
     if flag(library-only)

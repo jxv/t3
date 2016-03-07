@@ -54,7 +54,7 @@ makeFoundation appSettings = do
     appStatic <-
         (if appMutableStatic appSettings then staticDevel else static)
         (appStaticDir appSettings)
-
+    let appKillServer = return ()
     -- Return the foundation
     return App {..}
 
@@ -145,7 +145,7 @@ getApplicationRepl = do
     return (getPort wsettings, foundation, app1)
 
 shutdownApp :: App -> IO ()
-shutdownApp _ = return ()
+shutdownApp app = appKillServer app
 
 
 ---------------------------------------------

@@ -1,11 +1,11 @@
 module Handler.Play where
 
 import Import
-import Respond
-import T3.Session.Types
 import T3.Web
+import T3.Web.Instance ()
+import T3.Service
 
-postPlayR :: GameId -> GameToken -> Handler ()
-postPlayR gameId gameToken = do
-  userKey <- requireJsonBody 
-  responder $ play gameId gameToken userKey
+postPlayR :: GameId -> GameToken -> Handler Value
+postPlayR gameId gameToken = error "NYI"
+--  userPlay <- requireJsonBody 
+--  returnJson =<< play gameId gameToken userPlay
