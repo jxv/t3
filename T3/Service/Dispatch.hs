@@ -20,7 +20,7 @@ data UserConfig = UserConfig
 data SessionConfig = SessionConfig
   { sessCfgX :: UserConfig
   , sessCfgO :: UserConfig
-  , sessCfgKillSelf :: IO ()
+  , sessCfgDie :: IO ()
   }
 
 forkSession

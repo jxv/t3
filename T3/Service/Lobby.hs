@@ -4,19 +4,25 @@ import Prelude
 import T3.Comm.Types
 import Control.Concurrent.STM
 import System.Random
+import Data.Maybe
+import T3.Session
+import T3.Service.Dispatch (GameId, GameToken)
 
-addUserToLobby :: TVar [UserId] -> UserId -> IO ()
-addUserToLobby lobby ui = atomically $
-    modifyTVar lobby (\lob -> if elem ui lob then lob else ui : lob)
 
-userPairFromLobby :: TVar [UserId] -> IO (Maybe (UserId, UserId))
+type Lobby = [(UserId, GameId -> GameToken -> Callback)]
+
+addUserToLobby :: TVar Lobby  -> UserId -> (GameId -> GameToken -> Callback) -> IO ()
+addUserToLobby lobby ui cb = atomically $
+  modifyTVar lobby (\lob -> if isJust (lookup ui lob) then lob else (ui, cb) : lob)
+
+userPairFromLobby :: TVar Lobby -> IO (Maybe ((UserId, GameId -> GameToken -> Callback), (UserId, GameId -> GameToken -> Callback)))
 userPairFromLobby lobby = do
-    a <- randomIO
-    b <- randomIO
-    atomically $ do
-      lob <- readTVar lobby
-      let len = length lob
-      if len >= 2 then return Nothing else grabEm lob (mod a len) (mod b (len - 1))
+  a <- randomIO
+  b <- randomIO
+  atomically $ do
+    lob <- readTVar lobby
+    let len = length lob
+    if len < 2 then return Nothing else grabEm lob (mod a len) (mod b (len - 1))
   where
     grabEm lob i j = do
       let (x, lob') = grab lob i

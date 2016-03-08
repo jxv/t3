@@ -7,7 +7,7 @@ module T3.Game.Types
 import Prelude
 
 newtype Win a = Win a
-  deriving (Functor)
+  deriving (Functor, Show)
 
 newtype Lose a = Lose a
-  deriving (Functor)
+  deriving (Functor, Show)

@@ -36,6 +36,8 @@ import Handler.Create
 import Handler.Start
 import Handler.Play
 
+import T3.Service
+
 -- This line actually creates our YesodDispatch instance. It is the second half
 -- of the call to mkYesodData which occurs in Foundation.hs. Please see the
 -- comments there for more details.
@@ -54,9 +56,16 @@ makeFoundation appSettings = do
     appStatic <-
         (if appMutableStatic appSettings then staticDevel else static)
         (appStaticDir appSettings)
-    let appKillServer = return ()
+    appServer <- forkServer gameLogger
     -- Return the foundation
     return App {..}
+  where
+    gameLogger gameId winner loser board = do
+      putStrLn $ "Finished Game: " `mappend` gameId
+      print winner
+      print loser
+      putStr "Board: "
+      print board
 
 -- | Convert our foundation to a WAI Application by calling @toWaiAppPlain@ and
 -- applying some additional middlewares.
@@ -145,7 +154,7 @@ getApplicationRepl = do
     return (getPort wsettings, foundation, app1)
 
 shutdownApp :: App -> IO ()
-shutdownApp app = appKillServer app
+shutdownApp app = srvDie (appServer app)
 
 
 ---------------------------------------------
