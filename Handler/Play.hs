@@ -1,8 +1,6 @@
 module Handler.Play where
 
 import Import
-import T3.Web
-import T3.Web.Instance ()
 import T3.Server
 import T3.Match
 

@@ -1,7 +1,6 @@
 module T3.Server.Lobby where
 
 import Prelude
-import T3.Comm.Types
 import Control.Concurrent.STM
 import System.Random
 import Data.Maybe

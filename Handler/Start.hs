@@ -1,10 +1,8 @@
 module Handler.Start where
 
 import Import
-import T3.Web
 import T3.Server
 import T3.Server.Lobby
-import T3.Web.Instance ()
 
 postStartR :: Handler Value
 postStartR = do

@@ -23,7 +23,6 @@ import System.Random
 import T3.Game.Core
 import T3.Game
 import T3.Game.Types
-import T3.Comm.Types
 import T3.Server.Dispatch
 import T3.Server.Lobby
 import T3.Match

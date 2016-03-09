@@ -26,9 +26,6 @@ library
                      Handler.Start
                      Handler.Play
 
-                     T3.Web
-                     T3.Web.Instance
-
                      T3.Server
                      T3.Server.Dispatch
                      T3.Server.Lobby
@@ -41,10 +38,6 @@ library
                      T3.Game.Core
                      T3.Game.Instance
                      T3.Game.Types
-
-                     T3.Comm.Class
-                     T3.Comm.Game
-                     T3.Comm.Types
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT

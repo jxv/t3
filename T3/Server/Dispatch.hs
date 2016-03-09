@@ -3,7 +3,6 @@ module T3.Server.Dispatch where
 import Prelude
 import Control.Concurrent
 import T3.Game
-import T3.Comm.Types
 import T3.Match
 
 data UserConfig = UserConfig
