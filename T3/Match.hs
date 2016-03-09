@@ -18,11 +18,7 @@ import Control.Monad.State.Strict
 import Data.Text (Text)
 
 type Callback = Board -> IO ()
-type StartCallback =
-  Text -> -- GameId
-  Text -> -- GameToken
-  Board ->
-  IO ()
+type StartCallback = MatchId -> MatchToken -> Board -> IO ()
 
 data MatchData = MatchData
   { matchReq :: XO -> IO (Loc, Callback)

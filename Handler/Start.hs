@@ -11,6 +11,6 @@ postStartR = do
   userKey <- liftIO $ genBase64 32
   resp <- liftIO $ newEmptyMVar
   srv <- appServer <$> getYesod
-  liftIO $ addUserToLobby (srvLobby srv) userKey (\gameId gameToken board -> putMVar resp (gameId, gameToken, board))
-  (gameId, gameToken, board) <- liftIO $ readMVar resp
-  returnJson $ [show userKey, show gameId, show gameToken, show board]
+  liftIO $ addUserToLobby (srvLobby srv) userKey (\matchId matchToken board -> putMVar resp (matchId, matchToken, board))
+  (matchId, matchToken, board) <- liftIO $ readMVar resp
+  returnJson $ [show userKey, show matchId, show matchToken, show board]

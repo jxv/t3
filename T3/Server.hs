@@ -1,8 +1,6 @@
 {-# OPTIONS -fno-warn-orphans #-}
 module T3.Server
-  ( GameToken
-  , GameId
-  , GameLogger
+  ( GameLogger
   , Server(..)
   , forkServer
   , start
@@ -30,11 +28,11 @@ import T3.Server.Dispatch
 import T3.Server.Lobby
 import T3.Match
 
-type GameLogger = GameId -> Win UserId -> Lose UserId -> Board -> IO ()
+type GameLogger = MatchId -> Win UserId -> Lose UserId -> Board -> IO ()
 
 data Server = Server
   { srvLobby :: TVar Lobby
-  , srvMatches :: TVar (M.Map GameId MatchConfig)
+  , srvMatches :: TVar (M.Map MatchId MatchConfig)
   , srvUsers :: TVar (M.Map UserKey UserId)
   , srvDie :: IO ()
   , srvLogger :: GameLogger
@@ -61,11 +59,11 @@ genBase64 n = fmap T.pack (sequence $ replicate n gen)
     len = length vals
     vals = ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ ['-','_']
 
-genGameToken :: IO Text
-genGameToken = genBase64 32
+genMatchToken :: IO Text
+genMatchToken = genBase64 32
 
-genGameId :: IO Text
-genGameId = genBase64 32
+genMatchId :: IO Text
+genMatchId = genBase64 32
 
 genUserId :: IO Text
 genUserId = genBase64 32
@@ -76,12 +74,12 @@ serve srv = do
   case musers of
     Nothing -> return ()
     Just ((xUI, xCB), (oUI, oCB)) -> do
-      gameId <- genGameId
-      xGT <- genGameToken
-      oGT <- genGameToken
-      let removeSelf = atomically $ modifyTVar (srvMatches srv) (M.delete gameId)
-      sessCfg <- forkMatch  (xUI, xGT, xCB gameId xGT) (oUI, oGT, oCB gameId oGT) (srvLogger srv gameId) removeSelf
-      atomically $ modifyTVar (srvMatches srv) (M.insert gameId sessCfg)
+      matchId <- genMatchId
+      xGT <- genMatchToken
+      oGT <- genMatchToken
+      let removeSelf = atomically $ modifyTVar (srvMatches srv) (M.delete matchId)
+      sessCfg <- forkMatch  (xUI, xGT, xCB matchId xGT) (oUI, oGT, oCB matchId oGT) (srvLogger srv matchId) removeSelf
+      atomically $ modifyTVar (srvMatches srv) (M.insert matchId sessCfg)
   threadDelay (1 * 1000000)
   serve srv
 
@@ -89,7 +87,6 @@ serve srv = do
 
 type Username = Text
 type UserKey = Text
-type MatchId = Text
 
 data UserStart = UserStart
   { usKey :: UserKey
@@ -110,8 +107,8 @@ start userStart = do
   -- wait for mvar
   return GameStart
 
-play :: GameId -> GameToken -> UserPlay -> IO GamePlay
-play gameId gameToken userPlay = do
+play :: MatchId -> MatchToken -> UserPlay -> IO GamePlay
+play matchId matchToken userPlay = do
   return GamePlay
 
 instance FromJSON UserStart where

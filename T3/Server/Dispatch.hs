@@ -8,7 +8,7 @@ import T3.Match
 
 data UserConfig = UserConfig
   { userCfgUserId :: UserId
-  , userCfgGameToken :: GameToken
+  , userCfgMatchToken :: MatchToken
   , userCfgSendLoc :: (Loc, Callback) -> IO ()
   }
 
@@ -19,8 +19,8 @@ data MatchConfig = MatchConfig
   }
 
 forkMatch
-  :: (UserId, GameToken, Callback)
-  -> (UserId, GameToken, Callback)
+  :: (UserId, MatchToken, Callback)
+  -> (UserId, MatchToken, Callback)
   -> (Win UserId -> Lose UserId -> Board -> IO ())
   -> IO ()
   -> IO MatchConfig

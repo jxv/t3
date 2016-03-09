@@ -8,4 +8,4 @@
 /comments CommentR POST
 /create CreateR GET POST
 /api/start StartR POST
-/api/play/#GameId/#GameToken PlayR POST
+/api/play/#MatchId/#MatchToken PlayR POST

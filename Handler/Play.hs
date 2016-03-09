@@ -4,8 +4,9 @@ import Import
 import T3.Web
 import T3.Web.Instance ()
 import T3.Server
+import T3.Match
 
-postPlayR :: GameId -> GameToken -> Handler Value
-postPlayR gameId gameToken = error "NYI"
+postPlayR :: MatchId -> MatchToken -> Handler Value
+postPlayR matchId matchToken = error "NYI"
 --  userPlay <- requireJsonBody 
---  returnJson =<< play gameId gameToken userPlay
+--  returnJson =<< play matchId matchToken userPlay
