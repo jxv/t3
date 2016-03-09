@@ -2,6 +2,7 @@ module T3.Session
   ( runSession
   , UserInit
   , Callback
+  , StartCallback
   ) where
 
 import Prelude
@@ -12,7 +13,14 @@ import T3.Comm.Game
 
 import Control.Monad.State.Strict
 
+import Data.Text (Text)
+
 type Callback = Board -> IO ()
+type StartCallback =
+  Text -> -- GameId
+  Text -> -- GameToken
+  Board ->
+  IO ()
 
 data SessionData = SessionData
   { sessReq :: XO -> IO (Loc, Callback)

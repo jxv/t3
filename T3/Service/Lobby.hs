@@ -6,16 +6,15 @@ import Control.Concurrent.STM
 import System.Random
 import Data.Maybe
 import T3.Session
-import T3.Service.Dispatch (GameId, GameToken)
 
 
-type Lobby = [(UserId, GameId -> GameToken -> Callback)]
+type Lobby = [(UserId, StartCallback)]
 
-addUserToLobby :: TVar Lobby  -> UserId -> (GameId -> GameToken -> Callback) -> IO ()
+addUserToLobby :: TVar Lobby  -> UserId -> (StartCallback) -> IO ()
 addUserToLobby lobby ui cb = atomically $
   modifyTVar lobby (\lob -> if isJust (lookup ui lob) then lob else (ui, cb) : lob)
 
-userPairFromLobby :: TVar Lobby -> IO (Maybe ((UserId, GameId -> GameToken -> Callback), (UserId, GameId -> GameToken -> Callback)))
+userPairFromLobby :: TVar Lobby -> IO (Maybe ((UserId, StartCallback), (UserId, StartCallback)))
 userPairFromLobby lobby = do
   a <- randomIO
   b <- randomIO
