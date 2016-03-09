@@ -1,12 +1,11 @@
-module T3.Service.Lobby where
+module T3.Server.Lobby where
 
 import Prelude
 import T3.Comm.Types
 import Control.Concurrent.STM
 import System.Random
 import Data.Maybe
-import T3.Session
-
+import T3.Match
 
 type Lobby = [(UserId, StartCallback)]
 

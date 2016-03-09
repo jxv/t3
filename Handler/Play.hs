@@ -3,7 +3,7 @@ module Handler.Play where
 import Import
 import T3.Web
 import T3.Web.Instance ()
-import T3.Service
+import T3.Server
 
 postPlayR :: GameId -> GameToken -> Handler Value
 postPlayR gameId gameToken = error "NYI"

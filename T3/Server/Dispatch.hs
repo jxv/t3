@@ -1,15 +1,10 @@
-module T3.Service.Dispatch where
+module T3.Server.Dispatch where
 
 import Prelude
-import Data.Text (Text)
 import Control.Concurrent
-import Control.Concurrent.Chan
 import T3.Game
 import T3.Comm.Types
-import T3.Session
-
-type GameId = Text
-type GameToken = Text
+import T3.Match
 
 data UserConfig = UserConfig
   { userCfgUserId :: UserId
@@ -17,25 +12,25 @@ data UserConfig = UserConfig
   , userCfgSendLoc :: (Loc, Callback) -> IO ()
   }
 
-data SessionConfig = SessionConfig
-  { sessCfgX :: UserConfig
-  , sessCfgO :: UserConfig
-  , sessCfgDie :: IO ()
+data MatchConfig = MatchConfig
+  { matchCfgX :: UserConfig
+  , matchCfgO :: UserConfig
+  , matchCfgDie :: IO ()
   }
 
-forkSession
+forkMatch
   :: (UserId, GameToken, Callback)
   -> (UserId, GameToken, Callback)
   -> (Win UserId -> Lose UserId -> Board -> IO ())
   -> IO ()
-  -> IO SessionConfig
-forkSession (xUI, xGT, xCB) (oUI, oGT, oCB) logger end = do
+  -> IO MatchConfig
+forkMatch (xUI, xGT, xCB) (oUI, oGT, oCB) logger done = do
   xChan <- newChan
   oChan <- newChan
   let x = (xUI, xCB, readChan xChan)
   let o = (oUI, oCB, readChan oChan)
-  thid <- forkIO $ runSession x o logger
-  return $ SessionConfig
+  thid <- forkIO $ runMatch x o logger
+  return $ MatchConfig
     (UserConfig xUI xGT (writeChan xChan))
     (UserConfig oUI oGT (writeChan oChan))
-    (killThread thid >> end)
+    (killThread thid >> done)

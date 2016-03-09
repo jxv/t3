@@ -1,5 +1,5 @@
 {-# OPTIONS -fno-warn-orphans #-}
-module T3.Service
+module T3.Server
   ( GameToken
   , GameId
   , GameLogger
@@ -26,15 +26,15 @@ import T3.Game.Core
 import T3.Game
 import T3.Game.Types
 import T3.Comm.Types
-import T3.Service.Dispatch
-import T3.Service.Lobby
-import T3.Session
+import T3.Server.Dispatch
+import T3.Server.Lobby
+import T3.Match
 
 type GameLogger = GameId -> Win UserId -> Lose UserId -> Board -> IO ()
 
 data Server = Server
   { srvLobby :: TVar Lobby
-  , srvSessions :: TVar (M.Map GameId SessionConfig)
+  , srvMatches :: TVar (M.Map GameId MatchConfig)
   , srvUsers :: TVar (M.Map UserKey UserId)
   , srvDie :: IO ()
   , srvLogger :: GameLogger
@@ -43,16 +43,16 @@ data Server = Server
 forkServer :: GameLogger ->  IO Server
 forkServer logger = do
   lobby <- newTVarIO []
-  sess <- newTVarIO M.empty
+  matches <- newTVarIO M.empty
   users <- newTVarIO M.empty
-  let srv = Server lobby sess users (return ()) logger
+  let srv = Server lobby matches users (return ()) logger
   thid <- forkIO $ serve srv
-  let killSessions = do
+  let killMatches = do
         killers <- atomically $ do
-          s <- readTVar sess 
-          return $ map sessCfgDie (M.elems s)
+          s <- readTVar matches
+          return $ map matchCfgDie (M.elems s)
         sequence_  killers
-  return srv { srvDie = killSessions >> killThread thid }
+  return srv { srvDie = killMatches >> killThread thid }
 
 genBase64 :: Int -> IO Text
 genBase64 n = fmap T.pack (sequence $ replicate n gen)
@@ -79,9 +79,9 @@ serve srv = do
       gameId <- genGameId
       xGT <- genGameToken
       oGT <- genGameToken
-      let removeSelf = atomically $ modifyTVar (srvSessions srv) (M.delete gameId)
-      sessCfg <- forkSession  (xUI, xGT, xCB gameId xGT) (oUI, oGT, oCB gameId oGT) (srvLogger srv gameId) removeSelf
-      atomically $ modifyTVar (srvSessions srv) (M.insert gameId sessCfg)
+      let removeSelf = atomically $ modifyTVar (srvMatches srv) (M.delete gameId)
+      sessCfg <- forkMatch  (xUI, xGT, xCB gameId xGT) (oUI, oGT, oCB gameId oGT) (srvLogger srv gameId) removeSelf
+      atomically $ modifyTVar (srvMatches srv) (M.insert gameId sessCfg)
   threadDelay (1 * 1000000)
   serve srv
 
@@ -89,7 +89,7 @@ serve srv = do
 
 type Username = Text
 type UserKey = Text
-type SessionId = Text
+type MatchId = Text
 
 data UserStart = UserStart
   { usKey :: UserKey

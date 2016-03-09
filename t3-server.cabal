@@ -29,19 +29,22 @@ library
                      T3.Web
                      T3.Web.Instance
 
-                     T3.Service
-                     T3.Service.Dispatch
-                     T3.Service.Lobby
+                     T3.Server
+                     T3.Server.Dispatch
+                     T3.Server.Lobby
 
-                     T3.Comm.Class
-                     T3.Comm.Game
-                     T3.Comm.Types
+                     T3.Match
+                     T3.Match.Types
+
                      T3.Game
                      T3.Game.Class
                      T3.Game.Core
                      T3.Game.Instance
                      T3.Game.Types
-                     T3.Session
+
+                     T3.Comm.Class
+                     T3.Comm.Game
+                     T3.Comm.Types
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
