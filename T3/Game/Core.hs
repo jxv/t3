@@ -7,6 +7,7 @@ module T3.Game.Core
   , emptyBoard
   , boardMap
   , boardList
+  , boardSize
   , insertXO
   , inside
   , valid
@@ -50,6 +51,9 @@ boardMap = bCells
 boardList :: Board -> [Maybe XO]
 boardList b = [M.lookup (Loc x y) (bCells b) | y <- q, x <- q]
   where q = indices b
+
+boardSize :: Board -> Int
+boardSize = bSize
 
 inside :: Loc -> Board -> Bool
 inside loc b = x >= 0 && x < bSize b && y >= 0 && y < bSize b

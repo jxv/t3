@@ -1,14 +1,21 @@
 module Handler.Start where
 
 import Import
+import T3.Match
 import T3.Server
 import T3.Server.Lobby
 
 postStartR :: Handler Value
 postStartR = do
-  userKey <- liftIO $ genBase64 32
+  userId <- liftIO $ genUserKey
+  userKey <- liftIO $ genUserKey
   resp <- liftIO $ newEmptyMVar
   srv <- appServer <$> getYesod
-  liftIO $ addUserToLobby (srvLobby srv) userKey (\matchId matchToken board -> putMVar resp (matchId, matchToken, board))
+  let startReq = StartRequest $ UserCreds userId userKey
+  liftIO $ addUserToLobby
+    (srvLobby srv)
+    (ucUserId $ sreqUserCreds startReq)
+    (\matchId matchToken board -> putMVar resp (matchId, matchToken, board))
   (matchId, matchToken, board) <- liftIO $ readMVar resp
-  returnJson $ [show userKey, show matchId, show matchToken, show board]
+  let sreq = StartResponse (MatchInfo matchId matchToken) (GameState board Nothing)
+  returnJson sreq 

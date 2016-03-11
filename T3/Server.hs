@@ -2,10 +2,20 @@
 module T3.Server
   ( GameLogger
   , Server(..)
+  , UserCreds(..)
+  , StartRequest(..)
+  , PlayRequest(..)
+  , GameState(..)
+  , StartResponse(..)
+  , PlayResponse(..)
+  , Username
+  , UserKey
   , forkServer
-  , start
-  , play
   , genBase64
+  , genMatchToken
+  , genMatchId
+  , genUserId
+  , genUserKey
   ) where
 
 import qualified Data.Map as M
@@ -59,13 +69,16 @@ genBase64 n = fmap T.pack (sequence $ replicate n gen)
     vals = ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ ['-','_']
 
 genMatchToken :: IO Text
-genMatchToken = genBase64 32
+genMatchToken = genBase64 16
 
 genMatchId :: IO Text
-genMatchId = genBase64 32
+genMatchId = genBase64 16
 
 genUserId :: IO Text
 genUserId = genBase64 32
+
+genUserKey :: IO Text
+genUserKey = genBase64 64
 
 serve :: Server -> IO ()
 serve srv = do
@@ -87,45 +100,76 @@ serve srv = do
 type Username = Text
 type UserKey = Text
 
-data UserStart = UserStart
-  { usKey :: UserKey
-  }
+data UserCreds = UserCreds
+  { ucUserId :: UserId
+  , ucUserKey :: UserKey
+  } deriving (Show, Eq)
 
-data UserPlay = UserPlay
-  { upKey :: UserKey
-  , upLoc :: Loc
-  }
+data StartRequest = StartRequest
+  { sreqUserCreds :: UserCreds
+  } deriving (Show, Eq)
 
-data GameStart = GameStart
+data PlayRequest = PlayRequest
+  { preqUserCreds :: UserCreds
+  , preqLoc :: Loc
+  } deriving (Show, Eq)
 
-data GamePlay = GamePlay
-
-start :: UserStart -> IO GameStart
-start userStart = do
-  -- addUserToLobby
-  -- wait for mvar
-  return GameStart
-
-play :: MatchId -> MatchToken -> UserPlay -> IO GamePlay
-play matchId matchToken userPlay = do
-  return GamePlay
-
-instance FromJSON UserStart where
-  parseJSON (Object o) = UserStart <$> o .: "key"
+instance FromJSON UserCreds where
+  parseJSON (Object o) = UserCreds <$> o .: "id" <*> o .: "key"
   parseJSON _ = mzero
 
-instance FromJSON UserPlay where
-  parseJSON (Object o) = UserPlay <$> o .: "key" <*> o .: "location"
+instance FromJSON StartRequest where
+  parseJSON (Object o) = StartRequest <$> o .: "creds"
+  parseJSON _ = mzero
+
+instance FromJSON PlayRequest where
+  parseJSON (Object o) = PlayRequest <$> o .: "creds" <*> o .: "loc"
   parseJSON _ = mzero
 
 instance FromJSON Loc where
   parseJSON (Object o) = Loc <$> o .: "x" <*> o .: "y"
   parseJSON _ = mzero
 
-instance ToJSON GameStart where
-  toJSON _ = object []
+data GameState = GameState
+  { gsBoard :: Board
+  , gsFinal :: Maybe Final
+  } deriving (Show, Eq)
 
-instance ToJSON GamePlay where
-  toJSON _ = object []
+data StartResponse = StartResponse
+  { srespMatchInfo :: MatchInfo
+  , srespState :: GameState
+  } deriving (Show, Eq)
 
+data PlayResponse = PlayResponse
+  { prespState :: GameState
+  } deriving (Show, Eq)
 
+instance ToJSON Board where
+  toJSON b = toJSON [toJSON [cvt $ M.lookup (Loc x y) m | x <- [0..pred s]] | y <- [0..pred s]]
+    where
+      m = boardMap b
+      s = boardSize b
+      cvt :: Maybe XO -> String
+      cvt (Just X) = "x"
+      cvt (Just O) = "o"
+      cvt Nothing = " "
+
+instance ToJSON Final where
+  toJSON f = String $ case f of
+    Won -> "win"
+    WonByDQ -> "win"
+    Loss -> "lose"
+    LossByDQ -> "lose"
+    Tied -> "tie"
+
+instance ToJSON GameState where
+  toJSON gs = object [ "board" .= (gsBoard gs), "final" .= (gsFinal gs) ]
+
+instance ToJSON MatchInfo where
+  toJSON mi = object [ "id" .= miMatchId mi, "token" .= miMatchToken mi ]
+
+instance ToJSON StartResponse where
+  toJSON sreq = object [ "match" .= srespMatchInfo sreq, "state" .= srespState sreq ]
+
+instance ToJSON PlayResponse where
+  toJSON preq = object [ "state" .= prespState preq ]
