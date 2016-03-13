@@ -2,6 +2,8 @@
 module T3.Server
   ( GameLogger
   , Server(..)
+  , UserConfig(..)
+  , MatchConfig(..)
   , UserCreds(..)
   , StartRequest(..)
   , PlayRequest(..)
@@ -16,23 +18,24 @@ module T3.Server
   , genMatchId
   , genUserId
   , genUserKey
+  , play
+  , authenticate
+  , authorize
   ) where
 
 import qualified Data.Map as M
 import qualified Data.Text as T
 
 import Prelude
+import Control.Applicative
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Monad
 import Data.Aeson
 import Data.Text (Text)
-import Control.Monad.Except
 import System.Random
 
-import T3.Game.Core
 import T3.Game
-import T3.Game.Types
 import T3.Server.Dispatch
 import T3.Server.Lobby
 import T3.Match
@@ -42,10 +45,23 @@ type GameLogger = MatchId -> Win UserId -> Lose UserId -> Board -> IO ()
 data Server = Server
   { srvLobby :: TVar Lobby
   , srvMatches :: TVar (M.Map MatchId MatchConfig)
-  , srvUsers :: TVar (M.Map UserKey UserId)
+  , srvUsers :: TVar (M.Map UserId UserKey)
   , srvDie :: IO ()
   , srvLogger :: GameLogger
   }
+
+authenticate :: Server -> UserCreds -> STM Bool
+authenticate srv uc = do
+  users <- readTVar (srvUsers srv)
+  return $ M.lookup (ucUserId uc) users == Just (ucUserKey uc)
+
+authorize :: UserId -> MatchToken -> MatchConfig -> Maybe UserConfig
+authorize userId matchToken matchCfg = (userCfgMay $ matchCfgX matchCfg) <|> (userCfgMay $ matchCfgO matchCfg)
+  where
+    userCfgMay cfg =
+      if userCfgUserId cfg == userId && userCfgMatchToken cfg == matchToken
+      then Just cfg
+      else Nothing
 
 forkServer :: GameLogger ->  IO Server
 forkServer logger = do
@@ -94,6 +110,9 @@ serve srv = do
       atomically $ modifyTVar (srvMatches srv) (M.insert matchId sessCfg)
   threadDelay (1 * 1000000)
   serve srv
+
+play :: UserConfig -> Loc -> IO ()
+play _ _ = return ()
 
 --
 
