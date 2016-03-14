@@ -10,9 +10,12 @@ postStartR = do
   startReq <- requireJsonBody
   resp <- liftIO newEmptyMVar
   srv <- appServer <$> getYesod
-  liftIO $ addUserToLobby
+  added <- liftIO $ addUserToLobby
     (srvLobby srv)
     (ucUserName $ sreqUserCreds startReq)
     (\matchId matchToken board -> putMVar resp (matchId, matchToken, board))
-  (matchId, matchToken, board) <- liftIO $ readMVar resp
-  returnJson $ StartResponse (MatchInfo matchId matchToken) (GameState board Nothing)
+  if added
+    then do
+      (matchId, matchToken, board) <- liftIO $ readMVar resp
+      returnJson $ StartResponse (MatchInfo matchId matchToken) (GameState board Nothing)
+    else returnJson (Nothing :: Maybe ())

@@ -56,10 +56,10 @@ authenticate srv uc = do
   return $ M.lookup (ucUserName uc) users == Just (ucUserKey uc)
 
 authorize :: UserName -> MatchToken -> MatchConfig -> Maybe UserConfig
-authorize userId matchToken matchCfg = (userCfgMay $ matchCfgX matchCfg) <|> (userCfgMay $ matchCfgO matchCfg)
+authorize userName matchToken matchCfg = (userCfgMay $ matchCfgX matchCfg) <|> (userCfgMay $ matchCfgO matchCfg)
   where
     userCfgMay cfg =
-      if userCfgUserName cfg == userId && userCfgMatchToken cfg == matchToken
+      if userCfgUserName cfg == userName && userCfgMatchToken cfg == matchToken
       then Just cfg
       else Nothing
 
@@ -133,7 +133,7 @@ data PlayRequest = PlayRequest
   } deriving (Show, Eq)
 
 instance FromJSON UserCreds where
-  parseJSON (Object o) = UserCreds <$> o .: "id" <*> o .: "key"
+  parseJSON (Object o) = UserCreds <$> o .: "name" <*> o .: "key"
   parseJSON _ = mzero
 
 instance FromJSON StartRequest where

@@ -1,6 +1,7 @@
 module T3.Server.Lobby where
 
 import Prelude
+import Control.Monad
 import Control.Concurrent.STM
 import System.Random
 import Data.Maybe
@@ -8,9 +9,12 @@ import T3.Match
 
 type Lobby = [(UserName, StartCallback)]
 
-addUserToLobby :: TVar Lobby  -> UserName -> (StartCallback) -> IO ()
-addUserToLobby lobby un cb = atomically $
-  modifyTVar lobby (\lob -> if isJust (lookup un lob) then lob else (un, cb) : lob)
+addUserToLobby :: TVar Lobby  -> UserName -> (StartCallback) -> IO Bool
+addUserToLobby lobby un cb = atomically $ do
+  lob <- readTVar lobby
+  let shouldAdd = isNothing (lookup un lob)
+  when shouldAdd $ writeTVar lobby ((un, cb) : lob)
+  return shouldAdd
 
 userPairFromLobby :: TVar Lobby -> IO (Maybe ((UserName, StartCallback), (UserName, StartCallback)))
 userPairFromLobby lobby = do
