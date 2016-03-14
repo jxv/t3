@@ -1,0 +1,23 @@
+<h1.jumbotron>
+  Tic Tac Toe
+
+<section.page-header>
+  <h2>Register
+  <div>
+    $maybe createResult <- submission
+      $case createResult
+        $of NameExists
+          <div .message .alert .alert-danger>
+            Name already exists
+        $of NoName 
+          <div .message .alert .alert-danger>
+            No name given
+        $of Good name key
+          <div .message .alert .alert-success>
+            Username: <code>#{name}</code>
+            <br>
+            Key: <code>#{key}</code>
+    <form method=post action=@{RegisterR}#form enctype=#{formEnctype}>
+      ^{formWidget}
+      <button .btn .btn-primary type="submit">
+         Create

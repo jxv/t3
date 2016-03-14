@@ -10,13 +10,13 @@ module T3.Server
   , GameState(..)
   , StartResponse(..)
   , PlayResponse(..)
-  , Username
+  , UserName
   , UserKey
   , forkServer
   , genBase64
   , genMatchToken
   , genMatchId
-  , genUserId
+  , genUserName
   , genUserKey
   , play
   , authenticate
@@ -40,12 +40,12 @@ import T3.Server.Dispatch
 import T3.Server.Lobby
 import T3.Match
 
-type GameLogger = MatchId -> Win UserId -> Lose UserId -> Board -> IO ()
+type GameLogger = MatchId -> Win UserName -> Lose UserName -> Board -> IO ()
 
 data Server = Server
   { srvLobby :: TVar Lobby
   , srvMatches :: TVar (M.Map MatchId MatchConfig)
-  , srvUsers :: TVar (M.Map UserId UserKey)
+  , srvUsers :: TVar (M.Map UserName UserKey)
   , srvDie :: IO ()
   , srvLogger :: GameLogger
   }
@@ -53,13 +53,13 @@ data Server = Server
 authenticate :: Server -> UserCreds -> STM Bool
 authenticate srv uc = do
   users <- readTVar (srvUsers srv)
-  return $ M.lookup (ucUserId uc) users == Just (ucUserKey uc)
+  return $ M.lookup (ucUserName uc) users == Just (ucUserKey uc)
 
-authorize :: UserId -> MatchToken -> MatchConfig -> Maybe UserConfig
+authorize :: UserName -> MatchToken -> MatchConfig -> Maybe UserConfig
 authorize userId matchToken matchCfg = (userCfgMay $ matchCfgX matchCfg) <|> (userCfgMay $ matchCfgO matchCfg)
   where
     userCfgMay cfg =
-      if userCfgUserId cfg == userId && userCfgMatchToken cfg == matchToken
+      if userCfgUserName cfg == userId && userCfgMatchToken cfg == matchToken
       then Just cfg
       else Nothing
 
@@ -90,11 +90,11 @@ genMatchToken = genBase64 16
 genMatchId :: IO Text
 genMatchId = genBase64 16
 
-genUserId :: IO Text
-genUserId = genBase64 32
+genUserName :: IO Text
+genUserName = genBase64 32
 
 genUserKey :: IO Text
-genUserKey = genBase64 64
+genUserKey = genBase64 32
 
 serve :: Server -> IO ()
 serve srv = do
@@ -116,11 +116,10 @@ play _ _ = return ()
 
 --
 
-type Username = Text
 type UserKey = Text
 
 data UserCreds = UserCreds
-  { ucUserId :: UserId
+  { ucUserName :: UserName
   , ucUserKey :: UserKey
   } deriving (Show, Eq)
 

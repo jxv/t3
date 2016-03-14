@@ -17,7 +17,7 @@ postPlayR matchId matchToken = do
       False -> return Nothing
       True -> do
         mMatchCfg <- M.lookup matchId <$> readTVar (srvMatches srv)
-        return $ authorize (ucUserId creds) matchToken =<< mMatchCfg
+        return $ authorize (ucUserName creds) matchToken =<< mMatchCfg
   case mUserCfg of
     Nothing -> returnJson ([] :: [Int])
     Just userCfg -> do

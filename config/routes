@@ -6,6 +6,6 @@
 / HomeR GET POST
 
 /comments CommentR POST
-/create CreateR GET POST
+/register RegisterR GET POST
 /api/start StartR POST
 /api/play/#MatchId/#MatchToken PlayR POST

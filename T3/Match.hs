@@ -28,22 +28,22 @@ data MatchData = MatchData
 newtype Match a = Match { unMatch :: StateT MatchData IO a }
   deriving (Functor, Applicative, Monad, MonadIO, MonadState MatchData)
 
-type UserInit = (UserId, Callback, IO (Loc, Callback))
+type UserInit = (UserName, Callback, IO (Loc, Callback))
 
 runMatch
   :: UserInit
   -> UserInit
-  -> (Win UserId -> Lose UserId -> Board -> IO ())
+  -> (Win UserName -> Lose UserName -> Board -> IO ())
   -> IO ()
-runMatch (xUI, xCB, xReq) (oUI, oCB, oReq) logger = let
+runMatch (xUN, xCB, xReq) (oUN, oCB, oReq) logger = let
   req X = xReq
   req O = oReq
   cb X = xCB
   cb O = oCB
-  ui X = xUI
-  ui O = oUI
+  un X = xUN
+  un O = oUN
   b = emptyBoard
-  matchDat = MatchData req (cb X) (cb O) (\w l -> logger (fmap ui w) (fmap ui l)) b
+  matchDat = MatchData req (cb X) (cb O) (\w l -> logger (fmap un w) (fmap un l)) b
   in evalStateT (unMatch $ run b) matchDat
 
 sendGameState :: XO -> Match ()

@@ -12,7 +12,7 @@ postStartR = do
   srv <- appServer <$> getYesod
   liftIO $ addUserToLobby
     (srvLobby srv)
-    (ucUserId $ sreqUserCreds startReq)
+    (ucUserName $ sreqUserCreds startReq)
     (\matchId matchToken board -> putMVar resp (matchId, matchToken, board))
   (matchId, matchToken, board) <- liftIO $ readMVar resp
   returnJson $ StartResponse (MatchInfo matchId matchToken) (GameState board Nothing)

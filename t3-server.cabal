@@ -22,7 +22,7 @@ library
                      Handler.Common
                      Handler.Home
                      Handler.Comment
-                     Handler.Create
+                     Handler.Register
                      Handler.Start
                      Handler.Play
 

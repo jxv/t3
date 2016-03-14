@@ -6,13 +6,13 @@ import System.Random
 import Data.Maybe
 import T3.Match
 
-type Lobby = [(UserId, StartCallback)]
+type Lobby = [(UserName, StartCallback)]
 
-addUserToLobby :: TVar Lobby  -> UserId -> (StartCallback) -> IO ()
-addUserToLobby lobby ui cb = atomically $
-  modifyTVar lobby (\lob -> if isJust (lookup ui lob) then lob else (ui, cb) : lob)
+addUserToLobby :: TVar Lobby  -> UserName -> (StartCallback) -> IO ()
+addUserToLobby lobby un cb = atomically $
+  modifyTVar lobby (\lob -> if isJust (lookup un lob) then lob else (un, cb) : lob)
 
-userPairFromLobby :: TVar Lobby -> IO (Maybe ((UserId, StartCallback), (UserId, StartCallback)))
+userPairFromLobby :: TVar Lobby -> IO (Maybe ((UserName, StartCallback), (UserName, StartCallback)))
 userPairFromLobby lobby = do
   a <- randomIO
   b <- randomIO
