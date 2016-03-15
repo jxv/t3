@@ -18,7 +18,6 @@ module T3.Server
   , genMatchId
   , genUserName
   , genUserKey
-  , play
   , authenticate
   , authorize
   ) where
@@ -110,9 +109,6 @@ serve srv = do
       atomically $ modifyTVar (srvMatches srv) (M.insert matchId sessCfg)
   threadDelay (1 * 1000000)
   serve srv
-
-play :: UserConfig -> Loc -> IO ()
-play _ _ = return ()
 
 --
 

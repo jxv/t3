@@ -27,9 +27,9 @@ postRegisterR = do
   ((result, formWidget), formEnctype) <- runFormPost sampleForm
   submission <- case result of
     FormSuccess name -> do
-      case T.null name of
-        True -> return $ Just NoName
-        False -> do
+      if T.null name
+        then return $ Just NoName
+        else do
           userKey <- liftIO genUserKey
           exists <- liftIO . atomically $ do
             users <- readTVar (srvUsers srv)
