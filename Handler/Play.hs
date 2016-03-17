@@ -23,4 +23,4 @@ postPlayR matchId matchToken = do
       resp <- liftIO newEmptyMVar
       liftIO $ (userCfgSendLoc userCfg) (preqLoc playReq, putMVar resp)
       step <- liftIO $ readMVar resp
-      returnJson $ PlayResponse (GameState (stepBoard step) Nothing)
+      returnJson $ PlayResponse (GameState (stepBoard step) (stepFinal step))

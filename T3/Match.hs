@@ -48,7 +48,7 @@ runMatch (xUN, xCB, xReq) (oUN, oCB, oReq) logger = let
 sendGameState :: XO -> Match ()
 sendGameState xo = do
   s <- get
-  liftIO $ (respXO xo s) (Step $ matchBoard s)
+  liftIO $ (respXO xo s) (Step (matchBoard s) Nothing)
 
 recvMove :: XO -> Match Loc
 recvMove xo = do
@@ -64,9 +64,9 @@ recvMove xo = do
         O -> match { matchRespO = resp }
 
 sendFinal :: XO -> Final -> Match ()
-sendFinal xo _final = do
+sendFinal xo final = do
   s <- get
-  liftIO $ (respXO xo s) (Step $ matchBoard s)
+  liftIO $ (respXO xo s) (Step (matchBoard s) (Just final))
 
 tally :: Win XO -> Lose XO -> Match ()
 tally w l = do

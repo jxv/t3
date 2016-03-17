@@ -15,6 +15,7 @@ data MatchInfo = MatchInfo
 
 data Step = Step
   { stepBoard :: Board
+  , stepFinal :: Maybe Final
   } deriving (Show, Eq)
 
 data Final
