@@ -20,6 +20,6 @@ postStartR = do
         (\matchId matchToken board -> putMVar resp (matchId, matchToken, board))
       if added
         then do
-          (matchId, matchToken, board) <- liftIO $ readMVar resp
-          returnJson $ StartResponse (MatchInfo matchId matchToken) (GameState board Nothing)
+          (matchId, matchToken, step) <- liftIO $ readMVar resp
+          returnJson $ StartResponse (MatchInfo matchId matchToken) (GameState (stepBoard step) Nothing)
         else returnJson (Nothing :: Maybe ())

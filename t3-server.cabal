@@ -13,8 +13,7 @@ Flag library-only
 
 library
     hs-source-dirs: ., app
-    exposed-modules: Application
-                     Foundation
+    exposed-modules: Application Foundation
                      Import
                      Import.NoFoundation
                      Settings
@@ -41,9 +40,9 @@ library
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
-        ghc-options:   -Wall -fwarn-tabs -O0
+        ghc-options:   -Wall -fwarn-tabs -O0 -Werror
     else
-        ghc-options:   -Wall -fwarn-tabs -O2
+        ghc-options:   -Wall -fwarn-tabs -O2 -Werror
 
     extensions: TemplateHaskell
                 QuasiQuotes
