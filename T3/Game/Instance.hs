@@ -28,12 +28,13 @@ instance Game Terminal where
   end (Win w) (Lose l) = do
     liftIO $ putStrLn $ show w ++ " won, and " ++ show l ++ " lost."
   tie = liftIO $ putStrLn "Tie game!"
-  step b = do
+  step b p loc = liftIO $ do
     let d = boardList b
     let cell :: Maybe XO -> String
         cell mcell = maybe " " show mcell
-    liftIO $ putStrLn $ cell (d !! 0) ++ "|" ++  cell (d !! 1) ++ "|" ++ cell (d !! 2)
-    liftIO $ putStrLn "-+-+-"
-    liftIO $ putStrLn $ cell (d !! 3) ++ "|" ++  cell (d !! 4) ++ "|" ++ cell (d !! 5)
-    liftIO $ putStrLn "-+-+-"
-    liftIO $ putStrLn $ cell (d !! 6) ++ "|" ++  cell (d !! 7) ++ "|" ++ cell (d !! 8)
+    putStrLn $ show p ++ " moved to " ++ show loc
+    putStrLn $ cell (d !! 0) ++ "|" ++  cell (d !! 1) ++ "|" ++ cell (d !! 2)
+    putStrLn "-+-+-"
+    putStrLn $ cell (d !! 3) ++ "|" ++  cell (d !! 4) ++ "|" ++ cell (d !! 5)
+    putStrLn "-+-+-"
+    putStrLn $ cell (d !! 6) ++ "|" ++  cell (d !! 7) ++ "|" ++ cell (d !! 8)

@@ -9,4 +9,4 @@ class Monad m => Game m where
   forfeit :: Win XO -> Lose XO -> m ()
   end :: Win XO -> Lose XO -> m ()
   tie :: m ()
-  step :: Board -> m ()
+  step :: Board -> XO -> Loc -> m ()

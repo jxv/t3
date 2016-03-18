@@ -22,6 +22,7 @@ data MatchData = MatchData
   , matchRespO :: Callback
   , matchLog :: Win XO -> Lose XO -> Board -> IO ()
   , matchBoard :: Board
+  , matchMoves :: [(XO, Loc)]
   }
 
 newtype Match a = Match { unMatch :: StateT MatchData IO a }
@@ -42,7 +43,7 @@ runMatch (xUN, xCB, xReq) (oUN, oCB, oReq) logger = let
   un X = xUN
   un O = oUN
   b = emptyBoard
-  matchDat = MatchData req (cb X) (cb O) (\w l -> logger (fmap un w) (fmap un l)) b
+  matchDat = MatchData req (cb X) (cb O) (\w l -> logger (fmap un w) (fmap un l)) b []
   in evalStateT (unMatch $ run b) matchDat
 
 sendGameState :: XO -> Match ()
@@ -78,6 +79,11 @@ updateBoard b = do
   match <- get
   put $ match { matchBoard = b }
 
+logMove :: XO -> Loc -> Match ()
+logMove xo loc = do
+  match <- get
+  put $ match { matchMoves = matchMoves match ++ [(xo, loc)] }
+
 respXO :: XO -> MatchData -> Callback
 respXO X = matchRespX
 respXO O = matchRespO
@@ -95,5 +101,6 @@ instance Game Match  where
   tie = do
     sendFinal X Tied
     sendFinal O Tied
-  step b = do
+  step b xo loc = do
+    logMove xo loc
     updateBoard b
