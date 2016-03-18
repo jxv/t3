@@ -28,7 +28,7 @@ forkMatch (xUI, xGT, xCB) (oUI, oGT, oCB) logger done = do
   oChan <- newChan
   let x = (xCB, readChan xChan)
   let o = (oCB, readChan oChan)
-  thid <- forkIO $ runMatch x o logger
+  thid <- forkIO $ runMatch x o logger done
   return $ MatchConfig
     (UserConfig xUI xGT (writeChan xChan))
     (UserConfig oUI oGT (writeChan oChan))

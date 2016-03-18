@@ -116,7 +116,7 @@ serve srv = do
         (srvLogger srv matchId users)
         removeSelf
       atomically $ modifyTVar (srvMatches srv) (M.insert matchId sessCfg)
-  threadDelay (1 * 1000000)
+  threadDelay (1 * 1000000) -- 1 second
   serve srv
 
 toGameState :: Step -> GameState

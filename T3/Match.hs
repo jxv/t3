@@ -29,19 +29,15 @@ newtype Match a = Match { unMatch :: StateT MatchData IO a }
 
 type UserInit = (Callback, IO (Loc, Callback))
 
-runMatch
-  :: UserInit
-  -> UserInit
-  -> ([(XO, Loc)] -> Board -> Result -> IO ())
-  -> IO ()
-runMatch (xCB, xReq) (oCB, oReq) logger = let
+runMatch :: UserInit -> UserInit -> ([(XO, Loc)] -> Board -> Result -> IO ()) -> IO () -> IO ()
+runMatch (xCB, xReq) (oCB, oReq) logger done = let
   req X = xReq
   req O = oReq
   cb X = xCB
   cb O = oCB
   b = emptyBoard
   matchDat = MatchData req (cb X) (cb O) logger b []
-  in evalStateT (unMatch $ run b) matchDat
+  in evalStateT (unMatch $ run b) matchDat >> done
 
 sendGameState :: XO -> Match ()
 sendGameState xo = do
