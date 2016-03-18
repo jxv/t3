@@ -32,7 +32,7 @@ import Control.Applicative
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Monad
-import Data.Aeson
+import Data.Aeson hiding (Result)
 import Data.Text (Text)
 import System.Random
 
@@ -41,7 +41,7 @@ import T3.Server.Dispatch
 import T3.Server.Lobby
 import T3.Match
 
-type GameLogger = MatchId -> Win UserName -> Lose UserName -> Board -> IO ()
+type GameLogger = MatchId -> Users -> [(XO, Loc)] -> Board -> Result -> IO ()
 
 data Server = Server
   { srvLobby :: TVar Lobby
@@ -113,7 +113,7 @@ serve srv = do
       sessCfg <- forkMatch
         (xUN, xGT, xCB xMatchInfo users)
         (oUN, oGT, oCB oMatchInfo users)
-        (srvLogger srv matchId)
+        (srvLogger srv matchId users)
         removeSelf
       atomically $ modifyTVar (srvMatches srv) (M.insert matchId sessCfg)
   threadDelay (1 * 1000000)

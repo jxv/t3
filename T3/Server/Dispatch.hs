@@ -20,14 +20,14 @@ data MatchConfig = MatchConfig
 forkMatch
   :: (UserName, MatchToken, Callback)
   -> (UserName, MatchToken, Callback)
-  -> (Win UserName -> Lose UserName -> Board -> IO ())
+  -> ([(XO, Loc)] -> Board -> Result -> IO ())
   -> IO ()
   -> IO MatchConfig
 forkMatch (xUI, xGT, xCB) (oUI, oGT, oCB) logger done = do
   xChan <- newChan
   oChan <- newChan
-  let x = (xUI, xCB, readChan xChan)
-  let o = (oUI, oCB, readChan oChan)
+  let x = (xCB, readChan xChan)
+  let o = (oCB, readChan oChan)
   thid <- forkIO $ runMatch x o logger
   return $ MatchConfig
     (UserConfig xUI xGT (writeChan xChan))

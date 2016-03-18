@@ -37,6 +37,7 @@ import Handler.Start
 import Handler.Play
 
 import T3.Server
+import T3.Game.Core
 
 -- This line actually creates our YesodDispatch instance. It is the second half
 -- of the call to mkYesodData which occurs in Foundation.hs. Please see the
@@ -60,10 +61,15 @@ makeFoundation appSettings = do
     -- Return the foundation
     return App {..}
   where
-    gameLogger gameId winner loser board = do
-      putStrLn $ "Finished Game: " `mappend` gameId
-      print winner
-      print loser
+    gameLogger matchId users _moves board res = do
+      putStrLn $ "Finished Game: " `mappend` matchId
+      case res of
+        Tie -> putStrLn "TIE"
+        Unfinished -> putStrLn "UNFINISHED"
+        Winner xo -> do
+          let (w,l) = if xo == X then (uX users, uO users) else (uO users, uX users)
+          putStrLn $ w `mappend` " WON"
+          putStrLn $ l `mappend` " LOST"
       putStr "Board: "
       print board
 

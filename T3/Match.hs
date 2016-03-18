@@ -1,7 +1,6 @@
 module T3.Match
   ( module T3.Match.Types
   , runMatch
-  , tally
   , UserInit
   , Callback
   , StartCallback
@@ -20,7 +19,7 @@ data MatchData = MatchData
   { matchReq :: XO -> IO (Loc, Callback)
   , matchRespX :: Callback
   , matchRespO :: Callback
-  , matchLog :: Win XO -> Lose XO -> Board -> IO ()
+  , matchLog :: [(XO, Loc)] -> Board -> Result -> IO ()
   , matchBoard :: Board
   , matchMoves :: [(XO, Loc)]
   }
@@ -28,22 +27,20 @@ data MatchData = MatchData
 newtype Match a = Match { unMatch :: StateT MatchData IO a }
   deriving (Functor, Applicative, Monad, MonadIO, MonadState MatchData)
 
-type UserInit = (UserName, Callback, IO (Loc, Callback))
+type UserInit = (Callback, IO (Loc, Callback))
 
 runMatch
   :: UserInit
   -> UserInit
-  -> (Win UserName -> Lose UserName -> Board -> IO ())
+  -> ([(XO, Loc)] -> Board -> Result -> IO ())
   -> IO ()
-runMatch (xUN, xCB, xReq) (oUN, oCB, oReq) logger = let
+runMatch (xCB, xReq) (oCB, oReq) logger = let
   req X = xReq
   req O = oReq
   cb X = xCB
   cb O = oCB
-  un X = xUN
-  un O = oUN
   b = emptyBoard
-  matchDat = MatchData req (cb X) (cb O) (\w l -> logger (fmap un w) (fmap un l)) b []
+  matchDat = MatchData req (cb X) (cb O) logger b []
   in evalStateT (unMatch $ run b) matchDat
 
 sendGameState :: XO -> Match ()
@@ -69,10 +66,10 @@ sendFinal xo final = do
   s <- get
   liftIO $ (respXO xo s) (Step (matchBoard s) (Just final))
 
-tally :: Win XO -> Lose XO -> Match ()
-tally w l = do
+tally :: Result -> Match ()
+tally res = do
   s <- get
-  liftIO $ (matchLog s) w l (matchBoard s)
+  liftIO $ matchLog s (matchMoves s) (matchBoard s) res
 
 updateBoard :: Board -> Match ()
 updateBoard b = do
@@ -93,12 +90,15 @@ instance Game Match  where
     sendGameState xo
     recvMove xo
   forfeit (Win w) (Lose l) = do
+    tally (Winner w)
     sendFinal l LossByDQ
     sendFinal w WonByDQ
   end (Win w) (Lose l) = do
+    tally (Winner w)
     sendFinal w Won
     sendFinal l Loss
   tie = do
+    tally Tie
     sendFinal X Tied
     sendFinal O Tied
   step b xo loc = do
