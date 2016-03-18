@@ -8,6 +8,11 @@ type UserName = Text
 type MatchId = Text
 type MatchToken = Text
 
+data Users = Users
+  { uX :: UserName
+  , uO :: UserName
+  } deriving (Show, Eq)
+
 data MatchInfo = MatchInfo
   { miMatchId :: MatchId
   , miMatchToken :: MatchToken

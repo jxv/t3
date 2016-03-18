@@ -8,6 +8,7 @@ module T3.Server
   , StartRequest(..)
   , PlayRequest(..)
   , GameState(..)
+  , Users(..)
   , StartResponse(..)
   , PlayResponse(..)
   , UserName
@@ -20,6 +21,7 @@ module T3.Server
   , genUserKey
   , authenticate
   , authorize
+  , toGameState
   ) where
 
 import qualified Data.Map as M
@@ -100,15 +102,25 @@ serve srv = do
   musers <- userPairFromLobby (srvLobby srv)
   case musers of
     Nothing -> return ()
-    Just ((xUI, xCB), (oUI, oCB)) -> do
+    Just ((xUN, xCB), (oUN, oCB)) -> do
       matchId <- genMatchId
       xGT <- genMatchToken
       oGT <- genMatchToken
       let removeSelf = atomically $ modifyTVar (srvMatches srv) (M.delete matchId)
-      sessCfg <- forkMatch  (xUI, xGT, xCB matchId xGT) (oUI, oGT, oCB matchId oGT) (srvLogger srv matchId) removeSelf
+      let users = Users { uX = xUN, uO = oUN }
+      let xMatchInfo = MatchInfo { miMatchId = matchId, miMatchToken = xGT }
+      let oMatchInfo = MatchInfo { miMatchId = matchId, miMatchToken = oGT }
+      sessCfg <- forkMatch
+        (xUN, xGT, xCB xMatchInfo users)
+        (oUN, oGT, oCB oMatchInfo users)
+        (srvLogger srv matchId)
+        removeSelf
       atomically $ modifyTVar (srvMatches srv) (M.insert matchId sessCfg)
   threadDelay (1 * 1000000)
   serve srv
+
+toGameState :: Step -> GameState
+toGameState s = GameState (stepBoard s) (stepFinal s)
 
 --
 
@@ -151,6 +163,7 @@ data GameState = GameState
 
 data StartResponse = StartResponse
   { srespMatchInfo :: MatchInfo
+  , srespUsers :: Users
   , srespState :: GameState
   } deriving (Show, Eq)
 
@@ -177,13 +190,16 @@ instance ToJSON Final where
     Tied -> "tie"
 
 instance ToJSON GameState where
-  toJSON gs = object [ "board" .= (gsBoard gs), "final" .= (gsFinal gs) ]
+  toJSON gs = object [ "board" .= gsBoard gs, "final" .= gsFinal gs ]
+
+instance ToJSON Users where
+  toJSON u = object [ "x" .= uX u, "o" .= uO u ]
 
 instance ToJSON MatchInfo where
   toJSON mi = object [ "id" .= miMatchId mi, "token" .= miMatchToken mi ]
 
 instance ToJSON StartResponse where
-  toJSON sreq = object [ "match" .= srespMatchInfo sreq, "state" .= srespState sreq ]
+  toJSON sreq = object [ "match" .= srespMatchInfo sreq, "users" .= srespUsers sreq, "state" .= srespState sreq ]
 
 instance ToJSON PlayResponse where
   toJSON preq = object [ "state" .= prespState preq ]

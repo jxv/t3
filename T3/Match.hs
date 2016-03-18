@@ -14,7 +14,7 @@ import T3.Game
 import Control.Monad.State.Strict
 
 type Callback = Step -> IO ()
-type StartCallback = MatchId -> MatchToken -> Step -> IO ()
+type StartCallback = MatchInfo -> Users -> Step -> IO ()
 
 data MatchData = MatchData
   { matchReq :: XO -> IO (Loc, Callback)

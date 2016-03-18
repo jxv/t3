@@ -1,7 +1,6 @@
 module Handler.Start where
 
 import Import
-import T3.Match
 import T3.Server
 import T3.Server.Lobby
 
@@ -17,9 +16,9 @@ postStartR = do
       added <- liftIO $ addUserToLobby
         (srvLobby srv)
         (ucUserName $ sreqUserCreds startReq)
-        (\matchId matchToken board -> putMVar resp (matchId, matchToken, board))
+        (\matchInfo users step -> putMVar resp $ StartResponse matchInfo users (toGameState step))
       if added
         then do
-          (matchId, matchToken, step) <- liftIO $ readMVar resp
-          returnJson $ StartResponse (MatchInfo matchId matchToken) (GameState (stepBoard step) (stepFinal step))
+          sresp <- liftIO $ readMVar resp
+          returnJson sresp
         else returnJson (Nothing :: Maybe ())
