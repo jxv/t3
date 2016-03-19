@@ -1,6 +1,7 @@
 module T3.Game.Core
   ( XO(..)
   , Loc(..)
+  , Action(..)
   , Result(..)
   , Board
   , yinYang
@@ -26,6 +27,11 @@ data Loc = Loc
   { locX :: Int
   , locY :: Int
   } deriving (Show, Read, Eq, Ord)
+
+data Action = Action
+  { actXO :: XO
+  , actLoc :: Loc
+  } deriving (Show, Eq)
 
 data Board = Board
   { bCells :: M.Map Loc XO

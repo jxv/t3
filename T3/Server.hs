@@ -41,7 +41,7 @@ import T3.Server.Dispatch
 import T3.Server.Lobby
 import T3.Match
 
-type GameLogger = MatchId -> Users -> [(XO, Loc)] -> Board -> Result -> IO ()
+type GameLogger = MatchId -> Users -> [Action] -> Board -> Result -> IO ()
 
 data Server = Server
   { srvLobby :: TVar Lobby
@@ -116,7 +116,7 @@ serve srv = do
         (srvLogger srv matchId users)
         removeSelf
       atomically $ modifyTVar (srvMatches srv) (M.insert matchId sessCfg)
-  threadDelay (1 * 1000000)
+  threadDelay (1 * 1000000) -- 1 second
   serve srv
 
 toGameState :: Step -> GameState
@@ -171,15 +171,23 @@ data PlayResponse = PlayResponse
   { prespState :: GameState
   } deriving (Show, Eq)
 
+instance ToJSON XO where
+  toJSON X = String "x"
+  toJSON O = String "o"
+
+instance ToJSON Loc where
+  toJSON loc = object [ "x" .= locX loc, "y" .= locY loc ]
+
+instance ToJSON Action where
+  toJSON a = object [ "xo" .= actXO a, "loc" .= actLoc a ]
+
 instance ToJSON Board where
-  toJSON b = toJSON [toJSON [cvt $ M.lookup (Loc x y) m | x <- [0..pred s]] | y <- [0..pred s]]
+  toJSON b = toJSON [[cvt $ M.lookup (Loc x y) m | x <- [0..pred s]] | y <- [0..pred s]]
     where
       m = boardMap b
       s = boardSize b
-      cvt :: Maybe XO -> String
-      cvt (Just X) = "x"
-      cvt (Just O) = "o"
-      cvt Nothing = " "
+      cvt :: Maybe XO -> Value
+      cvt = maybe (String " ") toJSON
 
 instance ToJSON Final where
   toJSON f = String $ case f of

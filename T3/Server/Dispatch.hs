@@ -20,7 +20,7 @@ data MatchConfig = MatchConfig
 forkMatch
   :: (UserName, MatchToken, Callback)
   -> (UserName, MatchToken, Callback)
-  -> ([(XO, Loc)] -> Board -> Result -> IO ())
+  -> ([Action] -> Board -> Result -> IO ())
   -> IO ()
   -> IO MatchConfig
 forkMatch (xUI, xGT, xCB) (oUI, oGT, oCB) logger done = do

@@ -19,9 +19,9 @@ data MatchData = MatchData
   { matchReq :: XO -> IO (Loc, Callback)
   , matchRespX :: Callback
   , matchRespO :: Callback
-  , matchLog :: [(XO, Loc)] -> Board -> Result -> IO ()
+  , matchLog :: [Action] -> Board -> Result -> IO ()
   , matchBoard :: Board
-  , matchMoves :: [(XO, Loc)]
+  , matchActions :: [Action]
   }
 
 newtype Match a = Match { unMatch :: StateT MatchData IO a }
@@ -32,7 +32,7 @@ type UserInit = (Callback, IO (Loc, Callback))
 runMatch
   :: UserInit
   -> UserInit
-  -> ([(XO, Loc)] -> Board -> Result -> IO ())
+  -> ([Action] -> Board -> Result -> IO ())
   -> IO ()
 runMatch (xCB, xReq) (oCB, oReq) logger = let
   req X = xReq
@@ -48,8 +48,8 @@ sendGameState xo = do
   s <- get
   liftIO $ (respXO xo s) (Step (matchBoard s) Nothing)
 
-recvMove :: XO -> Match Loc
-recvMove xo = do
+recvAction :: XO -> Match Loc
+recvAction xo = do
   req <- gets (flip matchReq xo)
   (loc, resp) <- liftIO req
   updateResp resp
@@ -69,17 +69,17 @@ sendFinal xo final = do
 tally :: Result -> Match ()
 tally res = do
   s <- get
-  liftIO $ matchLog s (matchMoves s) (matchBoard s) res
+  liftIO $ matchLog s (matchActions s) (matchBoard s) res
 
 updateBoard :: Board -> Match ()
 updateBoard b = do
   match <- get
   put $ match { matchBoard = b }
 
-logMove :: XO -> Loc -> Match ()
-logMove xo loc = do
+logAction :: XO -> Loc -> Match ()
+logAction xo loc = do
   match <- get
-  put $ match { matchMoves = matchMoves match ++ [(xo, loc)] }
+  put $ match { matchActions = matchActions match ++ [Action xo loc] }
 
 respXO :: XO -> MatchData -> Callback
 respXO X = matchRespX
@@ -88,7 +88,7 @@ respXO O = matchRespO
 instance Game Match  where
   move xo = do
     sendGameState xo
-    recvMove xo
+    recvAction xo
   forfeit (Win w) (Lose l) = do
     tally (Winner w)
     sendFinal l LossByDQ
@@ -102,5 +102,5 @@ instance Game Match  where
     sendFinal X Tied
     sendFinal O Tied
   step b xo loc = do
-    logMove xo loc
+    logAction xo loc
     updateBoard b

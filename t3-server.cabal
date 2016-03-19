@@ -25,6 +25,8 @@ library
                      Handler.Start
                      Handler.Play
 
+                     T3.Playback
+
                      T3.Server
                      T3.Server.Dispatch
                      T3.Server.Lobby
