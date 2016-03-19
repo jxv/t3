@@ -32,4 +32,4 @@ instance ToJSON Playback where
 instance ToJSON Result where
   toJSON Tie = object [ "tag" .= String "tie" ]
   toJSON Unfinished = object [ "tag" .= String "unfinished" ]
-  toJSON (Winner xo) = object [ "tag" .= String "divide", "winner" .= xo, "loser" .= yinYang xo ]
+  toJSON (Winner xo) = object [ "tag" .= String "decision", "winner" .= xo, "loser" .= yinYang xo ]

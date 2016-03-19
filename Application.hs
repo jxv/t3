@@ -62,7 +62,7 @@ makeFoundation appSettings = do
     return App {..}
   where
     gameLogger matchId users actions _board res = do
-      writePlayback "matches" (Playback matchId users actions res)
+      writePlayback "static/playback/" (Playback matchId users actions res)
       putStrLn $ "Finished Game: " `mappend` matchId
 
 -- | Convert our foundation to a WAI Application by calling @toWaiAppPlain@ and
