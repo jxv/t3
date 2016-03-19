@@ -9,16 +9,25 @@ import Data.Aeson hiding (Result)
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
 
-writePlayback :: FilePath -> MatchId -> Users -> [Action] -> Result -> IO ()
-writePlayback prefix matchId users actions res = BL.writeFile path (encode val)
+data Playback = Playback
+  { pbMatchId :: MatchId
+  , pbUsers :: Users
+  , pbActions :: [Action]
+  , pbResult :: Result
+  } deriving (Show, Eq)
+
+writePlayback :: FilePath -> Playback -> IO ()
+writePlayback prefix pb = BL.writeFile path (encode pb)
   where
-    path = prefix `mappend` (T.unpack $ matchId `mappend` ".json")
-    val = object
-      [ "matchId" .= matchId
-      , "users" .= users
-      , "actions" .= actions
-      , "result" .= res
-      ]
+    path = prefix `mappend` (T.unpack $ pbMatchId pb `mappend` ".json")
+
+instance ToJSON Playback where
+  toJSON pb = object
+    [ "matchId" .= pbMatchId pb
+    , "users" .= pbUsers pb
+    , "actions" .= pbActions pb
+    , "result" .= pbResult pb
+    ]
 
 instance ToJSON Result where
   toJSON Tie = object [ "tag" .= String "tie" ]
