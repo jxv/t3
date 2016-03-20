@@ -24,8 +24,11 @@ library
                      Handler.Register
                      Handler.Start
                      Handler.Play
+                     Handler.Instance
 
                      T3.Playback
+
+                     T3.Web
 
                      T3.Server
                      T3.Server.Dispatch
@@ -100,6 +103,8 @@ library
                  , mtl
                  , stm
                  , random
+                 , hashable
+                 , hashmap
 
 executable         t3-server
     if flag(library-only)
