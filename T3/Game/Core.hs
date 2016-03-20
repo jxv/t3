@@ -16,6 +16,8 @@ module T3.Game.Core
   ) where
 
 import Prelude
+import Control.Monad (mzero)
+import Data.Aeson hiding (Result)
 import qualified Data.Map as M
 
 data XO
@@ -95,3 +97,25 @@ isWinner xo b =
 
 indices :: Board -> [Int]
 indices b = [0..bSize b - 1]
+
+instance FromJSON Loc where
+  parseJSON (Object o) = Loc <$> o .: "x" <*> o .: "y"
+  parseJSON _ = mzero
+
+instance ToJSON Loc where
+  toJSON loc = object [ "x" .= locX loc, "y" .= locY loc ]
+
+instance ToJSON XO where
+  toJSON X = String "x"
+  toJSON O = String "o"
+
+instance ToJSON Action where
+  toJSON a = object [ "xo" .= actXO a, "loc" .= actLoc a ]
+
+instance ToJSON Board where
+  toJSON b = toJSON [[cvt $ M.lookup (Loc x y) m | x <- [0..pred s]] | y <- [0..pred s]]
+    where
+      m = boardMap b
+      s = boardSize b
+      cvt :: Maybe XO -> Value
+      cvt = maybe (String " ") toJSON

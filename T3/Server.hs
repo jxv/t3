@@ -140,6 +140,21 @@ data PlayRequest = PlayRequest
   , preqLoc :: Loc
   } deriving (Show, Eq)
 
+data StartResponse = StartResponse
+  { srespMatchInfo :: MatchInfo
+  , srespUsers :: Users
+  , srespState :: GameState
+  } deriving (Show, Eq)
+
+data PlayResponse = PlayResponse
+  { prespState :: GameState
+  } deriving (Show, Eq)
+
+data GameState = GameState
+  { gsBoard :: Board
+  , gsFinal :: Maybe Final
+  } deriving (Show, Eq)
+
 instance FromJSON UserCreds where
   parseJSON (Object o) = UserCreds <$> o .: "name" <*> o .: "key"
   parseJSON _ = mzero
@@ -151,43 +166,6 @@ instance FromJSON StartRequest where
 instance FromJSON PlayRequest where
   parseJSON (Object o) = PlayRequest <$> o .: "creds" <*> o .: "loc"
   parseJSON _ = mzero
-
-instance FromJSON Loc where
-  parseJSON (Object o) = Loc <$> o .: "x" <*> o .: "y"
-  parseJSON _ = mzero
-
-data GameState = GameState
-  { gsBoard :: Board
-  , gsFinal :: Maybe Final
-  } deriving (Show, Eq)
-
-data StartResponse = StartResponse
-  { srespMatchInfo :: MatchInfo
-  , srespUsers :: Users
-  , srespState :: GameState
-  } deriving (Show, Eq)
-
-data PlayResponse = PlayResponse
-  { prespState :: GameState
-  } deriving (Show, Eq)
-
-instance ToJSON XO where
-  toJSON X = String "x"
-  toJSON O = String "o"
-
-instance ToJSON Loc where
-  toJSON loc = object [ "x" .= locX loc, "y" .= locY loc ]
-
-instance ToJSON Action where
-  toJSON a = object [ "xo" .= actXO a, "loc" .= actLoc a ]
-
-instance ToJSON Board where
-  toJSON b = toJSON [[cvt $ M.lookup (Loc x y) m | x <- [0..pred s]] | y <- [0..pred s]]
-    where
-      m = boardMap b
-      s = boardSize b
-      cvt :: Maybe XO -> Value
-      cvt = maybe (String " ") toJSON
 
 instance ToJSON Final where
   toJSON f = String $ case f of
