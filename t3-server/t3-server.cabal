@@ -37,12 +37,6 @@ library
                      T3.Match
                      T3.Match.Types
 
-                     T3.Game
-                     T3.Game.Class
-                     T3.Game.Core
-                     T3.Game.Instance
-                     T3.Game.Types
-
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
         ghc-options:   -Wall -fwarn-tabs -O0 -Werror
@@ -105,6 +99,7 @@ library
                  , random
                  , hashable
                  , hashmap
+                 , t3-game
 
 executable         t3-server
     if flag(library-only)
@@ -112,7 +107,7 @@ executable         t3-server
 
     main-is:           main.hs
     hs-source-dirs:    app
-    build-depends:     base, t3-server
+    build-depends:     base, t3-server, t3-game
 
     ghc-options:       -threaded -rtsopts -with-rtsopts=-N
 
@@ -141,6 +136,7 @@ test-suite test
 
     build-depends: base
                  , t3-server
+                 , t3-game
                  , yesod-test >= 1.5.0.1 && < 1.6
                  , yesod-core
                  , yesod

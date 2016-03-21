@@ -26,7 +26,6 @@ test-suite t3-game-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
-  other-modules:       T3.GameSpec
   build-depends:       base
                      , t3-game
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N

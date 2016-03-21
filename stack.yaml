@@ -5,13 +5,17 @@ resolver: lts-5.5
 
 # Local packages, usually specified by relative directory name
 packages:
-- '.'
+- './t3-game'
+- './t3-server'
 
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
-extra-deps: []
+extra-deps: [t3-game-0.0.0]
 
 # Override default flag values for local packages and extra-deps
-flags: {}
+flags:
+  t3-server:
+    library-only: false
+    dev: false
 
 # Extra package databases containing global packages
 extra-package-dbs: []
@@ -21,7 +25,7 @@ extra-package-dbs: []
 
 # Require a specific version of stack, using version ranges
 # require-stack-version: -any # Default
-# require-stack-version: >= 0.1.10.0
+# require-stack-version: >= 1.0.0
 
 # Override the architecture used by stack, especially useful on Windows
 # arch: i386
