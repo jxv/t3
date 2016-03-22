@@ -3,12 +3,9 @@ resolver: lts-5.5
 packages:
 - t3-game
 - t3-server
+- t3-server-yesod
 
-extra-deps: []
-
-flags:
-  t3-server:
-    library-only: false
-    dev: false
-
-extra-package-dbs: []
+#flags:
+#  t3-server:
+#    library-only: false
+#    dev: false
