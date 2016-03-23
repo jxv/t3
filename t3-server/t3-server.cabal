@@ -50,6 +50,7 @@ library
       , random
       , hashable
       , hashmap
+      , either
       , t3-game
     default-language:
       Haskell2010

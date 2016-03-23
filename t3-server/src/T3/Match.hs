@@ -9,6 +9,9 @@ module T3.Match
 import Prelude
 import T3.Match.Types
 import T3.Game
+import Control.Concurrent
+import Control.Concurrent.Async
+import Control.Monad.Trans.Either
 
 import Control.Monad.State.Strict
 
@@ -24,32 +27,46 @@ data MatchData = MatchData
   , matchActions :: [Action]
   }
 
-newtype Match a = Match { unMatch :: StateT MatchData IO a }
+newtype Match a = Match { unMatch :: EitherT (IO ()) (StateT MatchData IO) a }
   deriving (Functor, Applicative, Monad, MonadIO, MonadState MatchData)
 
 type UserInit = (Callback, IO (Loc, Callback))
 
+
+lifter :: EitherT (IO ()) (StateT MatchData IO) a  -> Match a
+lifter = Match
+
 runMatch :: UserInit -> UserInit -> ([Action] -> Board -> Result -> IO ()) -> IO () -> IO ()
-runMatch (xCB, xReq) (oCB, oReq) logger done = let
-  req X = xReq
-  req O = oReq
-  cb X = xCB
-  cb O = oCB
-  b = emptyBoard
-  matchDat = MatchData req (cb X) (cb O) logger b []
-  in evalStateT (unMatch $ run b) matchDat >> done
+runMatch (xCB, xReq) (oCB, oReq) logger done = do
+  let req X = xReq
+      req O = oReq
+  let cb X = xCB
+      cb O = oCB
+  let b = emptyBoard
+  let matchDat = MatchData req (cb X) (cb O) logger b []
+  matchResult <- evalStateT (runEitherT $ unMatch $ run b) matchDat
+  either id (const $ return ()) matchResult
+  done
 
 sendGameState :: XO -> Match ()
 sendGameState xo = do
   s <- get
   liftIO $ (respXO xo s) (Step (matchBoard s) Nothing)
 
+delay30Seconds :: IO ()
+delay30Seconds = threadDelay (30 * 1000000)
+
 recvAction :: XO -> Match Loc
 recvAction xo = do
   req <- gets (flip matchReq xo)
-  (loc, resp) <- liftIO req
-  updateResp resp
-  return loc
+  s <- get
+  let timeoutResponse = forfeitIO s (Win $ yinYang xo) (Lose xo)
+  timeoutOrLoc <- liftIO $ race (delay30Seconds >> return timeoutResponse) req
+  case timeoutOrLoc of
+    Left timeout -> lifter (left timeout)
+    Right (loc, resp) -> do
+      updateResp resp
+      return loc
   where
     updateResp resp = do
       match <- get
@@ -60,12 +77,24 @@ recvAction xo = do
 sendFinal :: XO -> Final -> Match ()
 sendFinal xo final = do
   s <- get
-  liftIO $ (respXO xo s) (Step (matchBoard s) (Just final))
+  liftIO $ sendFinalIO s xo final
+
+sendFinalIO :: MatchData -> XO -> Final -> IO ()
+sendFinalIO s xo final = liftIO $ (respXO xo s) (Step (matchBoard s) (Just final))
 
 tally :: Result -> Match ()
 tally res = do
   s <- get
   liftIO $ matchLog s (matchActions s) (matchBoard s) res
+
+tallyIO :: MatchData -> Result -> IO ()
+tallyIO s res =  matchLog s (matchActions s) (matchBoard s) res
+
+forfeitIO :: MatchData -> Win XO -> Lose XO -> IO ()
+forfeitIO s (Win w) (Lose l) = do
+  tallyIO s (Winner w)
+  sendFinalIO s w WonByDQ
+  sendFinalIO s l LossByDQ
 
 updateBoard :: Board -> Match ()
 updateBoard b = do
@@ -85,10 +114,9 @@ instance Game Match  where
   move xo = do
     sendGameState xo
     recvAction xo
-  forfeit (Win w) (Lose l) = do
-    tally (Winner w)
-    sendFinal l LossByDQ
-    sendFinal w WonByDQ
+  forfeit w l = do
+    s <- get
+    liftIO $ forfeitIO s w l
   end (Win w) (Lose l) = do
     tally (Winner w)
     sendFinal w Won
