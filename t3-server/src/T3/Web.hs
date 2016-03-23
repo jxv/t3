@@ -34,7 +34,7 @@ play matchId matchToken = do
     Just userCfg -> do
       resp <- liftIO newEmptyMVar
       liftIO $ (userCfgSendLoc userCfg) (preqLoc playReq, putMVar resp . PlayResponse . toGameState)
-      presp <- liftIO $ readMVar resp
+      presp <- liftIO $ takeMVar resp
       return $ toJSON presp
 
 start :: HttpHandler m => m Value
