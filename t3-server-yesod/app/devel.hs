@@ -1,5 +1,5 @@
 {-# LANGUAGE PackageImports #-}
-import "t3-server" Application (develMain)
+import "t3-server-yesod" Application (develMain)
 import Prelude (IO)
 
 main :: IO ()
