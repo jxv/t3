@@ -57,7 +57,7 @@ makeFoundation appSettings = do
     appStatic <-
         (if appMutableStatic appSettings then staticDevel else static)
         (appStaticDir appSettings)
-    appServer <- forkServer gameLogger
+    appServer <- forkServer gameLogger (Just 30)
     -- Return the foundation
     return App {..}
   where

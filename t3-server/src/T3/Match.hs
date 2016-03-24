@@ -1,5 +1,6 @@
 module T3.Match
   ( module T3.Match.Types
+  , Seconds(..)
   , runMatch
   , UserInit
   , Callback
@@ -18,6 +19,9 @@ import Control.Monad.State.Strict
 type Callback = Step -> IO ()
 type StartCallback = MatchInfo -> Users -> Step -> IO ()
 
+newtype Seconds = Seconds Int
+  deriving (Num, Show, Eq, Ord, Enum)
+
 data MatchData = MatchData
   { matchReq :: XO -> IO (Loc, Callback)
   , matchRespX :: Callback
@@ -25,6 +29,7 @@ data MatchData = MatchData
   , matchLog :: [Action] -> Board -> Result -> IO ()
   , matchBoard :: Board
   , matchActions :: [Action]
+  , matchTimeoutLimit :: Maybe Seconds
   }
 
 newtype Match a = Match { unMatch :: EitherT (IO ()) (StateT MatchData IO) a }
@@ -32,14 +37,14 @@ newtype Match a = Match { unMatch :: EitherT (IO ()) (StateT MatchData IO) a }
 
 type UserInit = (Callback, IO (Loc, Callback))
 
-runMatch :: UserInit -> UserInit -> ([Action] -> Board -> Result -> IO ()) -> IO () -> IO ()
-runMatch (xCB, xReq) (oCB, oReq) logger done = do
+runMatch :: Maybe Seconds -> UserInit -> UserInit -> ([Action] -> Board -> Result -> IO ()) -> IO () -> IO ()
+runMatch timeoutLimit (xCB, xReq) (oCB, oReq) logger done = do
   let req X = xReq
       req O = oReq
   let cb X = xCB
       cb O = oCB
   let b = emptyBoard
-  let matchDat = MatchData req (cb X) (cb O) logger b []
+  let matchDat = MatchData req (cb X) (cb O) logger b [] timeoutLimit
   matchResult <- evalStateT (runEitherT $ unMatch $ run b) matchDat
   either id (const $ return ()) matchResult
   done
@@ -49,15 +54,19 @@ sendGameState xo = do
   s <- get
   liftIO $ (respXO xo s) (Step (matchBoard s) Nothing)
 
-delay30Seconds :: IO ()
-delay30Seconds = threadDelay (30 * 1000000)
+delay :: Seconds -> IO ()
+delay (Seconds n) = threadDelay (n * 1000000)
 
 recvAction :: XO -> Match Loc
 recvAction xo = do
   req <- gets (flip matchReq xo)
   s <- get
   let timeoutResponse = forfeitIO s (Win $ yinYang xo) (Lose xo)
-  timeoutOrLoc <- liftIO $ race (delay30Seconds >> return timeoutResponse) req
+  timeoutOrLoc <- liftIO $
+    maybe
+      (fmap Right req)
+      (\secs -> race (delay secs >> return timeoutResponse) req)
+      (matchTimeoutLimit s)
   case timeoutOrLoc of
     Left timeout -> Match (left timeout)
     Right (loc, resp) -> do

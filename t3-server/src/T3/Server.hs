@@ -49,6 +49,7 @@ data Server = Server
   , srvUsers :: TVar (M.Map UserName UserKey)
   , srvDie :: IO ()
   , srvLogger :: GameLogger
+  , srvTimeoutLimit :: Maybe Seconds
   }
 
 authenticate :: Server -> UserCreds -> STM Bool
@@ -64,12 +65,12 @@ authorize userName matchToken matchCfg = (userCfgMay $ matchCfgX matchCfg) <|> (
       then Just cfg
       else Nothing
 
-forkServer :: GameLogger ->  IO Server
-forkServer logger = do
+forkServer :: GameLogger -> Maybe Seconds -> IO Server
+forkServer logger timeoutLimit = do
   lobby <- newTVarIO []
   matches <- newTVarIO M.empty
   users <- newTVarIO M.empty
-  let srv = Server lobby matches users (return ()) logger
+  let srv = Server lobby matches users (return ()) logger timeoutLimit
   thid <- forkIO $ serve srv
   let killMatches = do
         killers <- atomically $ do
@@ -111,6 +112,7 @@ serve srv = do
       let xMatchInfo = MatchInfo { miMatchId = matchId, miMatchToken = xGT }
       let oMatchInfo = MatchInfo { miMatchId = matchId, miMatchToken = oGT }
       sessCfg <- forkMatch
+        (srvTimeoutLimit srv)
         (xUN, xGT, xCB xMatchInfo users)
         (oUN, oGT, oCB oMatchInfo users)
         (srvLogger srv matchId users)
