@@ -32,7 +32,7 @@ data MatchData = MatchData
   , matchTimeoutLimit :: Maybe Seconds
   }
 
-newtype Match a = Match { unMatch :: EitherT (IO ()) (StateT MatchData IO) a }
+newtype Match a = Match { unMatch :: StateT MatchData (EitherT (IO ()) IO) a }
   deriving (Functor, Applicative, Monad, MonadIO, MonadState MatchData)
 
 type UserInit = (Callback, IO (Loc, Callback))
@@ -45,7 +45,7 @@ runMatch timeoutLimit (xCB, xReq) (oCB, oReq) logger done = do
       cb O = oCB
   let b = emptyBoard
   let matchDat = MatchData req (cb X) (cb O) logger b [] timeoutLimit
-  matchResult <- evalStateT (runEitherT $ unMatch $ run b) matchDat
+  matchResult <- runEitherT (evalStateT (unMatch $ run b) matchDat)
   either id (const $ return ()) matchResult
   done
 
@@ -68,7 +68,7 @@ recvAction xo = do
       (\secs -> race (delay secs >> return timeoutResponse) req)
       (matchTimeoutLimit s)
   case timeoutOrLoc of
-    Left timeout -> Match (left timeout)
+    Left timeout -> Match (lift $ left timeout)
     Right (loc, resp) -> do
       updateResp resp
       return loc

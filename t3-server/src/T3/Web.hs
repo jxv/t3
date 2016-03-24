@@ -53,7 +53,7 @@ start = do
         (\matchInfo users step -> putMVar resp $ StartResponse matchInfo users (toGameState step))
       if added
         then do
-          sresp <- liftIO $ readMVar resp
+          sresp <- liftIO $ takeMVar resp
           return $ toJSON sresp
         else return $ toJSON (Nothing :: Maybe ())
 
