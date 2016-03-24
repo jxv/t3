@@ -32,10 +32,6 @@ newtype Match a = Match { unMatch :: EitherT (IO ()) (StateT MatchData IO) a }
 
 type UserInit = (Callback, IO (Loc, Callback))
 
-
-lifter :: EitherT (IO ()) (StateT MatchData IO) a  -> Match a
-lifter = Match
-
 runMatch :: UserInit -> UserInit -> ([Action] -> Board -> Result -> IO ()) -> IO () -> IO ()
 runMatch (xCB, xReq) (oCB, oReq) logger done = do
   let req X = xReq
@@ -63,7 +59,7 @@ recvAction xo = do
   let timeoutResponse = forfeitIO s (Win $ yinYang xo) (Lose xo)
   timeoutOrLoc <- liftIO $ race (delay30Seconds >> return timeoutResponse) req
   case timeoutOrLoc of
-    Left timeout -> lifter (left timeout)
+    Left timeout -> Match (left timeout)
     Right (loc, resp) -> do
       updateResp resp
       return loc
