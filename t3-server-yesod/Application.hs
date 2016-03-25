@@ -37,6 +37,7 @@ import Handler.Start
 import Handler.Play
 
 import T3.Server
+import T3.Match
 import T3.Playback
 
 -- This line actually creates our YesodDispatch instance. It is the second half
@@ -61,9 +62,9 @@ makeFoundation appSettings = do
     -- Return the foundation
     return App {..}
   where
-    gameLogger matchId users actions _board res = do
+    gameLogger matchId@(MatchId matchIdText) users actions _board res = do
       writePlayback "static/playback/" (Playback matchId users actions res)
-      putStrLn $ "Finished Game: " `mappend` matchId
+      putStrLn $ "Finished Game: " `mappend` matchIdText
 
 -- | Convert our foundation to a WAI Application by calling @toWaiAppPlain@ and
 -- applying some additional middlewares.

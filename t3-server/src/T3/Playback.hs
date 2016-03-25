@@ -19,7 +19,8 @@ data Playback = Playback
 writePlayback :: FilePath -> Playback -> IO ()
 writePlayback prefix pb = BL.writeFile path (encode pb)
   where
-    path = prefix `mappend` (T.unpack $ pbMatchId pb `mappend` ".json")
+    (MatchId matchIdText) = pbMatchId pb
+    path = prefix `mappend` (T.unpack $ matchIdText  `mappend` ".json")
 
 instance ToJSON Playback where
   toJSON pb = object

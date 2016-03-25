@@ -5,5 +5,5 @@ import T3.Web
 import T3.Match
 import Handler.Instance ()
 
-postPlayR :: MatchId -> MatchToken -> Handler Value
-postPlayR = play
+postPlayR :: Text -> Text -> Handler Value
+postPlayR a b = fmap toJSON (play (MatchId a) (MatchToken b))

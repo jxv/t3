@@ -12,7 +12,7 @@
         $of NoName 
           <div .message .alert .alert-danger>
             No name given
-        $of Good name key
+        $of Good (UserName name) (UserKey key)
           <div .message .alert .alert-success>
             Username: <code>#{name}</code>
             <br>

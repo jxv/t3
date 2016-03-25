@@ -11,8 +11,8 @@ module T3.Server
   , Users(..)
   , StartResponse(..)
   , PlayResponse(..)
-  , UserName
-  , UserKey
+  , UserName(..)
+  , UserKey(..)
   , forkServer
   , genBase64
   , genMatchToken
@@ -86,17 +86,17 @@ genBase64 n = fmap T.pack (sequence $ replicate n gen)
     len = length vals
     vals = ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ ['-','_']
 
-genMatchToken :: IO Text
-genMatchToken = genBase64 16
+genMatchToken :: IO MatchToken
+genMatchToken = MatchToken <$> genBase64 16
 
-genMatchId :: IO Text
-genMatchId = genBase64 16
+genMatchId :: IO MatchId
+genMatchId = MatchId <$> genBase64 16
 
-genUserName :: IO Text
-genUserName = genBase64 32
+genUserName :: IO UserName
+genUserName = UserName <$> genBase64 32
 
-genUserKey :: IO Text
-genUserKey = genBase64 32
+genUserKey :: IO UserKey
+genUserKey = UserKey <$> genBase64 32
 
 serve :: Server -> IO ()
 serve srv = do
@@ -126,7 +126,8 @@ toGameState s = GameState (stepBoard s) (stepFinal s)
 
 --
 
-type UserKey = Text
+newtype UserKey = UserKey Text
+  deriving (Show, Eq, Ord, FromJSON, ToJSON)
 
 data UserCreds = UserCreds
   { ucUserName :: UserName

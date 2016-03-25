@@ -16,7 +16,7 @@ class (MonadIO m) => HttpHandler m where
   httpRequestEntity :: m BL.ByteString
   server :: m Server
 
-play :: HttpHandler m => MatchId -> MatchToken -> m Value
+play :: HttpHandler m => MatchId -> MatchToken -> m (Maybe PlayResponse)
 play matchId matchToken = do
   srv <- server
   entity <- httpRequestEntity
@@ -30,14 +30,14 @@ play matchId matchToken = do
         mMatchCfg <- M.lookup matchId <$> readTVar (srvMatches srv)
         return $ authorize (ucUserName creds) matchToken =<< mMatchCfg
   case mUserCfg of
-    Nothing -> return (toJSON ([] :: [()]))
+    Nothing -> return Nothing
     Just userCfg -> do
       resp <- liftIO newEmptyMVar
       liftIO $ (userCfgSendLoc userCfg) (preqLoc playReq, putMVar resp . PlayResponse . toGameState)
       presp <- liftIO $ takeMVar resp
-      return $ toJSON presp
+      return $ Just presp
 
-start :: HttpHandler m => m Value
+start :: HttpHandler m => m (Maybe StartResponse)
 start = do
   srv <- server
   entity <- httpRequestEntity
@@ -45,7 +45,7 @@ start = do
   resp <- liftIO newEmptyMVar
   authenticated <- liftIO . atomically $ authenticate srv (sreqUserCreds startReq)
   if not authenticated
-    then return (toJSON (Nothing :: Maybe ()))
+    then return $ Nothing
     else do
       added <- liftIO $ addUserToLobby
         (srvLobby srv)
@@ -54,18 +54,19 @@ start = do
       if added
         then do
           sresp <- liftIO $ takeMVar resp
-          return $ toJSON sresp
-        else return $ toJSON (Nothing :: Maybe ())
+          return $ Just sresp
+        else return $ Nothing 
 
 data RegisterResult
   = NameExists
   | NoName
   | Good UserName UserKey
+  deriving (Show, Eq)
 
 register :: HttpHandler m => UserName -> m RegisterResult
-register name = do
+register name@(UserName un) = do
   srv <- server
-  if T.null name
+  if T.null un
     then return NoName
     else do
       userKey <- liftIO genUserKey
@@ -75,4 +76,3 @@ register name = do
           then return True
           else writeTVar (srvUsers srv) (M.insert name userKey users) >> return False
       return $ if exists then NameExists else Good name userKey
-

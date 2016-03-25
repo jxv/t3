@@ -5,4 +5,4 @@ import T3.Web
 import Handler.Instance ()
 
 postStartR :: Handler Value
-postStartR = start
+postStartR = fmap toJSON start
