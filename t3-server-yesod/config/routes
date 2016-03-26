@@ -6,6 +6,7 @@
 / HomeR GET POST
 
 /comments CommentR POST
-/register RegisterR GET POST
+/register RegisterPageR GET POST
+/api/register RegisterR POST
 /api/start StartR POST
 /api/play/#Text/#Text PlayR POST

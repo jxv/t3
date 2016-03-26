@@ -22,6 +22,7 @@ library
                      Handler.Common
                      Handler.Home
                      Handler.Comment
+                     Handler.RegisterPage
                      Handler.Register
                      Handler.Start
                      Handler.Play

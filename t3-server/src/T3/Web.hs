@@ -15,47 +15,51 @@ import Control.Monad.Trans (MonadIO, liftIO)
 class (MonadIO m) => HttpHandler m where
   httpRequestEntity :: m BL.ByteString
   server :: m Server
+  httpJSONEntity :: FromJSON a => m (Maybe a)
+  httpJSONEntity = fmap decode httpRequestEntity
 
-play :: HttpHandler m => MatchId -> MatchToken -> m (Maybe PlayResponse)
-play matchId matchToken = do
+play :: HttpHandler m => MatchId -> MatchToken -> Maybe PlayRequest -> m (Maybe PlayResponse)
+play matchId matchToken mPlayRequest = do
   srv <- server
-  entity <- httpRequestEntity
-  let (Just playReq) = decode entity
-  mUserCfg <- liftIO . atomically $ do
-    let creds = preqUserCreds playReq
-    authenicated <- authenticate srv creds
-    if not authenicated
-      then return Nothing
-      else do
-        mMatchCfg <- M.lookup matchId <$> readTVar (srvMatches srv)
-        return $ authorize (ucUserName creds) matchToken =<< mMatchCfg
-  case mUserCfg of
+  case mPlayRequest of
     Nothing -> return Nothing
-    Just userCfg -> do
-      resp <- liftIO newEmptyMVar
-      liftIO $ (userCfgSendLoc userCfg) (preqLoc playReq, putMVar resp . PlayResponse . toGameState)
-      presp <- liftIO $ takeMVar resp
-      return $ Just presp
+    Just playReq -> do
+      mUserCfg <- liftIO . atomically $ do
+        let creds = preqUserCreds playReq
+        authenicated <- authenticate srv creds
+        if not authenicated
+          then return Nothing
+          else do
+            mMatchCfg <- M.lookup matchId <$> readTVar (srvMatches srv)
+            return $ authorize (ucUserName creds) matchToken =<< mMatchCfg
+      case mUserCfg of
+        Nothing -> return Nothing
+        Just userCfg -> do
+          resp <- liftIO newEmptyMVar
+          liftIO $ (userCfgSendLoc userCfg) (preqLoc playReq, putMVar resp . PlayResponse . toGameState)
+          presp <- liftIO $ takeMVar resp
+          return $ Just presp
 
-start :: HttpHandler m => m (Maybe StartResponse)
-start = do
+start :: HttpHandler m => Maybe StartRequest -> m (Maybe StartResponse)
+start mStartReq = do
   srv <- server
-  entity <- httpRequestEntity
-  let (Just startReq) = decode entity
-  resp <- liftIO newEmptyMVar
-  authenticated <- liftIO . atomically $ authenticate srv (sreqUserCreds startReq)
-  if not authenticated
-    then return $ Nothing
-    else do
-      added <- liftIO $ addUserToLobby
-        (srvLobby srv)
-        (ucUserName $ sreqUserCreds startReq)
-        (\matchInfo users step -> putMVar resp $ StartResponse matchInfo users (toGameState step))
-      if added
-        then do
-          sresp <- liftIO $ takeMVar resp
-          return $ Just sresp
-        else return $ Nothing 
+  case mStartReq of
+    Nothing -> return Nothing
+    Just startReq -> do
+      resp <- liftIO newEmptyMVar
+      authenticated <- liftIO . atomically $ authenticate srv (sreqUserCreds startReq)
+      if not authenticated
+        then return $ Nothing
+        else do
+          added <- liftIO $ addUserToLobby
+            (srvLobby srv)
+            (ucUserName $ sreqUserCreds startReq)
+            (\matchInfo users step -> putMVar resp $ StartResponse matchInfo users (toGameState step))
+          if added
+            then do
+              sresp <- liftIO $ takeMVar resp
+              return $ Just sresp
+            else return $ Nothing 
 
 data RegisterResult
   = NameExists
@@ -63,8 +67,14 @@ data RegisterResult
   | Good UserName UserKey
   deriving (Show, Eq)
 
-register :: HttpHandler m => UserName -> m RegisterResult
-register name@(UserName un) = do
+instance ToJSON RegisterResult where
+  toJSON NameExists = String "exists"
+  toJSON NoName = String "no name"
+  toJSON (Good un uk) = object [ "name" .= un, "key" .= uk ]
+
+register :: HttpHandler m => Maybe UserName -> m (Maybe RegisterResult)
+register Nothing = return Nothing
+register (Just name@(UserName un)) = fmap Just $ do
   srv <- server
   if T.null un
     then return NoName
