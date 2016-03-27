@@ -4,15 +4,15 @@
 <section.page-header>
   <h2>Register
   <div>
-    $maybe createResult <- submission
-      $case createResult
-        $of NameExists
+    $maybe eRegister <- submission
+      $case eRegister
+        $of (Left NameExists)
           <div .message .alert .alert-danger>
             Name already exists
-        $of NoName 
+        $of (Left NoName)
           <div .message .alert .alert-danger>
             No name given
-        $of Good (UserName name) (UserKey key)
+        $of (Right (RegisterResponse (UserCreds (UserName name) (UserKey key))))
           <div .message .alert .alert-success>
             Username: <code>#{name}</code>
             <br>

@@ -14,6 +14,9 @@ module T3.Server
   , PlayResponse(..)
   , UserName(..)
   , UserKey(..)
+  , RegisterRequest(..)
+  , RegisterError(..)
+  , RegisterResponse(..)
   , forkServer
   , genBase64
   , genMatchToken
@@ -131,6 +134,45 @@ toGameState s = GameState (stepBoard s) (stepFinal s)
 
 newtype UserKey = UserKey Text
   deriving (Show, Eq, Ord, FromJSON, ToJSON)
+
+data RegisterRequest = RegisterRequest
+  { rreqName :: UserName
+  } deriving (Show, Eq, Generic)
+
+instance FromJSON RegisterRequest where
+  parseJSON = dropPrefixP "rreq"
+
+instance ToJSON RegisterRequest where
+  toJSON = dropPrefixJ "rreq"
+
+data RegisterError
+  = NameExists
+  | NoName
+  deriving (Show, Eq)
+
+instance ToJSON RegisterError where
+  toJSON NameExists = String "NameExists"
+  toJSON NoName = String "NoName"
+
+instance FromJSON RegisterError where
+  parseJSON (String s)
+    | s' == lower "NameExists" = pure NameExists
+    | s' == lower "NoName" = pure NoName
+    | otherwise = mzero
+    where
+      lower = T.map toLower
+      s' = lower s
+  parseJSON _ = mzero
+
+data RegisterResponse = RegisterResponse
+  { rrespCreds :: UserCreds
+  } deriving (Show, Eq, Generic)
+
+instance FromJSON RegisterResponse where
+  parseJSON = dropPrefixP "rresp"
+
+instance ToJSON RegisterResponse where
+  toJSON = dropPrefixJ "rresp"
 
 data UserCreds = UserCreds
   { ucName :: UserName

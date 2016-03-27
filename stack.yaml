@@ -4,6 +4,7 @@ packages:
 - t3-game
 - t3-server
 - t3-server-yesod
+- t3-client
 
 #flags:
 #  t3-server:

@@ -25,7 +25,6 @@ module T3.Game.Core
   ) where
 
 import qualified Data.Map as M
-import qualified Data.Vector as V
 import qualified Data.Text as T
 
 import GHC.Generics
@@ -33,10 +32,7 @@ import Control.Monad (mzero)
 import Data.Aeson hiding (Result)
 import Data.Aeson.Types hiding (Result)
 import Data.Char (toLower)
-import Safe.Exact
 import Data.Maybe
-
-import Debug.Trace
 
 data XO
   = X

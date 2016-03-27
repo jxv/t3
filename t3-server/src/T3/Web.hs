@@ -64,42 +64,13 @@ start mStartReq = do
               return $ Just sresp
             else return $ Nothing 
 
-data RegisterResult
-  = NameExists
-  | NoName
-  | Good UserName UserKey
-  deriving (Show, Eq)
-
-instance ToJSON RegisterResult where
-  toJSON NameExists = object [ "tag" .= String "NameExists" ]
-  toJSON NoName = object [ "tag" .= String "NoName" ]
-  toJSON (Good un uk) = object [ "tag" .= String "Good", "data" .= object [ "name" .= un, "key" .= uk ] ]
-
-instance FromJSON RegisterResult where
-  parseJSON (Object o) =  nameExists <|> noName <|> good <|> mzero
-    where
-      tag = o .: "tag"
-      --
-      nameExists = nameExistsTag =<< tag
-      nameExistsTag (String "NameExists") = pure NameExists
-      nameExistsTag _ = mzero
-      --
-      noName = noNameTag =<< tag
-      noNameTag (String "NoName") = pure NoName
-      noNameTag _ = mzero
-      --
-      good = (goodTag =<< tag) *> goodData
-      goodTag (String "Good") = pure ()
-      goodTag _ = mzero
-      goodData = (\d -> Good <$> d .: "name" <*> d .: "key") =<< (o .: "data")
-  parseJSON _ = mzero
-
-register :: HttpHandler m => Maybe UserName -> m (Maybe RegisterResult)
+register :: HttpHandler m => Maybe RegisterRequest -> m (Maybe (Either RegisterError RegisterResponse))
 register Nothing = return Nothing
-register (Just name@(UserName un)) = fmap Just $ do
+register (Just rreq) = fmap Just $ do
+  let name@(UserName un) = rreqName rreq
   srv <- server
   if T.null un
-    then return NoName
+    then return $ Left NoName
     else do
       userKey <- liftIO genUserKey
       exists <- liftIO . atomically $ do
@@ -107,4 +78,4 @@ register (Just name@(UserName un)) = fmap Just $ do
         if M.member name users
           then return True
           else writeTVar (srvUsers srv) (M.insert name userKey users) >> return False
-      return $ if exists then NameExists else Good name userKey
+      return $ if exists then Left NameExists else Right $ RegisterResponse (UserCreds name userKey)
