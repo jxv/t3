@@ -1,4 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module T3.Game.Core
   ( XO(..)
   , Loc(..)
@@ -14,27 +20,38 @@ module T3.Game.Core
   , inside
   , valid
   , result
+  , dropPrefixP
+  , dropPrefixJ
   ) where
 
-import Prelude
+import qualified Data.Map as M
+import qualified Data.Vector as V
+import qualified Data.Text as T
+
+import GHC.Generics
 import Control.Monad (mzero)
 import Data.Aeson hiding (Result)
-import qualified Data.Map as M
+import Data.Aeson.Types hiding (Result)
+import Data.Char (toLower)
+import Safe.Exact
+import Data.Maybe
+
+import Debug.Trace
 
 data XO
   = X
   | O
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic, ToJSON)
 
 data Loc = Loc
   { locX :: Int
   , locY :: Int
-  } deriving (Show, Read, Eq, Ord)
+  } deriving (Show, Read, Eq, Ord, Generic)
 
 data Action = Action
   { actXO :: XO
   , actLoc :: Loc
-  } deriving (Show, Eq)
+  } deriving (Show, Eq, Generic)
 
 data Board = Board
   { bCells :: M.Map Loc XO
@@ -103,15 +120,29 @@ instance FromJSON Loc where
   parseJSON (Object o) = Loc <$> o .: "x" <*> o .: "y"
   parseJSON _ = mzero
 
-instance ToJSON Loc where
-  toJSON loc = object [ "x" .= locX loc, "y" .= locY loc ]
+instance FromJSON XO where
+  parseJSON (String xo)
+    | xo' == "x" = pure X
+    | xo' == "o" = pure O
+    | otherwise = mzero
+    where
+      xo' = T.map toLower xo
+  parseJSON _ = mzero
 
-instance ToJSON XO where
-  toJSON X = String "x"
-  toJSON O = String "o"
+instance FromJSON (Maybe XO) where
+  parseJSON o@(String s) = if s == " " then pure Nothing  else fmap Just (parseJSON o)
+  parseJSON _ = mzero
 
-instance ToJSON Action where
-  toJSON a = object [ "xo" .= actXO a, "loc" .= actLoc a ]
+instance FromJSON Board where
+  parseJSON b = Board <$> (M.fromList <$> board b) <*> pure size
+    where
+      size = 3
+      board o = do
+        cells :: [[Maybe XO]] <- parseJSON o
+        let correctRowSize = length cells == size
+        let correctColSize = and $ map ((== size) . length) cells
+        let pairs = [ (Loc x y, fromJust cell) | y <- [0..pred size], x <- [0..pred size], let cell = cells !! y !! x, isJust cell ]
+        if correctRowSize && correctColSize then return pairs else mzero
 
 instance ToJSON Board where
   toJSON b = toJSON [[cvt $ M.lookup (Loc x y) m | x <- [0..pred s]] | y <- [0..pred s]]
@@ -120,3 +151,18 @@ instance ToJSON Board where
       s = boardSize b
       cvt :: Maybe XO -> Value
       cvt = maybe (String " ") toJSON
+
+instance ToJSON Loc where
+  toJSON = dropPrefixJ "loc"
+
+instance ToJSON Action where
+  toJSON = dropPrefixJ "act"
+
+-- dropPrefixP :: (Generic a, GFromJSON (Rep a)) => String -> Value -> Parser a
+dropPrefixP prefix = genericParseJSON defaultOptions { fieldLabelModifier = dropPrefix prefix }
+
+-- dropPrefixJ :: (Generic a, GToJSON (Rep a)) => String -> a -> Value
+dropPrefixJ prefix = genericToJSON defaultOptions { fieldLabelModifier = dropPrefix prefix }
+
+dropPrefix :: String -> String -> String
+dropPrefix prefix = (\(c:cs) -> toLower c : cs) . drop (length prefix)

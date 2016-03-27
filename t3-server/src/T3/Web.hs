@@ -4,12 +4,15 @@ import Prelude
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text as T
-import Data.Aeson
+import Control.Applicative
 import Control.Concurrent
 import Control.Concurrent.STM
+import Control.Monad (mzero)
+import Data.Aeson
 import T3.Server
 import T3.Server.Lobby
 import T3.Match
+import T3.Game.Core
 import Control.Monad.Trans (MonadIO, liftIO)
 
 class (MonadIO m) => HttpHandler m where
@@ -25,13 +28,13 @@ play matchId matchToken mPlayRequest = do
     Nothing -> return Nothing
     Just playReq -> do
       mUserCfg <- liftIO . atomically $ do
-        let creds = preqUserCreds playReq
+        let creds = preqCreds playReq
         authenicated <- authenticate srv creds
         if not authenicated
           then return Nothing
           else do
             mMatchCfg <- M.lookup matchId <$> readTVar (srvMatches srv)
-            return $ authorize (ucUserName creds) matchToken =<< mMatchCfg
+            return $ authorize (ucName creds) matchToken =<< mMatchCfg
       case mUserCfg of
         Nothing -> return Nothing
         Just userCfg -> do
@@ -47,13 +50,13 @@ start mStartReq = do
     Nothing -> return Nothing
     Just startReq -> do
       resp <- liftIO newEmptyMVar
-      authenticated <- liftIO . atomically $ authenticate srv (sreqUserCreds startReq)
+      authenticated <- liftIO . atomically $ authenticate srv (sreqCreds startReq)
       if not authenticated
         then return $ Nothing
         else do
           added <- liftIO $ addUserToLobby
             (srvLobby srv)
-            (ucUserName $ sreqUserCreds startReq)
+            (ucName $ sreqCreds startReq)
             (\matchInfo users step -> putMVar resp $ StartResponse matchInfo users (toGameState step))
           if added
             then do
@@ -68,9 +71,28 @@ data RegisterResult
   deriving (Show, Eq)
 
 instance ToJSON RegisterResult where
-  toJSON NameExists = String "exists"
-  toJSON NoName = String "no name"
-  toJSON (Good un uk) = object [ "name" .= un, "key" .= uk ]
+  toJSON NameExists = object [ "tag" .= String "NameExists" ]
+  toJSON NoName = object [ "tag" .= String "NoName" ]
+  toJSON (Good un uk) = object [ "tag" .= String "Good", "data" .= object [ "name" .= un, "key" .= uk ] ]
+
+instance FromJSON RegisterResult where
+  parseJSON (Object o) =  nameExists <|> noName <|> good <|> mzero
+    where
+      tag = o .: "tag"
+      --
+      nameExists = nameExistsTag =<< tag
+      nameExistsTag (String "NameExists") = pure NameExists
+      nameExistsTag _ = mzero
+      --
+      noName = noNameTag =<< tag
+      noNameTag (String "NoName") = pure NoName
+      noNameTag _ = mzero
+      --
+      good = (goodTag =<< tag) *> goodData
+      goodTag (String "Good") = pure ()
+      goodTag _ = mzero
+      goodData = (\d -> Good <$> d .: "name" <*> d .: "key") =<< (o .: "data")
+  parseJSON _ = mzero
 
 register :: HttpHandler m => Maybe UserName -> m (Maybe RegisterResult)
 register Nothing = return Nothing

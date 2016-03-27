@@ -15,22 +15,22 @@ library
       T3.Match
       T3.Match.Types
 
-    extensions: TemplateHaskell
-                QuasiQuotes
-                OverloadedStrings
-                NoImplicitPrelude
-                MultiParamTypeClasses
-                TypeFamilies
-                GADTs
-                GeneralizedNewtypeDeriving
-                FlexibleContexts
-                FlexibleInstances
-                EmptyDataDecls
-                NoMonomorphismRestriction
-                DeriveDataTypeable
-                ViewPatterns
-                TupleSections
-                RecordWildCards
+    extensions:
+      TemplateHaskell
+      QuasiQuotes
+      OverloadedStrings
+      MultiParamTypeClasses
+      TypeFamilies
+      GADTs
+      GeneralizedNewtypeDeriving
+      FlexibleContexts
+      FlexibleInstances
+      EmptyDataDecls
+      NoMonomorphismRestriction
+      DeriveDataTypeable
+      ViewPatterns
+      TupleSections
+      RecordWildCards
 
     build-depends:
         base >= 4 && < 5

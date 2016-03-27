@@ -1,4 +1,5 @@
 {-# OPTIONS -fno-warn-orphans #-}
+{-# LANGUAGE DeriveGeneric #-}
 module T3.Server
   ( GameLogger
   , Server(..)
@@ -27,14 +28,16 @@ module T3.Server
 import qualified Data.Map as M
 import qualified Data.Text as T
 
-import Prelude
 import Control.Applicative
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Monad
 import Data.Aeson hiding (Result)
+import Data.Aeson.Types (Options(..), defaultOptions, Parser)
 import Data.Text (Text)
 import System.Random
+import GHC.Generics
+import Data.Char
 
 import T3.Game
 import T3.Server.Dispatch
@@ -55,7 +58,7 @@ data Server = Server
 authenticate :: Server -> UserCreds -> STM Bool
 authenticate srv uc = do
   users <- readTVar (srvUsers srv)
-  return $ M.lookup (ucUserName uc) users == Just (ucUserKey uc)
+  return $ M.lookup (ucName uc) users == Just (ucKey uc)
 
 authorize :: UserName -> MatchToken -> MatchConfig -> Maybe UserConfig
 authorize userName matchToken matchCfg = (userCfgMay $ matchCfgX matchCfg) <|> (userCfgMay $ matchCfgO matchCfg)
@@ -130,65 +133,66 @@ newtype UserKey = UserKey Text
   deriving (Show, Eq, Ord, FromJSON, ToJSON)
 
 data UserCreds = UserCreds
-  { ucUserName :: UserName
-  , ucUserKey :: UserKey
-  } deriving (Show, Eq)
+  { ucName :: UserName
+  , ucKey :: UserKey
+  } deriving (Show, Eq, Generic)
+
+instance FromJSON UserCreds where
+  parseJSON = dropPrefixP "uc"
+
+instance ToJSON UserCreds where
+  toJSON = dropPrefixJ "uc"
 
 data StartRequest = StartRequest
-  { sreqUserCreds :: UserCreds
-  } deriving (Show, Eq)
+  { sreqCreds :: UserCreds
+  } deriving (Show, Eq, Generic)
+
+instance FromJSON StartRequest where
+  parseJSON = dropPrefixP "sreq"
+
+instance ToJSON StartRequest where
+  toJSON = dropPrefixJ "sreq"
 
 data PlayRequest = PlayRequest
-  { preqUserCreds :: UserCreds
+  { preqCreds :: UserCreds
   , preqLoc :: Loc
-  } deriving (Show, Eq)
+  } deriving (Show, Eq, Generic)
+
+instance FromJSON PlayRequest where
+  parseJSON = dropPrefixP "preq"
+
+instance ToJSON PlayRequest where
+  toJSON = dropPrefixJ "preq"
 
 data StartResponse = StartResponse
   { srespMatchInfo :: MatchInfo
   , srespUsers :: Users
   , srespState :: GameState
-  } deriving (Show, Eq)
+  } deriving (Show, Eq, Generic)
+
+instance FromJSON StartResponse where
+  parseJSON = dropPrefixP "sresp"
+
+instance ToJSON StartResponse where
+  toJSON = dropPrefixJ "sresp"
 
 data PlayResponse = PlayResponse
   { prespState :: GameState
-  } deriving (Show, Eq)
+  } deriving (Show, Eq, Generic)
+
+instance FromJSON PlayResponse where
+  parseJSON = dropPrefixP "presp"
+
+instance ToJSON PlayResponse where
+  toJSON = dropPrefixJ "presp"
 
 data GameState = GameState
   { gsBoard :: Board
   , gsFinal :: Maybe Final
-  } deriving (Show, Eq)
+  } deriving (Show, Eq, Generic)
 
-instance FromJSON UserCreds where
-  parseJSON (Object o) = UserCreds <$> o .: "name" <*> o .: "key"
-  parseJSON _ = mzero
-
-instance FromJSON StartRequest where
-  parseJSON (Object o) = StartRequest <$> o .: "creds"
-  parseJSON _ = mzero
-
-instance FromJSON PlayRequest where
-  parseJSON (Object o) = PlayRequest <$> o .: "creds" <*> o .: "loc"
-  parseJSON _ = mzero
-
-instance ToJSON Final where
-  toJSON f = String $ case f of
-    Won -> "win"
-    WonByDQ -> "win"
-    Loss -> "lose"
-    LossByDQ -> "lose"
-    Tied -> "tie"
+instance FromJSON GameState where
+  parseJSON = dropPrefixP "gs"
 
 instance ToJSON GameState where
-  toJSON gs = object [ "board" .= gsBoard gs, "final" .= gsFinal gs ]
-
-instance ToJSON Users where
-  toJSON u = object [ "x" .= uX u, "o" .= uO u ]
-
-instance ToJSON MatchInfo where
-  toJSON mi = object [ "id" .= miMatchId mi, "token" .= miMatchToken mi ]
-
-instance ToJSON StartResponse where
-  toJSON sreq = object [ "match" .= srespMatchInfo sreq, "users" .= srespUsers sreq, "state" .= srespState sreq ]
-
-instance ToJSON PlayResponse where
-  toJSON preq = object [ "state" .= prespState preq ]
+  toJSON = dropPrefixJ "gs"
