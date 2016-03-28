@@ -8,6 +8,7 @@ library
       src
     exposed-modules:
       T3.Playback
+      T3.Random
       T3.Web
       T3.Server
       T3.Server.Dispatch
@@ -52,5 +53,7 @@ library
       , hashmap
       , either
       , t3-game
+      , random
+      , MonadRandom
     default-language:
       Haskell2010

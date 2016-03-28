@@ -17,7 +17,7 @@ import Network.Wreq
 mainDef :: IO ()
 mainDef = do
   let addr = "http://localhost:3000"
-  let regReq = RegisterRequest (UserName "botty")
+  let regReq = RegisterRequest (UserName "botty1")
   r <- asJSON =<< post (addr `mappend` "/api/register") (toJSON regReq)
   let eReg = (r ^. responseBody) :: Either RegisterError RegisterResponse
   print eReg
