@@ -21,12 +21,12 @@ library
                      Settings.StaticFiles
                      Handler.Common
                      Handler.Home
-                     Handler.Comment
                      Handler.RegisterPage
                      Handler.Register
                      Handler.Start
                      Handler.Play
                      Handler.Instance
+                     Handler.Random
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT

@@ -3,10 +3,9 @@
 /favicon.ico FaviconR GET
 /robots.txt RobotsR GET
 
-/ HomeR GET POST
-
-/comments CommentR POST
+/ HomeR GET
 /register RegisterPageR GET POST
 /api/register RegisterR POST
 /api/start StartR POST
+/api/random RandomR POST
 /api/play/#Text/#Text PlayR POST
