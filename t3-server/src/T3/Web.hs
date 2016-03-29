@@ -111,9 +111,9 @@ randomHandler mStartReq = do
           liftIO . atomically $ modifyTVar (srvMatches srv) (M.insert matchId sessCfg)
           return $ StartResponse xMatchInfo Users{ uX = xUN, uO = oUN } (GameState emptyBoard Nothing)
 
-register :: HttpHandler m => Maybe RegisterRequest -> m (Maybe (Either RegisterError RegisterResponse))
-register Nothing = return Nothing
-register (Just rreq) = fmap Just $ do
+register :: HttpHandler m => Maybe RegisterRequest -> m (Either RegisterError RegisterResponse)
+register Nothing = badFormat
+register (Just rreq) = do
   let name@(UserName un) = rreqName rreq
   srv <- server
   if T.null un
