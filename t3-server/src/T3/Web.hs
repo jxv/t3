@@ -97,11 +97,9 @@ randomHandler mStartReq = do
                 atomically $ modifyTVar (srvMatches srv) (M.delete matchId)
           let users = Users { uX = xUN, uO = oUN }
           let xMatchInfo = MatchInfo { miMatchId = matchId, miMatchToken = xGT }
-          -- Will hang because resp is being called in start like endpoint when should be called in play
-          resp <- liftIO newEmptyMVar
           sessCfg <- liftIO $ forkMatch
             (srvTimeoutLimit srv)
-            (xUN, xGT, \step -> putMVar resp $ StartResponse xMatchInfo users (toGameState step))
+            (xUN, xGT, \step -> return ())
             (oUN, oGT, randomCB)
             (\_ _ _ -> return ())
             removeSelf
