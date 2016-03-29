@@ -1,6 +1,5 @@
 module T3.Web where
 
-import Prelude
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text as T
@@ -21,14 +20,18 @@ import Control.Monad.Trans (MonadIO, liftIO)
 class (MonadIO m) => HttpHandler m where
   httpRequestEntity :: m BL.ByteString
   server :: m Server
+  unauthorized :: m a
+  badFormat :: m a
+  alreadyInLobby :: m a
+  --
   httpJSONEntity :: FromJSON a => m (Maybe a)
   httpJSONEntity = fmap decode httpRequestEntity
 
-play :: HttpHandler m => MatchId -> MatchToken -> Maybe PlayRequest -> m (Maybe PlayResponse)
+play :: HttpHandler m => MatchId -> MatchToken -> Maybe PlayRequest -> m PlayResponse
 play matchId matchToken mPlayRequest = do
   srv <- server
   case mPlayRequest of
-    Nothing -> return Nothing
+    Nothing -> badFormat
     Just playReq -> do
       mUserCfg <- liftIO . atomically $ do
         let creds = preqCreds playReq
@@ -39,23 +42,23 @@ play matchId matchToken mPlayRequest = do
             mMatchCfg <- M.lookup matchId <$> readTVar (srvMatches srv)
             return $ authorize (ucName creds) matchToken =<< mMatchCfg
       case mUserCfg of
-        Nothing -> return Nothing
+        Nothing -> unauthorized
         Just userCfg -> do
           resp <- liftIO newEmptyMVar
           liftIO $ (userCfgSendLoc userCfg) (preqLoc playReq, putMVar resp . PlayResponse . toGameState)
           presp <- liftIO $ takeMVar resp
-          return $ Just presp
+          return presp
 
-start :: HttpHandler m => Maybe StartRequest -> m (Maybe StartResponse)
+start :: HttpHandler m => Maybe StartRequest -> m StartResponse
 start mStartReq = do
   srv <- server
   case mStartReq of
-    Nothing -> return Nothing
+    Nothing -> badFormat
     Just startReq -> do
       resp <- liftIO newEmptyMVar
       authenticated <- liftIO . atomically $ authenticate srv (sreqCreds startReq)
       if not authenticated
-        then return $ Nothing
+        then unauthorized
         else do
           added <- liftIO $ addUserToLobby
             (srvLobby srv)
@@ -64,18 +67,18 @@ start mStartReq = do
           if added
             then do
               sresp <- liftIO $ takeMVar resp
-              return $ Just sresp
-            else return $ Nothing 
+              return sresp
+            else alreadyInLobby
 
-randomHandler :: HttpHandler m => Maybe StartRequest -> m (Maybe StartResponse)
+randomHandler :: HttpHandler m => Maybe StartRequest -> m StartResponse
 randomHandler mStartReq = do
   case mStartReq of
-    Nothing -> return Nothing
+    Nothing -> badFormat
     Just startReq -> do
       srv <- server
       authenticated <- liftIO . atomically $ authenticate srv (sreqCreds startReq)
       if not authenticated
-        then return $ Nothing
+        then unauthorized
         else do
           matchId <- liftIO genMatchId
           xGT <- liftIO genMatchToken
@@ -92,6 +95,7 @@ randomHandler mStartReq = do
                 sendLoc <- readIORef randomSendLocRef
                 sendLoc (loc, randomCB)
           let xUN = (ucName . sreqCreds) startReq
+          let oUN = UserName "random"
           let removeSelf = do
                 killThread randomThid
                 atomically $ modifyTVar (srvMatches srv) (M.delete matchId)
@@ -99,15 +103,13 @@ randomHandler mStartReq = do
           let xMatchInfo = MatchInfo { miMatchId = matchId, miMatchToken = xGT }
           sessCfg <- liftIO $ forkMatch
             (srvTimeoutLimit srv)
-            (xUN, xGT, \step -> return ())
+            (xUN, xGT, const $ return ())
             (oUN, oGT, randomCB)
             (\_ _ _ -> return ())
             removeSelf
           liftIO $ writeIORef randomSendLocRef (userCfgSendLoc $ matchCfgO sessCfg)
           liftIO . atomically $ modifyTVar (srvMatches srv) (M.insert matchId sessCfg)
-          return . Just $ StartResponse xMatchInfo Users{ uX = xUN, uO = oUN } (GameState emptyBoard Nothing)
-  where
-    oUN = UserName "random"
+          return $ StartResponse xMatchInfo Users{ uX = xUN, uO = oUN } (GameState emptyBoard Nothing)
 
 register :: HttpHandler m => Maybe RegisterRequest -> m (Maybe (Either RegisterError RegisterResponse))
 register Nothing = return Nothing
