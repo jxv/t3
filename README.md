@@ -1,19 +1,19 @@
 #t3
 
-## Client
+## API
 
 ### Register
 
-*Request*
-POST /api/register
+Request:
+`POST /api/register`
 ```json
 {
   "name":"<user-name>"
 }
 ```
 
-*Response*
-200
+Response:
+`200`
 ```json
 {
   "Right": {
@@ -25,10 +25,10 @@ POST /api/register
 }
 ```
 
-### Trial match with 'random'
+### Random bot
 
-*Request*
-POST /api/random
+Request:
+`POST /api/random`
 ```json
 {
   "creds": {
@@ -38,8 +38,8 @@ POST /api/random
 }
 ```
 
-*Response*
-200
+Response:
+`200`
 ```json
 {
   "state": {
@@ -49,14 +49,102 @@ POST /api/random
       [" "," "," "],
       [" "," "," "]
     ],
-  }
+  },
   "users": {
     "x":"<user-name>",
     "o":"random"
-  }
+  },
   "matchInfo": {
     "matchId":"<match-id>",
-    "matchToken":"<x-match-token>",
+    "matchToken":"<match-token>",
   }
 }
 ```
+
+### Start
+
+Request:
+`POST /api/start`
+```json
+{
+  "creds": {
+    "name":"<user-name>",
+    "key":"<user-key>",
+  }
+}
+```
+
+Response:
+`200`
+```json
+{
+  "state": {
+    "final":null,
+    "board": [
+      [" "," "," "],
+      [" "," "," "],
+      [" "," "," "]
+    ],
+  },
+  "users": {
+    "x":"<user-name>",
+    "o":"<opponent-user-name>"
+  },
+  "matchInfo": {
+    "matchId":"<match-id>",
+    "matchToken":"<match-token>",
+  }
+}
+```
+
+### Play
+
+Request:
+`POST /api/play/<match-id>/<match-token>`
+```json
+{
+  "creds": {
+    "name":"<user-name>",
+    "key":"<user-key>",
+  },
+  "loc": {
+    "x": 1,
+    "y": 1
+  }
+}
+
+```
+
+Response:
+`200`
+```json
+{
+  "state": {
+    "final":null,
+    "board": [
+      [" "," "," "],
+      [" ","X"," "],
+      [" "," "," "]
+    ],
+  }
+}
+```
+
+#### Final Response
+
+Response:
+`200`
+```json
+{
+  "state": {
+    "final":"Won",
+    "board": [
+      ["X","O"," "],
+      ["X","X","O"],
+      ["O"," ","X"]
+    ],
+  }
+}
+```
+
+
