@@ -5,10 +5,12 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text as T
 import Control.Applicative
 import Control.Concurrent
+import Control.Concurrent.Async
 import Control.Concurrent.STM
 import Control.Monad (mzero, forever)
 import Data.Aeson
 import Data.IORef
+import Data.Maybe
 import T3.Server
 import T3.Server.Dispatch
 import T3.Server.Lobby
@@ -21,6 +23,7 @@ class (MonadIO m) => HttpHandler m where
   httpRequestEntity :: m BL.ByteString
   server :: m Server
   unauthorized :: m a
+  badRequest :: m a
   badFormat :: m a
   alreadyInLobby :: m a
   --
@@ -46,8 +49,8 @@ play matchId matchToken mPlayRequest = do
         Just userCfg -> do
           resp <- liftIO newEmptyMVar
           liftIO $ (userCfgSendLoc userCfg) (preqLoc playReq, putMVar resp . PlayResponse . toGameState)
-          presp <- liftIO $ takeMVar resp
-          return presp
+          mPresp <- liftIO $ (either id id) <$> race (Just <$> takeMVar resp) (delay (Seconds 60) >> return Nothing)
+          fromMaybe badRequest (return <$> mPresp)
 
 start :: HttpHandler m => Maybe StartRequest -> m StartResponse
 start mStartReq = do

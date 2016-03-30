@@ -5,6 +5,7 @@ module T3.Match
   , UserInit
   , Callback
   , StartCallback
+  , delay
   ) where
 
 import Prelude

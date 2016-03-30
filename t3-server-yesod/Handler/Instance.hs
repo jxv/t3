@@ -11,6 +11,7 @@ instance HttpHandler Handler where
     req <- waiRequest
     BL.fromStrict <$> liftIO (Wai.requestBody req)
   unauthorized = notAuthenticated
+  badRequest = invalidArgs []
   badFormat = invalidArgs ["Bad JSON format"]
   alreadyInLobby = permissionDenied "Already in lobby"
   server = fmap appServer getYesod
