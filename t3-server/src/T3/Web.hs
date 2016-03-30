@@ -111,18 +111,20 @@ randomHandler mStartReq = do
           liftIO . atomically $ modifyTVar (srvMatches srv) (M.insert matchId sessCfg)
           return $ StartResponse xMatchInfo Users{ uX = xUN, uO = oUN } (GameState emptyBoard Nothing)
 
-register :: HttpHandler m => Maybe RegisterRequest -> m (Either RegisterError RegisterResponse)
+register :: HttpHandler m => Maybe RegisterRequest -> m (Maybe RegisterResponse)
 register Nothing = badFormat
 register (Just rreq) = do
   let name@(UserName un) = rreqName rreq
   srv <- server
   if T.null un
-    then return $ Left NoName
+    then return Nothing
     else do
       userKey <- liftIO genUserKey
-      exists <- liftIO . atomically $ do
+      inserted <- liftIO . atomically $ do
         users <- readTVar (srvUsers srv)
         if M.member name users
-          then return True
-          else writeTVar (srvUsers srv) (M.insert name userKey users) >> return False
-      return $ if exists then Left NameExists else Right $ RegisterResponse (UserCreds name userKey)
+          then return False
+          else writeTVar (srvUsers srv) (M.insert name userKey users) >> return True
+      if inserted
+        then return . Just $ RegisterResponse (UserCreds name userKey)
+        else return Nothing

@@ -15,7 +15,6 @@ module T3.Server
   , UserName(..)
   , UserKey(..)
   , RegisterRequest(..)
-  , RegisterError(..)
   , RegisterResponse(..)
   , forkServer
   , genBase64
@@ -144,25 +143,6 @@ instance FromJSON RegisterRequest where
 
 instance ToJSON RegisterRequest where
   toJSON = dropPrefixJ "rreq"
-
-data RegisterError
-  = NameExists
-  | NoName
-  deriving (Show, Eq)
-
-instance ToJSON RegisterError where
-  toJSON NameExists = String "NameExists"
-  toJSON NoName = String "NoName"
-
-instance FromJSON RegisterError where
-  parseJSON (String s)
-    | s' == lower "NameExists" = pure NameExists
-    | s' == lower "NoName" = pure NoName
-    | otherwise = mzero
-    where
-      lower = T.map toLower
-      s' = lower s
-  parseJSON _ = mzero
 
 data RegisterResponse = RegisterResponse
   { rrespCreds :: UserCreds

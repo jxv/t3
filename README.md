@@ -16,11 +16,9 @@ Response:
 `200`
 ```json
 {
-  "Right": {
-    "creds": {
-      "name":"<user-name>",
-      "key":"<user-key>",
-    }
+  "creds": {
+    "name":"<user-name>",
+    "key":"<user-key>",
   }
 }
 ```
