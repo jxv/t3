@@ -14,6 +14,7 @@ import Data.Maybe
 import T3.Server
 import T3.Server.Dispatch
 import T3.Server.Lobby
+import T3.DB
 import T3.Match
 import T3.Random
 import T3.Game.Core
@@ -114,7 +115,7 @@ randomHandler mStartReq = do
           liftIO . atomically $ modifyTVar (srvMatches srv) (M.insert matchId sessCfg)
           return $ StartResponse xMatchInfo Users{ uX = xUN, uO = oUN } (GameState emptyBoard Nothing)
 
-register :: HttpHandler m => Maybe RegisterRequest -> m (Maybe RegisterResponse)
+register :: (HttpHandler m, DB m) => Maybe RegisterRequest -> m (Maybe RegisterResponse)
 register Nothing = badFormat
 register (Just rreq) = do
   let name@(UserName un) = rreqName rreq
@@ -123,11 +124,14 @@ register (Just rreq) = do
     then return Nothing
     else do
       userKey <- liftIO genUserKey
-      inserted <- liftIO . atomically $ do
+      mUsers <- liftIO . atomically $ do
         users <- readTVar (srvUsers srv)
+        let users' = M.insert name userKey users
         if M.member name users
-          then return False
-          else writeTVar (srvUsers srv) (M.insert name userKey users) >> return True
-      if inserted
-        then return . Just $ RegisterResponse (UserCreds name userKey)
-        else return Nothing
+          then return Nothing
+          else writeTVar (srvUsers srv) users' >> return (Just users')
+      case mUsers of
+        Nothing -> return Nothing
+        Just users -> do
+          storeUsers users
+          return . Just $ RegisterResponse (UserCreds name userKey)

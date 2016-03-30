@@ -70,11 +70,11 @@ authorize userName matchToken matchCfg = (userCfgMay $ matchCfgX matchCfg) <|> (
       then Just cfg
       else Nothing
 
-forkServer :: GameLogger -> Maybe Seconds -> IO Server
-forkServer logger timeoutLimit = do
+forkServer :: GameLogger -> Maybe Seconds -> M.Map UserName UserKey -> IO Server
+forkServer logger timeoutLimit users = do
   lobby <- newTVarIO []
   matches <- newTVarIO M.empty
-  users <- newTVarIO M.empty
+  users <- newTVarIO users
   let srv = Server lobby matches users (return ()) logger timeoutLimit
   thid <- forkIO $ serve srv
   let killMatches = do

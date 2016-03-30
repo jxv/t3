@@ -10,6 +10,7 @@ library
       T3.Playback
       T3.Random
       T3.Web
+      T3.DB
       T3.Server
       T3.Server.Dispatch
       T3.Server.Lobby
