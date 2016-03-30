@@ -25,6 +25,7 @@ library
                      Handler.Register
                      Handler.Start
                      Handler.Play
+                     Handler.Match
                      Handler.Instance
                      Handler.Random
 

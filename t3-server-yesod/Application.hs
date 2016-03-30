@@ -36,6 +36,7 @@ import Handler.Register
 import Handler.Start
 import Handler.Play
 import Handler.Random
+import Handler.Match
 
 import T3.Server
 import T3.Match

@@ -145,4 +145,32 @@ Response:
 }
 ```
 
+### Match Playbacks
 
+Request:
+`GET /api/match/<match-id>`
+
+Response:
+`200`
+```json
+{
+  "users": {
+    "o":"<user-name-1>",
+    "x":"<user-name-2>"
+  },
+  "actions": [
+    {"xO":"X", "loc": {"x":0, "y":0}},
+    {"xO":"O", "loc": {"x":1, "y":1}},
+    {"xO":"X", "loc": {"x":2, "y":2}},
+    {"xO":"O", "loc": {"x":1, "y":0}},
+    {"xO":"X", "loc": {"x":2, "y":1}},
+    {"xO":"O", "loc": {"x":1, "y":2}}
+  ],
+  "result": {
+    "tag":"decision",
+    "winner":"O",
+    "loser":"X"
+  },
+  "matchId":"<match-id>"
+}
+```
