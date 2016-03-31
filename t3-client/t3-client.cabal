@@ -3,19 +3,21 @@ name:
 version:
   0.1.0.0
 synopsis:
-  Initial project template from stack
+  tic-tac-toe Rexports for client
 description:
   Please see README.md
 homepage:
   http://github.com/jxv/t3#readme
+license:
+  BSD3
 license-file:
   LICENSE
 author:
-  Author name here
+  Joe Vargas
 maintainer:
-  example@example.com
+  http://github.com/jxv
 copyright:
-  2016 Author Here
+  2016 Joe Vargas
 category:
   Game
 build-type:
@@ -24,17 +26,6 @@ build-type:
 cabal-version:
   >=1.10
 
-executable t3-client
-    main-is:
-      Main.hs
-    hs-source-dirs:
-      app
-    build-depends:
-        base
-      , t3-client
-    ghc-options:
-      -threaded -rtsopts -with-rtsopts=-N
-
 library
   hs-source-dirs:
     src
@@ -42,33 +33,8 @@ library
     T3.Client
   build-depends:
       base >= 4.7 && < 5
-    , aeson
-    , text
-    , bytestring
-    , mtl
-    , transformers
-    , containers
-    , lens
-    , wreq
     , t3-game
     , t3-server
-  default-language:
-    Haskell2010
-
-test-suite t3-client-test
-  type:
-    exitcode-stdio-1.0
-  hs-source-dirs:
-    test
-  main-is: Spec.hs
-  build-depends:
-      base
-    , t3-game
-    , t3-server
-    , hspec
-    , aeson
-  ghc-options:
-    -threaded -rtsopts -with-rtsopts=-N
   default-language:
     Haskell2010
 

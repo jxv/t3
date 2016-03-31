@@ -1,23 +1,13 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE OverloadedStrings #-}
+module T3.Client
+  ( module T3.Server
+  , module T3.Match
+  , module T3.Random
+  , module T3.Playback
+  , module T3.Game
+  ) where
 
-module T3.Client where
-
-import Control.Monad.RWS
-import Control.Monad.IO.Class
-
-import T3.Server
-import T3.Match
+import T3.Server hiding (GameLogger, Server, forkServer, genBase64, genMatchToken, genMatchId, genUserName, genUserKey, authenticate, authorize, toGameState)
+import T3.Match hiding (StartCallback, Callback, UserInit, runMatch)
 import T3.Game
-
-import Data.Aeson
-import Control.Lens
-import Network.Wreq
-
-mainDef :: IO ()
-mainDef = do
-  let addr = "http://localhost:3000"
-  let regReq = RegisterRequest (UserName "botty1")
-  r <- asJSON =<< post (addr `mappend` "/api/register") (toJSON regReq)
-  let mRegResp = (r ^. responseBody) :: Maybe RegisterResponse
-  print mRegResp
+import T3.Random
+import T3.Playback hiding (writePlayback)
