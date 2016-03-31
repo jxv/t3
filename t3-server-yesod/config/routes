@@ -9,4 +9,4 @@
 /api/start StartR POST
 /api/random RandomR POST
 /api/play/#Text/#Text PlayR POST
-/api/match/#String MatchR GET
+/api/match/#Text MatchR GET

@@ -1,6 +1,13 @@
 module Handler.Match where
 
 import Import
+import T3.DB
+import T3.Match
+import Handler.Instance ()
 
-getMatchR :: String -> Handler ()
-getMatchR matchId = sendFile "application/json" ("static/playback/" `mappend` matchId `mappend` ".json")
+getMatchR :: Text -> Handler Value
+getMatchR matchId = do
+  mPB <- loadPlayback (MatchId matchId)
+  case mPB of
+    Nothing -> notFound
+    Just pb -> returnJson pb
