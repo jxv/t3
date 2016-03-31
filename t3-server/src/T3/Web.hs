@@ -121,7 +121,7 @@ register (Just rreq) = do
   let name@(UserName un) = rreqName rreq
   srv <- server
   if T.null un
-    then return Nothing
+    then badRequest
     else do
       userKey <- liftIO genUserKey
       mUsers <- liftIO . atomically $ do
@@ -131,7 +131,7 @@ register (Just rreq) = do
           then return Nothing
           else writeTVar (srvUsers srv) users' >> return (Just users')
       case mUsers of
-        Nothing -> return Nothing
+        Nothing -> badRequest
         Just users -> do
           storeUsers users
           return . Just $ RegisterResponse (UserCreds name userKey)

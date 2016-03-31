@@ -1,5 +1,9 @@
 #t3
 
+## Client docs
+
+http://hackage.haskell.org/package/t3-client
+
 ## API
 
 ### Register
