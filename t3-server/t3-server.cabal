@@ -2,7 +2,7 @@ name:              t3-server
 synopsis:            tic-tac-toe server
 description:         Please see README.md
 version:           0.1.0
-cabal-version:     >= 1.8
+cabal-version:     >= 1.10
 build-type:        Simple
 license: BSD3
 license-file: LICENSE
@@ -25,7 +25,8 @@ library
       T3.Match
       T3.Match.Types
 
-    extensions:
+    default-extensions:
+      OverlappingInstances
       OverloadedStrings
       MultiParamTypeClasses
       TypeFamilies
