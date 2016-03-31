@@ -1,12 +1,13 @@
 name:                t3-game
 version:             0.1.0.0
-synopsis:            Initial project template from stack
+synopsis:            tic-tac-toe core
 description:         Please see README.md
 homepage:            http://github.com/jxv/t3#readme
+license: BSD3
 license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2016 Author Here
+author:              Joe Vargas
+maintainer:          http://github.com/jxv
+copyright:           2016 Joe Vargas
 category:            Game
 build-type:          Simple
 -- extra-source-files:
