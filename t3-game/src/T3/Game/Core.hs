@@ -154,6 +154,9 @@ instance ToJSON Loc where
 instance ToJSON Action where
   toJSON = dropPrefixJ "act"
 
+instance FromJSON Action where
+  parseJSON = dropPrefixP "act"
+
 -- dropPrefixP :: (Generic a, GFromJSON (Rep a)) => String -> Value -> Parser a
 dropPrefixP prefix = genericParseJSON defaultOptions { fieldLabelModifier = dropPrefix prefix }
 
