@@ -8,7 +8,7 @@ import T3.Match
 data UserConfig = UserConfig
   { userCfgUserName :: UserName
   , userCfgMatchToken :: MatchToken
-  , userCfgSendLoc :: (Loc, Callback) -> IO ()
+  , userCfgSendLoc :: (Loc, Callback IO) -> IO ()
   }
 
 data MatchConfig = MatchConfig
@@ -19,8 +19,8 @@ data MatchConfig = MatchConfig
 
 forkMatch
   :: Maybe Seconds
-  -> (UserName, MatchToken, Callback)
-  -> (UserName, MatchToken, Callback)
+  -> (UserName, MatchToken, Callback IO)
+  -> (UserName, MatchToken, Callback IO)
   -> ([Action] -> Board -> Result -> IO ())
   -> IO ()
   -> IO MatchConfig

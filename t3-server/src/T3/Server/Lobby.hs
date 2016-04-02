@@ -7,16 +7,16 @@ import System.Random
 import Data.Maybe
 import T3.Match
 
-type Lobby = [(UserName, StartCallback)]
+type Lobby = [(UserName, StartCallback IO)]
 
-addUserToLobby :: TVar Lobby  -> UserName -> (StartCallback) -> IO Bool
+addUserToLobby :: TVar Lobby  -> UserName -> StartCallback IO -> IO Bool
 addUserToLobby lobby un cb = atomically $ do
   lob <- readTVar lobby
   let shouldAdd = isNothing (lookup un lob)
   when shouldAdd $ writeTVar lobby ((un, cb) : lob)
   return shouldAdd
 
-userPairFromLobby :: TVar Lobby -> IO (Maybe ((UserName, StartCallback), (UserName, StartCallback)))
+userPairFromLobby :: TVar Lobby -> IO (Maybe ((UserName, StartCallback IO), (UserName, StartCallback IO)))
 userPairFromLobby lobby = do
   a <- randomIO
   b <- randomIO
