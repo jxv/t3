@@ -1,8 +1,14 @@
 {-# LANGUAGE DeriveGeneric #-}
--- {-# LANGUAGE DeriveAnyClass #-}
--- {-# LANGUAGE FlexibleContexts #-}
 
-module T3.Match.Types where
+module T3.Match.Types
+  ( UserName(..)
+  , MatchId(..)
+  , MatchToken(..)
+  , Users(..)
+  , MatchInfo(..)
+  , Step(..)
+  , Final(..)
+  ) where
 
 import GHC.Generics
 import Control.Monad (mzero)
