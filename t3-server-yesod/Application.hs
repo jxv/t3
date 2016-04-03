@@ -156,7 +156,7 @@ getApplicationRepl = do
     return (getPort wsettings, foundation, app1)
 
 shutdownApp :: App -> IO ()
-shutdownApp app = srvDie (appServer app)
+shutdownApp app = _srvDie (appServer app)
 
 
 ---------------------------------------------

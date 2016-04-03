@@ -29,30 +29,30 @@ newtype MatchToken = MatchToken Text
   deriving (Show, Eq, Ord, FromJSON, ToJSON)
 
 data Users = Users
-  { uX :: UserName
-  , uO :: UserName
+  { _uX :: UserName
+  , _uO :: UserName
   } deriving (Show, Eq, Generic)
 
 instance FromJSON Users where
-  parseJSON = dropPrefixP "u"
+  parseJSON = dropPrefixP "_u"
 
 instance ToJSON Users where
-  toJSON = dropPrefixJ "u"
+  toJSON = dropPrefixJ "_u"
 
 data MatchInfo = MatchInfo
-  { miMatchId :: MatchId
-  , miMatchToken :: MatchToken
+  { _miMatchId :: MatchId
+  , _miMatchToken :: MatchToken
   } deriving (Show, Eq, Generic)
 
 instance FromJSON MatchInfo where
-  parseJSON = dropPrefixP "mi"
+  parseJSON = dropPrefixP "_mi"
 
 instance ToJSON MatchInfo where
-  toJSON = dropPrefixJ "mi"
+  toJSON = dropPrefixJ "_mi"
 
 data Step = Step
-  { stepBoard :: Board
-  , stepFinal :: Maybe Final
+  { _stepBoard :: Board
+  , _stepFinal :: Maybe Final
   } deriving (Show, Eq)
 
 data Final

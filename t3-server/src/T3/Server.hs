@@ -50,26 +50,26 @@ import T3.Match
 type GameLogger m = MatchId -> Users -> [Action] -> Board -> Result -> m ()
 
 data Server m = Server
-  { srvLobby :: TVar (Lobby m)
-  , srvMatches :: TVar (M.Map MatchId (MatchConfig m))
-  , srvUsers :: TVar (M.Map UserName UserKey)
-  , srvDie :: m ()
-  , srvLogger :: GameLogger m
-  , srvTimeoutLimit :: Maybe Seconds
+  { _srvLobby :: TVar (Lobby m)
+  , _srvMatches :: TVar (M.Map MatchId (MatchConfig m))
+  , _srvUsers :: TVar (M.Map UserName UserKey)
+  , _srvDie :: m ()
+  , _srvLogger :: GameLogger m
+  , _srvTimeoutLimit :: Maybe Seconds
   }
 
 authenticate :: MonadConc m => Server m -> UserCreds -> STM Bool
 authenticate srv uc = do
-  users <- readTVar (srvUsers srv)
-  return $ M.lookup (ucName uc) users == Just (ucKey uc)
+  users <- readTVar (_srvUsers srv)
+  return $ M.lookup (_ucName uc) users == Just (_ucKey uc)
 
 authorize :: UserName -> MatchToken -> MatchConfig m -> Maybe (UserConfig m)
-authorize userName matchToken matchCfg = (userCfgMay $ matchCfgX matchCfg) <|> (userCfgMay $ matchCfgO matchCfg)
+authorize un mt mc = (userCfgMay $ _matchCfgX mc) <|> (userCfgMay $ _matchCfgO mc)
   where
     userCfgMay cfg =
-      if userCfgUserName cfg == userName && userCfgMatchToken cfg == matchToken
-      then Just cfg
-      else Nothing
+      if _userCfgUserName cfg == un && _userCfgMatchToken cfg == mt
+        then Just cfg
+        else Nothing
 
 forkServer :: (MonadConc m, MonadRandom m) => GameLogger m -> Maybe Seconds -> M.Map UserName UserKey -> m (Server m)
 forkServer logger timeoutLimit users = do
@@ -81,9 +81,9 @@ forkServer logger timeoutLimit users = do
   let killMatches = do
         killers <- atomically $ do
           s <- readTVar matches
-          return $ map matchCfgDie (M.elems s)
+          return $ map _matchCfgDie (M.elems s)
         sequence_  killers
-  return srv{ srvDie = killMatches >> killThread thid }
+  return srv{ _srvDie = killMatches >> killThread thid }
 
 genBase64 :: MonadRandom m => Int -> m Text
 genBase64 n = fmap T.pack (sequence $ replicate n gen)
@@ -106,29 +106,29 @@ genUserKey = UserKey <$> genBase64 32
 
 serve :: (MonadConc m, MonadRandom m) => Server m -> m ()
 serve srv = do
-  musers <- userPairFromLobby (srvLobby srv)
+  musers <- userPairFromLobby (_srvLobby srv)
   case musers of
     Nothing -> return ()
     Just ((xUN, xCB), (oUN, oCB)) -> do
       matchId <- genMatchId
       xGT <- genMatchToken
       oGT <- genMatchToken
-      let removeSelf = atomically $ modifyTVar (srvMatches srv) (M.delete matchId)
-      let users = Users { uX = xUN, uO = oUN }
-      let xMatchInfo = MatchInfo { miMatchId = matchId, miMatchToken = xGT }
-      let oMatchInfo = MatchInfo { miMatchId = matchId, miMatchToken = oGT }
+      let removeSelf = atomically $ modifyTVar (_srvMatches srv) (M.delete matchId)
+      let users = Users { _uX = xUN, _uO= oUN }
+      let xMatchInfo = MatchInfo matchId xGT 
+      let oMatchInfo = MatchInfo matchId oGT
       sessCfg <- forkMatch
-        (srvTimeoutLimit srv)
+        (_srvTimeoutLimit srv)
         (xUN, xGT, xCB xMatchInfo users)
         (oUN, oGT, oCB oMatchInfo users)
-        (srvLogger srv matchId users)
+        (_srvLogger srv matchId users)
         removeSelf
-      atomically $ modifyTVar (srvMatches srv) (M.insert matchId sessCfg)
+      atomically $ modifyTVar (_srvMatches srv) (M.insert matchId sessCfg)
   threadDelay (1 * 1000000) -- 1 second
   serve srv
 
 toGameState :: Step -> GameState
-toGameState s = GameState (stepBoard s) (stepFinal s)
+toGameState s = GameState (_stepBoard s) (_stepFinal s)
 
 --
 
@@ -136,86 +136,86 @@ newtype UserKey = UserKey Text
   deriving (Show, Eq, Ord, FromJSON, ToJSON)
 
 data RegisterRequest = RegisterRequest
-  { rreqName :: UserName
+  { _rreqName :: UserName
   } deriving (Show, Eq, Generic)
 
 instance FromJSON RegisterRequest where
-  parseJSON = dropPrefixP "rreq"
+  parseJSON = dropPrefixP "_rreq"
 
 instance ToJSON RegisterRequest where
-  toJSON = dropPrefixJ "rreq"
+  toJSON = dropPrefixJ "_rreq"
 
 data RegisterResponse = RegisterResponse
-  { rrespCreds :: UserCreds
+  { _rrespCreds :: UserCreds
   } deriving (Show, Eq, Generic)
 
 instance FromJSON RegisterResponse where
-  parseJSON = dropPrefixP "rresp"
+  parseJSON = dropPrefixP "_rresp"
 
 instance ToJSON RegisterResponse where
-  toJSON = dropPrefixJ "rresp"
+  toJSON = dropPrefixJ "_rresp"
 
 data UserCreds = UserCreds
-  { ucName :: UserName
-  , ucKey :: UserKey
+  { _ucName :: UserName
+  , _ucKey :: UserKey
   } deriving (Show, Eq, Generic)
 
 instance FromJSON UserCreds where
-  parseJSON = dropPrefixP "uc"
+  parseJSON = dropPrefixP "_uc"
 
 instance ToJSON UserCreds where
-  toJSON = dropPrefixJ "uc"
+  toJSON = dropPrefixJ "_uc"
 
 data StartRequest = StartRequest
-  { sreqCreds :: UserCreds
+  { _sreqCreds :: UserCreds
   } deriving (Show, Eq, Generic)
 
 instance FromJSON StartRequest where
-  parseJSON = dropPrefixP "sreq"
+  parseJSON = dropPrefixP "_sreq"
 
 instance ToJSON StartRequest where
-  toJSON = dropPrefixJ "sreq"
+  toJSON = dropPrefixJ "_sreq"
 
 data PlayRequest = PlayRequest
-  { preqCreds :: UserCreds
-  , preqLoc :: Loc
+  { _preqCreds :: UserCreds
+  , _preqLoc :: Loc
   } deriving (Show, Eq, Generic)
 
 instance FromJSON PlayRequest where
-  parseJSON = dropPrefixP "preq"
+  parseJSON = dropPrefixP "_preq"
 
 instance ToJSON PlayRequest where
-  toJSON = dropPrefixJ "preq"
+  toJSON = dropPrefixJ "_preq"
 
 data StartResponse = StartResponse
-  { srespMatchInfo :: MatchInfo
-  , srespUsers :: Users
-  , srespState :: GameState
+  { _srespMatchInfo :: MatchInfo
+  , _srespUsers :: Users
+  , _srespState :: GameState
   } deriving (Show, Eq, Generic)
 
 instance FromJSON StartResponse where
-  parseJSON = dropPrefixP "sresp"
+  parseJSON = dropPrefixP "_sresp"
 
 instance ToJSON StartResponse where
-  toJSON = dropPrefixJ "sresp"
+  toJSON = dropPrefixJ "_sresp"
 
 data PlayResponse = PlayResponse
-  { prespState :: GameState
+  { _prespState :: GameState
   } deriving (Show, Eq, Generic)
 
 instance FromJSON PlayResponse where
-  parseJSON = dropPrefixP "presp"
+  parseJSON = dropPrefixP "_presp"
 
 instance ToJSON PlayResponse where
-  toJSON = dropPrefixJ "presp"
+  toJSON = dropPrefixJ "_presp"
 
 data GameState = GameState
-  { gsBoard :: Board
-  , gsFinal :: Maybe Final
+  { _gsBoard :: Board
+  , _gsFinal :: Maybe Final
   } deriving (Show, Eq, Generic)
 
 instance FromJSON GameState where
-  parseJSON = dropPrefixP "gs"
+  parseJSON = dropPrefixP "_gs"
 
 instance ToJSON GameState where
-  toJSON = dropPrefixJ "gs"
+  toJSON = dropPrefixJ "_gs"

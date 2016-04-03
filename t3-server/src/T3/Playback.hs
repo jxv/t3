@@ -11,24 +11,24 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.HashMap.Lazy as HML
 
 data Playback = Playback
-  { pbMatchId :: MatchId
-  , pbUsers :: Users
-  , pbActions :: [Action]
-  , pbResult :: Result
+  { _pbMatchId :: MatchId
+  , _pbUsers :: Users
+  , _pbActions :: [Action]
+  , _pbResult :: Result
   } deriving (Show, Eq)
 
 writePlayback :: FilePath -> Playback -> IO ()
 writePlayback prefix pb = BL.writeFile path (encode pb)
   where
-    (MatchId matchIdText) = pbMatchId pb
+    (MatchId matchIdText) = _pbMatchId pb
     path = prefix `mappend` (T.unpack $ matchIdText  `mappend` ".json")
 
 instance ToJSON Playback where
   toJSON pb = object
-    [ "matchId" .= pbMatchId pb
-    , "users" .= pbUsers pb
-    , "actions" .= pbActions pb
-    , "result" .= pbResult pb
+    [ "matchId" .= _pbMatchId pb
+    , "users" .= _pbUsers pb
+    , "actions" .= _pbActions pb
+    , "result" .= _pbResult pb
     ]
 
 instance FromJSON Playback where

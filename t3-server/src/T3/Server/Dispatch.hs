@@ -6,15 +6,15 @@ import T3.Game
 import T3.Match
 
 data UserConfig m = UserConfig
-  { userCfgUserName :: UserName
-  , userCfgMatchToken :: MatchToken
-  , userCfgSendLoc :: (Loc, Callback m) -> m ()
+  { _userCfgUserName :: UserName
+  , _userCfgMatchToken :: MatchToken
+  , _userCfgSendLoc :: (Loc, Callback m) -> m ()
   }
 
 data MatchConfig m = MatchConfig
-  { matchCfgX :: UserConfig m
-  , matchCfgO :: UserConfig m
-  , matchCfgDie :: m ()
+  { _matchCfgX :: UserConfig m
+  , _matchCfgO :: UserConfig m
+  , _matchCfgDie :: m ()
   }
 
 forkMatch
