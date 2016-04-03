@@ -41,18 +41,18 @@ data XO
   deriving (Show, Eq, Generic, ToJSON)
 
 data Loc = Loc
-  { locX :: Int
-  , locY :: Int
+  { _locX :: Int
+  , _locY :: Int
   } deriving (Show, Read, Eq, Ord, Generic)
 
 data Action = Action
-  { actXO :: XO
-  , actLoc :: Loc
+  { _actXO :: XO
+  , _actLoc :: Loc
   } deriving (Show, Eq, Generic)
 
 data Board = Board
-  { bCells :: M.Map Loc XO
-  , bSize :: Int
+  { _bCells :: M.Map Loc XO
+  , _bSize :: Int
   } deriving (Show, Eq)
 
 data Result
@@ -69,35 +69,32 @@ emptyBoard :: Board
 emptyBoard = Board M.empty 3
 
 boardMap :: Board -> M.Map Loc XO
-boardMap = bCells
+boardMap = _bCells
 
 boardList :: Board -> [Maybe XO]
-boardList b = [M.lookup (Loc x y) (bCells b) | y <- q, x <- q]
+boardList b = [M.lookup (Loc x y) (_bCells b) | y <- q, x <- q]
   where q = indices b
 
 boardSize :: Board -> Int
-boardSize = bSize
+boardSize = _bSize
 
 inside :: Loc -> Board -> Bool
-inside loc b = x >= 0 && x < bSize b && y >= 0 && y < bSize b
-  where
-    x = locX loc
-    y = locY loc
+inside loc b = _locX loc >= 0 && _locX loc < _bSize b && _locY loc >= 0 && _locY loc < _bSize b
 
 valid :: Loc -> Board -> Bool
-valid loc b = inside loc b && not (M.member loc (bCells b))
+valid loc b = inside loc b && not (M.member loc (_bCells b))
 
 insertXO :: Loc -> XO -> Board -> Board
 insertXO loc xo b =
   if inside loc b
-  then b { bCells = M.insert loc xo (bCells b) }
-  else b
+    then b{ _bCells = M.insert loc xo (_bCells b) }
+    else b
 
 result :: Board -> Result
 result b
   | isWinner X b = Winner X
   | isWinner O b = Winner O
-  | M.size (bCells b) == (bSize b) ^ (2 :: Int) = Tie
+  | M.size (_bCells b) == (_bSize b) ^ (2 :: Int) = Tie
   | otherwise = Unfinished
 
 isWinner :: XO -> Board -> Bool
@@ -105,13 +102,13 @@ isWinner xo b =
   or [all has [Loc x y | y <- q] | x <- q] ||
   or [all has [Loc x y | x <- q] | y <- q] ||
   all has [Loc z z | z <- q] ||
-  all has [Loc z (bSize b - 1 - z) | z <- q]
+  all has [Loc z (_bSize b - 1 - z) | z <- q]
   where
-    has loc = M.lookup loc (bCells b) == Just xo
+    has loc = M.lookup loc (_bCells b) == Just xo
     q = indices b
 
 indices :: Board -> [Int]
-indices b = [0..bSize b - 1]
+indices b = [0 .. _bSize b - 1]
 
 instance FromJSON Loc where
   parseJSON (Object o) = Loc <$> o .: "x" <*> o .: "y"
@@ -150,13 +147,13 @@ instance ToJSON Board where
       cvt = maybe (String " ") toJSON
 
 instance ToJSON Loc where
-  toJSON = dropPrefixJ "loc"
+  toJSON = dropPrefixJ "_loc"
 
 instance ToJSON Action where
-  toJSON = dropPrefixJ "act"
+  toJSON = dropPrefixJ "_act"
 
 instance FromJSON Action where
-  parseJSON = dropPrefixP "act"
+  parseJSON = dropPrefixP "_act"
 
 -- dropPrefixP :: (Generic a, GFromJSON (Rep a)) => String -> Value -> Parser a
 dropPrefixP prefix = genericParseJSON defaultOptions { fieldLabelModifier = dropPrefix prefix }

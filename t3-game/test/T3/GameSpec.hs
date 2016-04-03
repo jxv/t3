@@ -10,7 +10,7 @@ spec :: Spec
 spec = do
   describe "result" $ do
     let playBack :: [(Loc, XO)] -> Result
-        playBack = result . foldl (\b (loc,xo) -> insertXO loc xo b) emptyBoard
+        playBack = result . foldl (\b (loc, xo) -> insertXO loc xo b) emptyBoard
     it "X should win horizontal" $ do
       shouldBe
         (playBack [(Loc 0 0, X), (Loc 1 0, X), (Loc 2 0, X)])
