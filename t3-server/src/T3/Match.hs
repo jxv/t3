@@ -8,27 +8,13 @@ module T3.Match
   , delay
   ) where
 
-import qualified Control.Concurrent.Async as IO
-import qualified Control.Concurrent as IO
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Either
 import Control.Monad.State.Strict
-
--- TODO: uncomment import when dejafu updates
--- import Control.Monad.Conc.Class (MonadConc(..))
+import Control.Monad.Conc.ClassTmp
 
 import T3.Game
 import T3.Match.Types
-
--- TODO: remove when dejafu updates
-class Monad m => MonadConc m where
-  threadDelay :: Int -> m ()
-  race :: m a -> m b -> m (Either a b)
-
--- TODO: remove when dejafu updates
-instance MonadConc IO where
-  threadDelay = IO.threadDelay
-  race = IO.race
 
 type Callback m = Step -> m ()
 type StartCallback m = MatchInfo -> Users -> Step -> m ()

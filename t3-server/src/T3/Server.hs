@@ -31,9 +31,10 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 
 import Control.Applicative
-import Control.Concurrent
-import Control.Concurrent.STM
+import Control.Concurrent.STM (TVar, STM, readTVar, modifyTVar)
+import Control.Monad.Conc.ClassTmp
 import Control.Monad
+import Control.Monad.Random
 import Data.Aeson hiding (Result)
 import Data.Aeson.Types (Options(..), defaultOptions, Parser)
 import Data.Text (Text)
@@ -46,23 +47,23 @@ import T3.Server.Dispatch
 import T3.Server.Lobby
 import T3.Match
 
-type GameLogger = MatchId -> Users -> [Action] -> Board -> Result -> IO ()
+type GameLogger m = MatchId -> Users -> [Action] -> Board -> Result -> m ()
 
-data Server = Server
-  { srvLobby :: TVar Lobby
-  , srvMatches :: TVar (M.Map MatchId MatchConfig)
+data Server m = Server
+  { srvLobby :: TVar (Lobby m)
+  , srvMatches :: TVar (M.Map MatchId (MatchConfig m))
   , srvUsers :: TVar (M.Map UserName UserKey)
-  , srvDie :: IO ()
-  , srvLogger :: GameLogger
+  , srvDie :: m ()
+  , srvLogger :: GameLogger m
   , srvTimeoutLimit :: Maybe Seconds
   }
 
-authenticate :: Server -> UserCreds -> STM Bool
+authenticate :: MonadConc m => Server m -> UserCreds -> STM Bool
 authenticate srv uc = do
   users <- readTVar (srvUsers srv)
   return $ M.lookup (ucName uc) users == Just (ucKey uc)
 
-authorize :: UserName -> MatchToken -> MatchConfig -> Maybe UserConfig
+authorize :: UserName -> MatchToken -> MatchConfig m -> Maybe (UserConfig m)
 authorize userName matchToken matchCfg = (userCfgMay $ matchCfgX matchCfg) <|> (userCfgMay $ matchCfgO matchCfg)
   where
     userCfgMay cfg =
@@ -70,40 +71,40 @@ authorize userName matchToken matchCfg = (userCfgMay $ matchCfgX matchCfg) <|> (
       then Just cfg
       else Nothing
 
-forkServer :: GameLogger -> Maybe Seconds -> M.Map UserName UserKey -> IO Server
+forkServer :: (MonadConc m, MonadRandom m) => GameLogger m -> Maybe Seconds -> M.Map UserName UserKey -> m (Server m)
 forkServer logger timeoutLimit users = do
   lobby <- newTVarIO []
   matches <- newTVarIO M.empty
   users <- newTVarIO users
   let srv = Server lobby matches users (return ()) logger timeoutLimit
-  thid <- forkIO $ serve srv
+  thid <- fork $ serve srv
   let killMatches = do
         killers <- atomically $ do
           s <- readTVar matches
           return $ map matchCfgDie (M.elems s)
         sequence_  killers
-  return srv { srvDie = killMatches >> killThread thid }
+  return srv{ srvDie = killMatches >> killThread thid }
 
-genBase64 :: Int -> IO Text
+genBase64 :: MonadRandom m => Int -> m Text
 genBase64 n = fmap T.pack (sequence $ replicate n gen)
   where
-    gen = fmap (\x -> vals !! (mod x len)) randomIO
+    gen = fmap (\x -> vals !! (mod x len)) getRandom
     len = length vals
     vals = ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ ['-','_']
 
-genMatchToken :: IO MatchToken
+genMatchToken :: MonadRandom m => m MatchToken
 genMatchToken = MatchToken <$> genBase64 16
 
-genMatchId :: IO MatchId
+genMatchId :: MonadRandom m => m MatchId
 genMatchId = MatchId <$> genBase64 16
 
-genUserName :: IO UserName
+genUserName :: MonadRandom m => m UserName
 genUserName = UserName <$> genBase64 32
 
-genUserKey :: IO UserKey
+genUserKey :: MonadRandom m => m UserKey
 genUserKey = UserKey <$> genBase64 32
 
-serve :: Server -> IO ()
+serve :: (MonadConc m, MonadRandom m) => Server m -> m ()
 serve srv = do
   musers <- userPairFromLobby (srvLobby srv)
   case musers of

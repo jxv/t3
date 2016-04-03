@@ -4,9 +4,8 @@ import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text as T
 import Control.Applicative
-import Control.Concurrent
-import Control.Concurrent.Async
-import Control.Concurrent.STM
+import Control.Monad.Conc.ClassTmp (MonadConc(..))
+import Control.Concurrent.STM (modifyTVar, readTVar, writeTVar)
 import Control.Monad (mzero, forever)
 import Data.Aeson
 import Data.IORef
@@ -20,9 +19,9 @@ import T3.Random
 import T3.Game.Core
 import Control.Monad.Trans (MonadIO, liftIO)
 
-class (MonadIO m) => HttpHandler m where
+class MonadIO m => HttpHandler m where
   httpRequestEntity :: m BL.ByteString
-  server :: m Server
+  server :: m (Server IO)
   unauthorized :: m a
   badRequest :: m a
   badFormat :: m a
@@ -90,7 +89,7 @@ randomHandler mStartReq = do
           randomStep <- liftIO newEmptyMVar
           let randomCB = putMVar randomStep
           randomSendLocRef <- liftIO $ newIORef (const $ return ())
-          randomThid <- liftIO . forkIO . forever $ do
+          randomThid <- liftIO . fork . forever $ do
             step <- takeMVar randomStep
             mLoc <- randomLoc (stepBoard step)
             case mLoc of

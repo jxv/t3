@@ -15,6 +15,7 @@ library
   hs-source-dirs:
     src
   exposed-modules:
+    Control.Monad.Conc.ClassTmp
     T3.Playback
     T3.Random
     T3.Web

@@ -1,25 +1,26 @@
 module T3.Server.Lobby where
 
-import Prelude
 import Control.Monad
-import Control.Concurrent.STM
+import Control.Monad.Random
+import Control.Monad.Conc.ClassTmp
+import Control.Concurrent.STM (TVar, STM, readTVar, writeTVar)
 import System.Random
 import Data.Maybe
 import T3.Match
 
-type Lobby = [(UserName, StartCallback IO)]
+type Lobby m = [(UserName, StartCallback m)]
 
-addUserToLobby :: TVar Lobby  -> UserName -> StartCallback IO -> IO Bool
+addUserToLobby :: MonadConc m => TVar (Lobby m) -> UserName -> StartCallback m -> m Bool
 addUserToLobby lobby un cb = atomically $ do
   lob <- readTVar lobby
   let shouldAdd = isNothing (lookup un lob)
   when shouldAdd $ writeTVar lobby ((un, cb) : lob)
   return shouldAdd
 
-userPairFromLobby :: TVar Lobby -> IO (Maybe ((UserName, StartCallback IO), (UserName, StartCallback IO)))
+userPairFromLobby :: (MonadConc m, MonadRandom m) => TVar (Lobby m) -> m (Maybe ((UserName, StartCallback m), (UserName, StartCallback m)))
 userPairFromLobby lobby = do
-  a <- randomIO
-  b <- randomIO
+  a <- getRandom
+  b <- getRandom
   atomically $ do
     lob <- readTVar lobby
     let len = length lob

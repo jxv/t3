@@ -20,7 +20,7 @@ data App = App
     , appStatic      :: Static -- ^ Settings for static file serving.
     , appHttpManager :: Manager
     , appLogger      :: Logger
-    , appServer      :: Server
+    , appServer :: Server IO
     }
 
 -- This is where we define all of the routes in our application. For a full
