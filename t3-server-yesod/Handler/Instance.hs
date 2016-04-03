@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 module Handler.Instance where
 
@@ -32,8 +33,8 @@ instance DB Handler where
   storePlayback = liftIO . storePlayback
   loadPlayback = liftIO . loadPlayback
 
+-- Warning: not transactional
 instance DB IO where
-  -- TODO: make transactional   D:
   storeUsers users = treadOn () $ void . forkIO $ do
     let users' = M.mapKeys (\(UserName un) -> un) users
     BL.writeFile "db/user.json" (encode users')

@@ -19,13 +19,13 @@ import Data.Text (Text)
 import T3.Game
 import T3.Game.Core
 
-newtype UserName = UserName Text
+newtype UserName = UserName { getUserName :: Text }
   deriving (Show, Eq, Ord, FromJSON, ToJSON)
 
-newtype MatchId = MatchId Text
+newtype MatchId = MatchId { getMatchId :: Text }
   deriving (Show, Eq, Ord, FromJSON, ToJSON)
 
-newtype MatchToken = MatchToken Text
+newtype MatchToken = MatchToken { getMatchToken :: Text }
   deriving (Show, Eq, Ord, FromJSON, ToJSON)
 
 data Users = Users

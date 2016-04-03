@@ -132,7 +132,7 @@ toGameState s = GameState (_stepBoard s) (_stepFinal s)
 
 --
 
-newtype UserKey = UserKey Text
+newtype UserKey = UserKey { getUserKey :: Text }
   deriving (Show, Eq, Ord, FromJSON, ToJSON)
 
 data RegisterRequest = RegisterRequest
