@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE RecordWildCards #-}
 module Application
     ( getApplicationDev
     , appMain
@@ -32,12 +33,16 @@ import Handler.Play
 import Handler.Random
 import Handler.Match
 
+import qualified T3.Playback as Pb
+import T3.Game
 import T3.Server
 import T3.Match
 import T3.DB
-import T3.Playback
 
 mkYesodDispatch "App" resourcesApp
+
+translate :: Action -> Pb.Action
+translate Action{..} = Pb.Action _actXO _actLoc
 
 makeFoundation :: AppSettings -> IO App
 makeFoundation appSettings = do
@@ -50,7 +55,7 @@ makeFoundation appSettings = do
     return App {..}
   where
     gameLogger matchId@(MatchId matchIdText) users actions _board res = do
-      storePlayback (Playback matchId users actions res)
+      storePlayback (Pb.Playback matchId users (map translate actions) res)
       putStrLn $ "Finished Game: " `mappend` matchIdText
 
 makeApplication :: App -> IO Application

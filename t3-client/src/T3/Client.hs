@@ -42,4 +42,4 @@ import T3.Server
 import T3.Match
 import T3.Game
 import T3.Random
-import T3.Playback
+import T3.Playback hiding (Action(..))

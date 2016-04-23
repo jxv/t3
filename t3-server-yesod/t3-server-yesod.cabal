@@ -36,6 +36,7 @@ library
     Handler.Match
     Handler.Instance
     Handler.Random
+    T3.DB.Instance.Postgres
 
   if flag(dev) || flag(library-only)
     cpp-options:
@@ -106,6 +107,7 @@ library
     , hashmap
     , t3-game
     , t3-server
+    , postgresql-simple
 
 executable t3-server-yesod
   if flag(library-only)
@@ -119,44 +121,3 @@ executable t3-server-yesod
     , t3-server-yesod
   ghc-options:
     -threaded -rtsopts -with-rtsopts=-N
-
-test-suite test
-  type:
-    exitcode-stdio-1.0
-  main-is:
-    Spec.hs
-  hs-source-dirs:
-    test
-  ghc-options:
-    -Wall
-
-  extensions:
-    TemplateHaskell
-    QuasiQuotes
-    OverloadedStrings
-    NoImplicitPrelude
-    CPP
-    MultiParamTypeClasses
-    TypeFamilies
-    GADTs
-    GeneralizedNewtypeDeriving
-    FlexibleContexts
-    FlexibleInstances
-    EmptyDataDecls
-    NoMonomorphismRestriction
-    DeriveDataTypeable
-    ViewPatterns
-    TupleSections
-
-  build-depends:
-      base
-    , t3-server-yesod
-    , t3-server
-    , t3-game
-    , yesod-test >= 1.5.0.1 && < 1.6
-    , yesod-core
-    , yesod
-    , hspec >= 2.0.0
-    , classy-prelude
-    , classy-prelude-yesod
-    , aeson

@@ -48,7 +48,7 @@ data Loc = Loc
 data Action = Action
   { _actXO :: XO
   , _actLoc :: Loc
-  } deriving (Show, Eq, Generic)
+  } deriving (Show, Eq)
 
 data Board = Board
   { _bCells :: M.Map Loc XO
@@ -149,11 +149,11 @@ instance ToJSON Board where
 instance ToJSON Loc where
   toJSON = dropPrefixJ "_loc"
 
-instance ToJSON Action where
-  toJSON = dropPrefixJ "_act"
+--instance ToJSON Action where
+--  toJSON = dropPrefixJ "_act"
 
-instance FromJSON Action where
-  parseJSON = dropPrefixP "_act"
+--instance FromJSON Action where
+--  parseJSON = dropPrefixP "_act"
 
 -- dropPrefixP :: (Generic a, GFromJSON (Rep a)) => String -> Value -> Parser a
 dropPrefixP prefix = genericParseJSON defaultOptions { fieldLabelModifier = dropPrefix prefix }
