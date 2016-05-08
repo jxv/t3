@@ -19,12 +19,15 @@ library
     T3.Playback
     T3.Random
     T3.Web
+    T3.WebLang
     T3.DB
     T3.Server
     T3.Server.Dispatch
     T3.Server.Lobby
     T3.Match
     T3.Match.Types
+  other-modules:
+    T3.Web.Impl.Server
   default-extensions:
     -- OverlappingInstances
     OverloadedStrings
@@ -48,6 +51,7 @@ library
     , time
     , transformers
     , case-insensitive
+    , http-types
     , wai
     , async
     , mtl

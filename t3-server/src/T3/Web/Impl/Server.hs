@@ -1,4 +1,4 @@
-module T3.Web where
+module T3.Web.Impl.Server where
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as BL
@@ -10,6 +10,9 @@ import Control.Monad (mzero, forever)
 import Data.Aeson
 import Data.IORef
 import Data.Maybe
+import Control.Monad.Trans (MonadIO, liftIO)
+
+import T3.WebLang hiding (Web(..))
 import T3.Server
 import T3.Server.Dispatch
 import T3.Server.Lobby
@@ -17,7 +20,6 @@ import T3.DB
 import T3.Match
 import T3.Random
 import T3.Game.Core
-import Control.Monad.Trans (MonadIO, liftIO)
 
 class MonadIO m => HttpHandler m where
   httpRequestEntity :: m BL.ByteString
@@ -31,9 +33,8 @@ class MonadIO m => HttpHandler m where
   httpJSONEntity = fmap decode httpRequestEntity
 
 play :: HttpHandler m => MatchId -> MatchToken -> Maybe PlayRequest -> m PlayResponse
-play matchId matchToken mPlayRequest = case mPlayRequest of
-  Nothing -> badFormat
-  Just playReq -> play' matchId matchToken playReq
+play _ _ Nothing = badFormat
+play matchId matchToken (Just playReq) = play' matchId matchToken playReq
 
 play' :: HttpHandler m => MatchId -> MatchToken -> PlayRequest -> m PlayResponse
 play' matchId matchToken playReq = do
