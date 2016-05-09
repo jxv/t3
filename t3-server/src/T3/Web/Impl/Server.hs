@@ -16,6 +16,7 @@ import Safe (atMay)
 import Network.HTTP.Types
 
 import T3.WebLang hiding (Web(..))
+import T3.ServerLang (ServerEsque(..))
 import T3.Server
 import T3.Server.Dispatch
 import T3.Server.Lobby
@@ -23,13 +24,6 @@ import T3.DB
 import T3.Match
 import T3.Random
 import T3.Game.Core
-
-class MonadIO m => ServerEsque m where
-  httpRequestEntity :: m BL.ByteString
-  server :: m (Server IO)
-  alreadyInLobby :: m a
-  registerUser :: Server IO -> UserName -> UserKey -> m (M.Map UserName UserKey)
-  playMove :: MatchId -> MatchToken -> PlayRequest -> m (Maybe PlayResponse)
 
 badRequest, badFormat, unauthorized :: Response
 badRequest = Response status400 [] Nothing
@@ -46,14 +40,11 @@ play req = do
   case m of
     Nothing -> return badFormat
     Just (matchId, matchToken, playReq) ->
-      fromPlayResponse <$> play' matchId matchToken playReq
+      fromPlayResponse <$> playMove matchId matchToken playReq
   where
     fromPlayResponse :: Maybe PlayResponse -> Response
     fromPlayResponse (Just presp) = Response status200 [] (Just $ encode presp)
     fromPlayResponse Nothing = badRequest
-
-play' :: ServerEsque m => MatchId -> MatchToken -> PlayRequest -> m (Maybe PlayResponse)
-play' = playMove
 
 playMove' :: Server IO -> MatchId -> MatchToken -> PlayRequest -> IO (Maybe PlayResponse)
 playMove' srv matchId matchToken playReq = do
@@ -81,29 +72,28 @@ start req = do
   let m = decode $ _reqBody req
   case m of
     Nothing -> return badFormat
-    Just startReq -> fromStartResponse <$> start' startReq
+    Just startReq -> fromStartResponse <$> startMatch startReq
   where
     fromStartResponse :: (Maybe StartResponse) -> Response
     fromStartResponse (Just sresp) = Response status200 [] (Just $ encode sresp)
     fromStartResponse Nothing = unauthorized
 
-start' :: ServerEsque m => StartRequest -> m (Maybe StartResponse)
-start' startReq = do
-  srv <- server
-  resp <- liftIO newEmptyMVar
-  authenticated <- liftIO . atomically $ authenticate srv (_sreqCreds startReq)
+startMatch' :: Server IO -> StartRequest -> IO (Maybe StartResponse)
+startMatch' srv startReq = do
+  resp <- newEmptyMVar
+  authenticated <- atomically $ authenticate srv (_sreqCreds startReq)
   if not authenticated
     then return Nothing
-    else fmap Just $ do
-      added <- liftIO $ addUserToLobby
+    else do
+      added <- addUserToLobby
         (_srvLobby srv)
         (_ucName $ _sreqCreds startReq)
         (\matchInfo users step -> putMVar resp $ StartResponse matchInfo users (toGameState step))
       if added
         then do
-          sresp <- liftIO $ takeMVar resp
-          return sresp
-        else alreadyInLobby
+          sresp <- takeMVar resp
+          return $ Just sresp
+        else return Nothing
 
 -- /api/random
 randomHandler :: ServerEsque m => Request -> m Response
@@ -111,26 +101,25 @@ randomHandler req = do
   let m = decode $ _reqBody req
   case m of
     Nothing -> return badFormat
-    Just startReq -> fromStartResponse <$> randomHandler' startReq
+    Just startReq -> fromStartResponse <$> randomMatch startReq
   where
     fromStartResponse :: (Maybe StartResponse) -> Response
     fromStartResponse (Just sresp) = Response status200 [] (Just $ encode sresp)
     fromStartResponse Nothing = unauthorized
 
-randomHandler' :: ServerEsque m => StartRequest -> m (Maybe StartResponse)
-randomHandler' startReq = do
-  srv <- server
-  authenticated <- liftIO . atomically $ authenticate srv (_sreqCreds startReq)
+randomMatch' :: Server IO -> StartRequest -> IO (Maybe StartResponse)
+randomMatch' srv startReq = do
+  authenticated <- atomically $ authenticate srv (_sreqCreds startReq)
   if not authenticated
     then return Nothing
     else fmap Just $ do
-      matchId <- liftIO genMatchId
-      xGT <- liftIO genMatchToken
-      oGT <- liftIO genMatchToken
-      randomStep <- liftIO newEmptyMVar
+      matchId <- genMatchId
+      xGT <- genMatchToken
+      oGT <- genMatchToken
+      randomStep <- newEmptyMVar
       let randomCB = putMVar randomStep
-      randomSendLocRef <- liftIO $ newIORef (const $ return ())
-      randomThid <- liftIO . fork . forever $ do
+      randomSendLocRef <- newIORef (const $ return ())
+      randomThid <- fork . forever $ do
         step <- takeMVar randomStep
         mLoc <- randomLoc (_stepBoard step)
         case mLoc of
@@ -145,14 +134,14 @@ randomHandler' startReq = do
             atomically $ modifyTVar (_srvMatches srv) (M.delete matchId)
       let users = Users { _uX = xUN, _uO = oUN }
       let xMatchInfo = MatchInfo matchId xGT
-      sessCfg <- liftIO $ forkMatch
+      sessCfg <- forkMatch
         (_srvTimeoutLimit srv)
         (xUN, xGT, const $ return ())
         (oUN, oGT, randomCB)
         (\_ _ _ -> return ())
         removeSelf
-      liftIO $ writeIORef randomSendLocRef (_userCfgSendLoc $ _matchCfgO sessCfg)
-      liftIO . atomically $ modifyTVar (_srvMatches srv) (M.insert matchId sessCfg)
+      writeIORef randomSendLocRef (_userCfgSendLoc $ _matchCfgO sessCfg)
+      atomically $ modifyTVar (_srvMatches srv) (M.insert matchId sessCfg)
       return $ StartResponse xMatchInfo Users{ _uX = xUN, _uO = oUN } (GameState emptyBoard Nothing)
 
 -- /api/register
@@ -165,25 +154,28 @@ register req = do
       let (UserName un) = _rreqName rreq
       if T.null un
         then return badRequest
-        else fromRegisterResponse <$> register' rreq
+        else fromRegisterResponse <$> registerUser rreq
   where
-    fromRegisterResponse :: RegisterResponse -> Response
-    fromRegisterResponse rresp = Response status200 [] (Just $ encode rresp)
+    fromRegisterResponse :: Maybe RegisterResponse -> Response
+    fromRegisterResponse Nothing = badRequest
+    fromRegisterResponse (Just rresp) = Response status200 [] (Just $ encode rresp)
 
-register' :: (ServerEsque m, DB m) => RegisterRequest -> m RegisterResponse
-register' rreq = do
+registerUser' :: (MonadIO m, DB m) => Server IO -> RegisterRequest -> m (Maybe RegisterResponse)
+registerUser' srv rreq = do
   let name@(UserName un) = _rreqName rreq
-  srv <- server
   userKey <- liftIO genUserKey
-  users <- registerUser srv name userKey
-  storeUsers users
-  return $ RegisterResponse (UserCreds name userKey)
-
-registerUser' :: Server IO -> UserName -> UserKey -> IO (Maybe (M.Map UserName UserKey))
-registerUser' srv name userKey = liftIO . atomically $ do
-  users <- readTVar (_srvUsers srv)
-  let users' = M.insert name userKey users
-  if M.member name users
-    then return Nothing
-    else writeTVar (_srvUsers srv) users' >> return (Just users')
+  mUsers <- liftIO $ tryRegister srv name userKey
+  case mUsers of
+    Nothing -> return Nothing
+    Just users -> do
+      storeUsers users
+      return . Just $ RegisterResponse (UserCreds name userKey)
+  where
+    tryRegister :: Server IO -> UserName -> UserKey -> IO (Maybe (M.Map UserName UserKey))
+    tryRegister srv name userKey = atomically $ do
+      users <- readTVar (_srvUsers srv)
+      let users' = M.insert name userKey users
+      if M.member name users
+        then return Nothing
+        else writeTVar (_srvUsers srv) users' >> return (Just users')
 
