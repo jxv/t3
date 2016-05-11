@@ -1,6 +1,6 @@
 {-# OPTIONS -fno-warn-orphans #-}
 {-# LANGUAGE DeriveGeneric #-}
-module T3.Server
+module T3.Serve
   ( GameLogger
   , Server(..)
   , UserConfig(..)
@@ -48,6 +48,7 @@ import T3.Server.Dispatch.Impl.MonadConc
 import T3.Server.Lobby.Types
 import T3.Server.Lobby.Impl.MonadConc
 import T3.Match
+import T3.Util
 
 type GameLogger m = MatchId -> Users -> [Action] -> Board -> Result -> m ()
 
@@ -86,13 +87,6 @@ forkServer logger timeoutLimit users = do
           return $ map _matchCfgDie (M.elems s)
         sequence_  killers
   return srv{ _srvDie = killMatches >> killThread thid }
-
-genBase64 :: MonadRandom m => Int -> m Text
-genBase64 n = fmap T.pack (sequence $ replicate n gen)
-  where
-    gen = fmap (\x -> vals !! (mod x len)) getRandom
-    len = length vals
-    vals = ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ ['-','_']
 
 genMatchToken :: MonadRandom m => m MatchToken
 genMatchToken = MatchToken <$> genBase64 16

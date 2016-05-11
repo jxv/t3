@@ -38,7 +38,7 @@ module T3.Client
   , randomLoc
   ) where
 
-import T3.Server
+import T3.Serve
 import T3.Match
 import T3.Game
 import T3.Random

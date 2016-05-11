@@ -22,7 +22,7 @@ library
     T3.Web.Class
     T3.Web.Types
     T3.DB
-    T3.Server
+    T3.Serve
     T3.Server.Class
     T3.Server.Types
     T3.Server.Dispatch.Class

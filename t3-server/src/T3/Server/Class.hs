@@ -2,7 +2,6 @@ module T3.Server.Class
   ( ServerEsque(..)
   ) where
 
-import T3.Server
 import T3.Server.Dispatch.Types
 import T3.Server.Lobby.Types
 import T3.DB

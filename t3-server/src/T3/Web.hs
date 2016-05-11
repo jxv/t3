@@ -16,7 +16,8 @@ import Data.Maybe
 import qualified T3.Server.Dispatch.Impl.MonadConc as IO
 import qualified T3.Server.Lobby.Impl.MonadConc as IO
 
-import T3.Server
+import T3.Serve
+  (GameState(..), genUserKey, UserCreds(..), genMatchToken, genMatchId, toGameState, Server(..), authenticate, authorize)
 import T3.Server.Dispatch.Class
 import T3.Server.Dispatch.Types
 import T3.Server.Lobby.Class

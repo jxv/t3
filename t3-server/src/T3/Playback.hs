@@ -6,7 +6,7 @@ import GHC.Generics
 import Control.Monad (mzero)
 import T3.Game hiding (Action(..))
 import T3.Match hiding (Action(..))
-import T3.Server ()
+import T3.Serve ()
 import Data.Aeson hiding (Result)
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
