@@ -43,14 +43,16 @@ import GHC.Generics
 import Data.Char
 
 import T3.Game
-import T3.Server.Dispatch
-import T3.Server.Lobby
+import T3.Server.Dispatch hiding (Dispatch(..))
+import T3.Server.Dispatch.Impl.MonadConc
+import T3.Server.Lobby hiding (Lobby(..))
+import T3.Server.Lobby.Impl.MonadConc
 import T3.Match
 
 type GameLogger m = MatchId -> Users -> [Action] -> Board -> Result -> m ()
 
 data Server m = Server
-  { _srvLobby :: TVar (Lobby m)
+  { _srvLobby :: ListLobby m
   , _srvMatches :: TVar (M.Map MatchId (MatchConfig m))
   , _srvUsers :: TVar (M.Map UserName UserKey)
   , _srvDie :: m ()

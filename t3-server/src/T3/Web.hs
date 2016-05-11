@@ -1,3 +1,4 @@
+-- 
 module T3.Web where
 
 import qualified Data.Map as M
@@ -7,17 +8,28 @@ import Control.Applicative
 import Control.Monad.Conc.ClassTmp (MonadConc(..))
 import Control.Concurrent.STM (modifyTVar, readTVar, writeTVar)
 import Control.Monad (mzero, forever)
+import Control.Monad.Trans (MonadIO, liftIO)
 import Data.Aeson
 import Data.IORef
 import Data.Maybe
+
+import qualified T3.Server.Dispatch.Impl.MonadConc as IO
+import qualified T3.Server.Lobby.Impl.MonadConc as IO
 import T3.Server
 import T3.Server.Dispatch
 import T3.Server.Lobby
+import T3.ServerLang
 import T3.DB
 import T3.Match
 import T3.Random
 import T3.Game.Core
-import Control.Monad.Trans (MonadIO, liftIO)
+
+instance Dispatch IO where
+  forkMatch = IO.forkMatch
+
+instance Lobby IO where
+  addUserToLobby = IO.addUserToLobby
+  userPairFromLobby = IO.userPairFromLobby
 
 class MonadIO m => HttpHandler m where
   httpRequestEntity :: m BL.ByteString
