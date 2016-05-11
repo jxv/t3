@@ -4,6 +4,7 @@ packages:
 - t3-game
 - t3-server
 - t3-client
+- t3-server-spock
 
 #flags:
 #  t3-server:
