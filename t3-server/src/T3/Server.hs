@@ -43,9 +43,9 @@ import GHC.Generics
 import Data.Char
 
 import T3.Game
-import T3.Server.Dispatch hiding (Dispatch(..))
+import T3.Server.Dispatch.Types
 import T3.Server.Dispatch.Impl.MonadConc
-import T3.Server.Lobby hiding (Lobby(..))
+import T3.Server.Lobby.Types
 import T3.Server.Lobby.Impl.MonadConc
 import T3.Match
 

@@ -19,11 +19,18 @@ library
     T3.Playback
     T3.Random
     T3.Web
-    T3.WebLang
+    T3.Web.Class
+    T3.Web.Types
     T3.DB
     T3.Server
-    T3.Server.Dispatch
-    T3.Server.Lobby
+    T3.Server.Class
+    T3.Server.Types
+    T3.Server.Dispatch.Class
+    T3.Server.Dispatch.Types
+    T3.Server.Dispatch.Impl.MonadConc
+    T3.Server.Lobby.Class
+    T3.Server.Lobby.Types
+    T3.Server.Lobby.Impl.MonadConc
     T3.Match
     T3.Match.Types
   other-modules:

@@ -7,7 +7,7 @@ import Control.Concurrent.STM (TVar, STM, readTVar, writeTVar)
 import System.Random
 import Data.Maybe
 
-import T3.Server.Lobby hiding (Lobby)
+import T3.Server.Lobby.Types
 import T3.Match
 
 addUserToLobby :: MonadConc m => ListLobby m -> UserName -> StartCallback m -> m Bool

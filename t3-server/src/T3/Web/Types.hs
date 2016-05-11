@@ -1,4 +1,7 @@
-module T3.WebLang where
+module T3.Web.Types
+  ( Request(..)
+  , Response(..)
+  ) where
 
 import Data.Text (Text)
 import Data.ByteString.Lazy (ByteString)
@@ -17,15 +20,4 @@ data Response = Response
   , _respBody :: Maybe ByteString
   } deriving (Show, Eq)
 
-class Monad m => Web m where
-  play :: Request -> m Response
-  start :: Request -> m Response
-  randomHandler :: Request -> m Response
-  register :: Request -> m Response
-  match :: Request -> m Response
 
-class FromRequest a where
-  fromRequest :: Request -> Maybe a
-
-class ToReponse a where
-  toResponse :: a -> Response

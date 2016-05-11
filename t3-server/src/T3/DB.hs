@@ -3,8 +3,8 @@ module T3.DB where
 
 import qualified Data.Map as M
 import T3.Server
-import T3.Server.Dispatch
-import T3.Server.Lobby
+import T3.Server.Dispatch.Types
+import T3.Server.Lobby.Types
 import T3.Match
 import T3.Random
 import T3.Playback

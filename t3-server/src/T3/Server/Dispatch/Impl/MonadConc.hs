@@ -2,7 +2,7 @@ module T3.Server.Dispatch.Impl.MonadConc where
 
 import Control.Monad.Conc.ClassTmp
 
-import T3.Server.Dispatch hiding (Dispatch)
+import T3.Server.Dispatch.Types
 import T3.Game
 import T3.Match
 

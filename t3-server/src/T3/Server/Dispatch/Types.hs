@@ -1,4 +1,15 @@
-module T3.Server.Dispatch where
+module T3.Server.Dispatch.Types
+  ( Seconds(..)
+  , UserConfig(..)
+  , MatchConfig(..)
+  , UserName(..)
+  , MatchToken(..)
+  , Loc(..)
+  , Callback
+  , Action(..)
+  , Board
+  , Result(..)
+  ) where
 
 import T3.Game
 import T3.Match
@@ -14,12 +25,3 @@ data MatchConfig m = MatchConfig
   , _matchCfgO :: UserConfig m
   , _matchCfgDie :: m ()
   }
-
-class Monad m => Dispatch m where
-  forkMatch
-    :: Maybe Seconds
-    -> (UserName, MatchToken, Callback m)
-    -> (UserName, MatchToken, Callback m)
-    -> ([Action] -> Board -> Result -> m ())
-    -> m ()
-    -> m (MatchConfig m)

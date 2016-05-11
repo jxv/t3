@@ -15,10 +15,15 @@ import Data.Maybe
 
 import qualified T3.Server.Dispatch.Impl.MonadConc as IO
 import qualified T3.Server.Lobby.Impl.MonadConc as IO
+
 import T3.Server
-import T3.Server.Dispatch
-import T3.Server.Lobby
-import T3.ServerLang
+import T3.Server.Dispatch.Class
+import T3.Server.Dispatch.Types
+import T3.Server.Lobby.Class
+import T3.Server.Lobby.Types
+import T3.Server.Class
+import T3.Server.Types
+
 import T3.DB
 import T3.Match
 import T3.Random
