@@ -33,6 +33,7 @@ library
     T3.Server.Lobby.Impl.MonadConc
     T3.Match
     T3.Match.Types
+    T3.Util
   other-modules:
     T3.Web.Impl.Server
   default-extensions:
