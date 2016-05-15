@@ -44,36 +44,13 @@ import Data.Char
 
 import T3.Game
 import T3.Server.Types
+import T3.Server.Impl.Abstract
 import T3.Server.Dispatch.Types
 import T3.Server.Dispatch.Impl.MonadConc
 import T3.Server.Lobby.Types
 import T3.Server.Lobby.Impl.MonadConc
 import T3.Match
 import T3.Util
-
-type GameLogger m = MatchId -> Users -> [Action] -> Board -> Result -> m ()
-
-data Server m = Server
-  { _srvLobby :: ListLobby m
-  , _srvMatches :: TVar (M.Map MatchId (MatchConfig m))
-  , _srvUsers :: TVar (M.Map UserName UserKey)
-  , _srvDie :: m ()
-  , _srvLogger :: GameLogger m
-  , _srvTimeoutLimit :: Maybe Seconds
-  }
-
-authenticate :: MonadConc m => Server m -> UserCreds -> STM Bool
-authenticate srv uc = do
-  users <- readTVar (_srvUsers srv)
-  return $ M.lookup (_ucName uc) users == Just (_ucKey uc)
-
-authorize :: UserName -> MatchToken -> MatchConfig m -> Maybe (UserConfig m)
-authorize un mt mc = (userCfgMay $ _matchCfgX mc) <|> (userCfgMay $ _matchCfgO mc)
-  where
-    userCfgMay cfg =
-      if _userCfgUserName cfg == un && _userCfgMatchToken cfg == mt
-        then Just cfg
-        else Nothing
 
 forkServer :: (MonadConc m, MonadRandom m) => GameLogger m -> Maybe Seconds -> M.Map UserName UserKey -> m (Server m)
 forkServer logger timeoutLimit users = do
@@ -88,18 +65,6 @@ forkServer logger timeoutLimit users = do
           return $ map _matchCfgDie (M.elems s)
         sequence_  killers
   return srv{ _srvDie = killMatches >> killThread thid }
-
-genMatchToken :: MonadRandom m => m MatchToken
-genMatchToken = MatchToken <$> genBase64 16
-
-genMatchId :: MonadRandom m => m MatchId
-genMatchId = MatchId <$> genBase64 16
-
-genUserName :: MonadRandom m => m UserName
-genUserName = UserName <$> genBase64 32
-
-genUserKey :: MonadRandom m => m UserKey
-genUserKey = UserKey <$> genBase64 32
 
 serve :: (MonadConc m, MonadRandom m) => Server m -> m ()
 serve srv = do
@@ -123,9 +88,6 @@ serve srv = do
       atomically $ modifyTVar (_srvMatches srv) (M.insert matchId sessCfg)
   threadDelay (1 * 1000000) -- 1 second
   serve srv
-
-toGameState :: Step -> GameState
-toGameState s = GameState (_stepBoard s) (_stepFinal s)
 
 --
 

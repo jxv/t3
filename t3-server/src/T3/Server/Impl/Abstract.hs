@@ -4,26 +4,69 @@ import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text as T
 import Control.Applicative
-import Control.Monad.Conc.ClassTmp (MonadConc(..))
-import Control.Concurrent.STM (modifyTVar, readTVar, writeTVar)
+import Control.Monad.Conc.ClassTmp
+import Control.Monad.Random
+import Control.Concurrent.STM (modifyTVar, readTVar, writeTVar, TVar, STM)
 import Control.Monad (mzero, forever)
-import Data.Aeson
+import Data.Aeson hiding (Result(..))
 import Data.IORef
 import Data.Maybe
 import Control.Monad.Trans (MonadIO, liftIO)
 import Safe (atMay)
 import Network.HTTP.Types
 
-import T3.WebLang hiding (Web(..))
-import T3.ServerLang (ServerEsque(..))
-import T3.Server
-import T3.Server.Dispatch
-import T3.Server.Lobby
+import T3.Server.Types
+import T3.Server.Dispatch.Impl.MonadConc
+import T3.Server.Dispatch.Types
+import T3.Server.Lobby.Impl.MonadConc
+import T3.Server.Lobby.Types
 import T3.DB
 import T3.Match
+import T3.Match.Types
 import T3.Random
 import T3.Game.Core
+import T3.Util
 
+data Server m = Server
+  { _srvLobby :: ListLobby m
+  , _srvMatches :: TVar (M.Map MatchId (MatchConfig m))
+  , _srvUsers :: TVar (M.Map UserName UserKey)
+  , _srvDie :: m ()
+  , _srvLogger :: GameLogger m
+  , _srvTimeoutLimit :: Maybe Seconds
+  }
+
+type GameLogger m = MatchId -> Users -> [Action] -> Board -> Result -> m ()
+
+genMatchToken :: MonadRandom m => m MatchToken
+genMatchToken = MatchToken <$> genBase64 16
+
+genMatchId :: MonadRandom m => m MatchId
+genMatchId = MatchId <$> genBase64 16
+
+genUserName :: MonadRandom m => m UserName
+genUserName = UserName <$> genBase64 32
+
+genUserKey :: MonadRandom m => m UserKey
+genUserKey = UserKey <$> genBase64 32
+
+authenticate :: MonadConc m => Server m -> UserCreds -> STM Bool
+authenticate srv uc = do
+  users <- readTVar (_srvUsers srv)
+  return $ M.lookup (_ucName uc) users == Just (_ucKey uc)
+
+authorize :: UserName -> MatchToken -> MatchConfig m -> Maybe (UserConfig m)
+authorize un mt mc = (userCfgMay $ _matchCfgX mc) <|> (userCfgMay $ _matchCfgO mc)
+  where
+    userCfgMay cfg =
+      if _userCfgUserName cfg == un && _userCfgMatchToken cfg == mt
+        then Just cfg
+        else Nothing
+
+toGameState :: Step -> GameState
+toGameState s = GameState (_stepBoard s) (_stepFinal s)
+
+-- ServerEsque.playMove :: MatchId -> MatchToken -> PlayRequest -> m (Maybe PlayResponse)
 playMove :: Server IO -> MatchId -> MatchToken -> PlayRequest -> IO (Maybe PlayResponse)
 playMove srv matchId matchToken playReq = do
   mUserCfg <- userConfig srv matchId matchToken playReq
@@ -44,6 +87,7 @@ userConfig srv matchId matchToken playReq = liftIO . atomically $ do
       mMatchCfg <- M.lookup matchId <$> readTVar (_srvMatches srv)
       return $ authorize (_ucName creds) matchToken =<< mMatchCfg
 
+-- ServerEsque.startMatch :: StartRequest -> m (Maybe StartResponse)
 startMatch :: Server IO -> StartRequest -> IO (Maybe StartResponse)
 startMatch srv startReq = do
   resp <- newEmptyMVar
@@ -61,6 +105,7 @@ startMatch srv startReq = do
           return $ Just sresp
         else return Nothing
 
+-- ServerEsque.randomMatch :: StartRequest -> m (Maybe StartResponse)
 randomMatch :: Server IO -> StartRequest -> IO (Maybe StartResponse)
 randomMatch srv startReq = do
   authenticated <- atomically $ authenticate srv (_sreqCreds startReq)
@@ -98,6 +143,7 @@ randomMatch srv startReq = do
       atomically $ modifyTVar (_srvMatches srv) (M.insert matchId sessCfg)
       return $ StartResponse xMatchInfo Users{ _uX = xUN, _uO = oUN } (GameState emptyBoard Nothing)
 
+-- ServerEsque.registerUser :: RegisterRequest -> m (Maybe RegisterResponse)
 registerUser :: (MonadIO m, DB m) => Server IO -> RegisterRequest -> m (Maybe RegisterResponse)
 registerUser srv rreq = do
   let name@(UserName un) = _rreqName rreq
