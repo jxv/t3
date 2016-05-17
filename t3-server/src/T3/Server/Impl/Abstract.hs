@@ -17,7 +17,6 @@ import T3.Server.Part.Class
 import T3.Server.Lobby.Class
 import T3.Server.Lobby.Types
 import T3.DB
-import T3.Match
 import T3.Match.Types
 import T3.Random
 import T3.Game.Core

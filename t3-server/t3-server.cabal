@@ -24,6 +24,7 @@ library
     T3.Serve
     T3.Server.Class
     T3.Server.Types
+    T3.Server.Util
     T3.Server.Impl.Abstract
     T3.Server.Dispatch.Class
     T3.Server.Dispatch.Types
@@ -33,7 +34,6 @@ library
     T3.Server.Lobby.Impl.MonadConc
     T3.Server.Part.Class
     T3.Server.Part.Impl.IO
-    T3.Match
     T3.Match.Class
     T3.Match.Types
     T3.Match.Impl.MonadConc

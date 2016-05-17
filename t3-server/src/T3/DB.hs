@@ -5,7 +5,7 @@ import qualified Data.Map as M
 import T3.Server.Types
 import T3.Server.Dispatch.Types
 import T3.Server.Lobby.Types
-import T3.Match
+import T3.Match.Types
 import T3.Random
 import T3.Playback
 import T3.Game.Core
