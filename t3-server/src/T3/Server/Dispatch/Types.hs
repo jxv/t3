@@ -11,14 +11,9 @@ module T3.Server.Dispatch.Types
   , Result(..)
   ) where
 
+import T3.Server.Types
 import T3.Game
 import T3.Match
-
-data UserConfig m = UserConfig
-  { _userCfgUserName :: UserName
-  , _userCfgMatchToken :: MatchToken
-  , _userCfgSendLoc :: (Loc, Callback m) -> m ()
-  }
 
 data MatchConfig m = MatchConfig
   { _matchCfgX :: UserConfig m

@@ -31,6 +31,8 @@ library
     T3.Server.Lobby.Class
     T3.Server.Lobby.Types
     T3.Server.Lobby.Impl.MonadConc
+    T3.Server.Part.Class
+    T3.Server.Part.Impl.IO
     T3.Match
     T3.Match.Types
     T3.Util

@@ -11,13 +11,14 @@ module T3.Server.Types
   , UserKey(..)
   , UserCreds(..)
   , GameState(..)
+  , UserConfig(..)
   ) where
 
 import GHC.Generics
 import Data.Aeson
 import Data.Text (Text)
 
-import T3.Match (UserName, MatchInfo, MatchId, MatchToken, Final, Users)
+import T3.Match (UserName, MatchInfo, MatchId, MatchToken, Final, Users, Callback)
 import T3.Game.Core (dropPrefixJ, dropPrefixP, Loc, Board)
 
 data RegisterRequest = RegisterRequest
@@ -107,3 +108,9 @@ instance ToJSON GameState where
 
 newtype UserKey = UserKey { getUserKey :: Text }
   deriving (Show, Eq, Ord, FromJSON, ToJSON)
+
+data UserConfig m = UserConfig
+  { _userCfgUserName :: UserName
+  , _userCfgMatchToken :: MatchToken
+  , _userCfgSendLoc :: (Loc, Callback m) -> m ()
+  }
