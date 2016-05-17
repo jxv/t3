@@ -8,16 +8,40 @@ module T3.Match.Types
   , MatchInfo(..)
   , Step(..)
   , Final(..)
+  , MatchData(..)
+  , Seconds(..)
+  , Callback
+  , StartCallback
+  , UserInit
   ) where
 
 import GHC.Generics
 import Control.Monad (mzero)
 import Data.Char (toLower)
-import Data.Aeson
-import Data.Aeson.Types
+import Data.Aeson hiding (Result)
+import Data.Aeson.Types hiding (Result)
 import Data.Text (Text)
 import T3.Game
 import T3.Game.Core
+
+type Callback m = Step -> m ()
+
+type StartCallback m = MatchInfo -> Users -> Step -> m ()
+
+type UserInit m = (Callback m, m (Loc, Callback m))
+
+newtype Seconds = Seconds Int
+  deriving (Num, Show, Eq, Ord, Enum)
+
+data MatchData m = MatchData
+  { _matchReq :: XO -> m (Loc, Callback m)
+  , _matchRespX :: Callback m
+  , _matchRespO :: Callback m
+  , _matchLog :: [Action] -> Board -> Result -> m ()
+  , _matchBoard :: Board
+  , _matchActions :: [Action]
+  , _matchTimeoutLimit :: Maybe Seconds
+  }
 
 newtype UserName = UserName { getUserName :: Text }
   deriving (Show, Eq, Ord, FromJSON, ToJSON)

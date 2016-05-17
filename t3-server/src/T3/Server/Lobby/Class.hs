@@ -3,7 +3,7 @@ module T3.Server.Lobby.Class
   ) where
 
 import Control.Concurrent.STM (TVar)
-import T3.Match
+import T3.Match.Types
 
 import T3.Server.Lobby.Types
 

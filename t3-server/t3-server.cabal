@@ -34,7 +34,9 @@ library
     T3.Server.Part.Class
     T3.Server.Part.Impl.IO
     T3.Match
+    T3.Match.Class
     T3.Match.Types
+    T3.Match.Impl.MonadConc
     T3.Util
   other-modules:
     T3.Web.Impl.Server

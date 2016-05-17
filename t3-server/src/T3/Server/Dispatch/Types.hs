@@ -13,7 +13,7 @@ module T3.Server.Dispatch.Types
 
 import T3.Server.Types
 import T3.Game
-import T3.Match
+import T3.Match.Types
 
 data MatchConfig m = MatchConfig
   { _matchCfgX :: UserConfig m

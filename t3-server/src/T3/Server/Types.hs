@@ -18,7 +18,7 @@ import GHC.Generics
 import Data.Aeson
 import Data.Text (Text)
 
-import T3.Match (UserName, MatchInfo, MatchId, MatchToken, Final, Users, Callback)
+import T3.Match.Types (UserName, MatchInfo, MatchId, MatchToken, Final, Users, Callback)
 import T3.Game.Core (dropPrefixJ, dropPrefixP, Loc, Board)
 
 data RegisterRequest = RegisterRequest

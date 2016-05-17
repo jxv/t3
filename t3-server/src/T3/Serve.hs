@@ -43,6 +43,7 @@ import GHC.Generics
 import Data.Char
 
 import T3.Game
+import T3.Match.Types
 import T3.Server.Types
 import T3.Server.Impl.Abstract
 import T3.Server.Dispatch.Types
@@ -51,7 +52,6 @@ import T3.Server.Lobby.Types
 import T3.Server.Lobby.Impl.MonadConc
 import T3.Server.Part.Impl.IO
 import T3.Server.Util
-import T3.Match
 import T3.Util
 
 forkServer :: (MonadConc m, MonadRandom m) => GameLogger m -> Maybe Seconds -> M.Map UserName UserKey -> m (Server m)

@@ -8,7 +8,7 @@ import System.Random
 import Data.Maybe
 
 import T3.Server.Lobby.Types
-import T3.Match
+import T3.Match.Types
 
 addUserToLobby :: MonadConc m => ListLobby m -> UserName -> StartCallback m -> m Bool
 addUserToLobby lobby un cb = atomically $ do

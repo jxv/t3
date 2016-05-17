@@ -39,7 +39,7 @@ module T3.Client
   ) where
 
 import T3.Serve
-import T3.Match
+import T3.Match.Types
 import T3.Game
 import T3.Random
 import T3.Playback hiding (Action(..))

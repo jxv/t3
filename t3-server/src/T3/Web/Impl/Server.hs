@@ -20,7 +20,7 @@ import T3.Server.Class
 import T3.Server.Dispatch.Types
 import T3.Server.Lobby.Types
 import T3.DB
-import T3.Match
+import T3.Match.Types
 import T3.Random
 import T3.Game.Core
 
