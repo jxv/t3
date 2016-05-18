@@ -19,7 +19,7 @@ library
     T3.Playback
     T3.Web.Class
     T3.Web.Types
-    T3.DB
+    T3.Storage.Class
     T3.Serve
     T3.Server.Class
     T3.Server.Types

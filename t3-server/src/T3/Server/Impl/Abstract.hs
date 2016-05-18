@@ -16,12 +16,12 @@ import T3.Server.Util
 import T3.Server.Part.Class
 import T3.Server.Lobby.Class
 import T3.Server.Lobby.Types
-import T3.DB
+import T3.Storage.Class
 import T3.Match.Types
 import T3.Game.Core
 import T3.Util
 
-playMove :: (Part m) => MatchId -> MatchToken -> PlayRequest -> m (Maybe PlayResponse)
+playMove :: Part m => MatchId -> MatchToken -> PlayRequest -> m (Maybe PlayResponse)
 playMove matchId matchToken playReq = do
   mUserCfg <- userConfig matchId matchToken playReq
   case mUserCfg of
@@ -44,14 +44,14 @@ startMatch startReq = do
           return $ Just sresp
         else return Nothing
 
-randomMatch :: (Part m, MonadConc m) => StartRequest -> m (Maybe StartResponse)
+randomMatch :: Part m => StartRequest -> m (Maybe StartResponse)
 randomMatch startReq = do
   authenticated <- authenticate (_sreqCreds startReq)
   if not authenticated
     then return Nothing
     else fmap Just (randomResponse startReq)
 
-registerUser :: (Part m, MonadIO m, DB m, MonadConc m, MonadRandom m) => RegisterRequest -> m (Maybe RegisterResponse)
+registerUser :: (Part m, Storage m, MonadRandom m) => RegisterRequest -> m (Maybe RegisterResponse)
 registerUser rreq = do
   let name@(UserName un) = _rreqName rreq
   userKey <- genUserKey

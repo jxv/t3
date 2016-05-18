@@ -19,7 +19,6 @@ import T3.Server.Types
 import T3.Server.Class
 import T3.Server.Dispatch.Types
 import T3.Server.Lobby.Types
-import T3.DB
 import T3.Match.Types
 import T3.Game.Core
 
@@ -69,7 +68,7 @@ randomHandler req = do
     fromStartResponse Nothing = unauthorized
 
 -- /api/register
-register :: (ServerEsque m, DB m) => Request -> m Response
+register :: ServerEsque m => Request -> m Response
 register req = do
   let m = decode (_reqBody req)
   case m of
