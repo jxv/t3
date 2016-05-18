@@ -1,16 +1,17 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS -fno-warn-orphans #-}
-module T3.Playback where
+module T3.Storage.Types where
 
-import GHC.Generics
-import Control.Monad (mzero)
-import T3.Game hiding (Action(..))
-import T3.Match.Types hiding (Action(..))
-import Data.Aeson hiding (Result)
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.HashMap.Lazy as HML
+import GHC.Generics
+import Control.Monad (mzero)
+import Data.Aeson hiding (Result)
+
 import qualified T3.Game as Game
+import T3.Game hiding (Action(..))
+import T3.Match.Types hiding (Action(..))
 
 data Action = Action
   { _actXO :: XO
@@ -23,12 +24,6 @@ data Playback = Playback
   , _pbActions :: [Action]
   , _pbResult :: Result
   } deriving (Show, Eq, Generic)
-
-writePlayback :: FilePath -> Playback -> IO ()
-writePlayback prefix pb = BL.writeFile path (encode pb)
-  where
-    (MatchId matchIdText) = _pbMatchId pb
-    path = prefix `mappend` (T.unpack $ matchIdText  `mappend` ".json")
 
 instance ToJSON Action where
   toJSON = Game.dropPrefixJ "_act"
