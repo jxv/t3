@@ -1,4 +1,6 @@
-module T3.Random where
+module T3.Game.Random
+  ( randomLoc
+  ) where
 
 import Data.Map (keys)
 import T3.Game.Core

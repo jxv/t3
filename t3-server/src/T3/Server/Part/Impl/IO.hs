@@ -26,7 +26,7 @@ import T3.Server.Util
 import T3.Match.Types
 import T3.Match.Impl.MonadConc (delay)
 import T3.Game.Core
-import T3.Random
+import T3.Game.Random
 import T3.Util
 
 type GameLogger m = MatchId -> Users -> [Action] -> Board -> Result -> m ()
