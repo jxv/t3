@@ -1,4 +1,4 @@
-module T3.Server.Dispatch.Impl.MonadConc
+module T3.Server.Dispatch.Impl.Conc
   ( forkMatch
   ) where
 
@@ -10,7 +10,7 @@ import Control.Monad.Conc.Class
 
 import T3.Game
 import T3.Match.Types
-import T3.Match.Impl.MonadConc (MatchT(..), delay)
+import T3.Match.Impl.Conc (MatchT(..), delay)
 import T3.Server.Dispatch.Types
 
 forkMatch

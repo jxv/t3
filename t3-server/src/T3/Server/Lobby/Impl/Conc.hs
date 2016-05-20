@@ -1,4 +1,4 @@
-module T3.Server.Lobby.Impl.MonadConc where
+module T3.Server.Lobby.Impl.Conc where
 
 import Control.Monad
 import Control.Monad.Random

@@ -1,4 +1,4 @@
-module T3.Match.Impl.MonadConc
+module T3.Match.Impl.Conc
   ( MatchT(..)
   , sendGameState
   , recvAction
