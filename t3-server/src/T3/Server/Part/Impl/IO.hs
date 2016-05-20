@@ -11,10 +11,11 @@ module T3.Server.Part.Impl.IO
 
 import qualified Data.Map as M
 import Control.Applicative
-import Control.Monad.Conc.ClassTmp
+import Control.Monad.Conc.Class
 import Control.Monad.Trans (MonadIO, liftIO)
 import Control.Monad (mzero, forever)
-import Control.Concurrent.STM (modifyTVar, readTVar, writeTVar, TVar, STM)
+import Control.Concurrent.Classy.STM
+import Control.Concurrent.Async
 import Data.IORef
 
 import T3.Server.Types
@@ -33,14 +34,14 @@ type GameLogger m = MatchId -> Users -> [Action] -> Board -> Result -> m ()
 
 data Server m = Server
   { _srvLobby :: ListLobby m
-  , _srvMatches :: TVar (M.Map MatchId (MatchConfig m))
-  , _srvUsers :: TVar (M.Map UserName UserKey)
+  , _srvMatches :: TVar (STM m) (M.Map MatchId (MatchConfig m))
+  , _srvUsers :: TVar (STM m) (M.Map UserName UserKey)
   , _srvDie :: m ()
   , _srvLogger :: GameLogger m
   , _srvTimeoutLimit :: Maybe Seconds
   }
 
-authenticate :: MonadConc m => Server m -> UserCreds -> STM Bool
+authenticate :: MonadConc m => Server m -> UserCreds -> STM m Bool
 authenticate srv uc = do
   users <- readTVar (_srvUsers srv)
   return $ M.lookup (_ucName uc) users == Just (_ucKey uc)

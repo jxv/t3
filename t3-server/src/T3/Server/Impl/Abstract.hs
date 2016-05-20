@@ -6,7 +6,7 @@ module T3.Server.Impl.Abstract
  ) where
 
 import Control.Applicative
-import Control.Monad.Conc.ClassTmp
+import Control.Monad.Conc.Class
 import Control.Monad.Random
 import Control.Monad (mzero, forever)
 import Control.Monad.Trans (MonadIO, liftIO)

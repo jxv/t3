@@ -2,9 +2,9 @@ module T3.Server.Lobby.Types
   ( ListLobby
   ) where
 
-import Control.Concurrent.STM (TVar)
+import Control.Monad.STM.Class (TVar)
+import Control.Monad.Conc.Class (STM)
 
-import T3.Server.Dispatch.Class
-import T3.Match.Types
+import T3.Match.Types (UserName, StartCallback)
 
-type ListLobby m = TVar [(UserName, StartCallback m)]
+type ListLobby m = TVar (STM m) [(UserName, StartCallback m)]

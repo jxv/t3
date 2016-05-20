@@ -2,10 +2,11 @@ module T3.Server.Dispatch.Impl.MonadConc
   ( forkMatch
   ) where
 
+import Control.Concurrent.Classy.Chan
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Either
 import Control.Monad.State.Strict
-import Control.Monad.Conc.ClassTmp
+import Control.Monad.Conc.Class
 
 import T3.Game
 import T3.Match.Types

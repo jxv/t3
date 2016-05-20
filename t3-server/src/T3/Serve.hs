@@ -31,8 +31,8 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 
 import Control.Applicative
-import Control.Concurrent.STM (TVar, STM, readTVar, modifyTVar)
-import Control.Monad.Conc.ClassTmp
+import Control.Monad.Conc.Class
+import Control.Concurrent.Classy.STM
 import Control.Monad
 import Control.Monad.Random
 import Data.Aeson hiding (Result)
@@ -54,11 +54,11 @@ import T3.Server.Part.Impl.IO
 import T3.Server.Util
 import T3.Util
 
-forkServer :: (MonadConc m, MonadRandom m) => GameLogger m -> Maybe Seconds -> M.Map UserName UserKey -> m (Server m)
+forkServer :: (MonadConc m, MonadSTM m, MonadRandom m) => GameLogger m -> Maybe Seconds -> M.Map UserName UserKey -> m (Server m)
 forkServer logger timeoutLimit users = do
-  lobby <- newTVarIO []
-  matches <- newTVarIO M.empty
-  users <- newTVarIO users
+  lobby <- atomically $ newTVar []
+  matches <- atomically $ newTVar M.empty
+  users <- atomically $ newTVar users
   let srv = Server lobby matches users (return ()) logger timeoutLimit
   thid <- fork $ serve srv
   let killMatches = do
@@ -68,7 +68,7 @@ forkServer logger timeoutLimit users = do
         sequence_  killers
   return srv{ _srvDie = killMatches >> killThread thid }
 
-serve :: (MonadConc m, MonadRandom m) => Server m -> m ()
+serve :: (MonadConc m, MonadSTM m, MonadRandom m) => Server m -> m ()
 serve srv = do
   musers <- userPairFromLobby (_srvLobby srv)
   case musers of

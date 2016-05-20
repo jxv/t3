@@ -9,10 +9,11 @@ module T3.Match.Impl.MonadConc
   , delay
   ) where
 
+import Control.Concurrent.Async
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.Either
 import Control.Monad.State.Strict
-import Control.Monad.Conc.ClassTmp
+import Control.Monad.Conc.Class
 
 import T3.Game
 import T3.Match.Types

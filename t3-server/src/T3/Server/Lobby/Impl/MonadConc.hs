@@ -2,22 +2,22 @@ module T3.Server.Lobby.Impl.MonadConc where
 
 import Control.Monad
 import Control.Monad.Random
-import Control.Monad.Conc.ClassTmp
-import Control.Concurrent.STM (TVar, STM, readTVar, writeTVar)
+import Control.Monad.Conc.Class
+import Control.Monad.STM.Class
 import System.Random
 import Data.Maybe
 
 import T3.Server.Lobby.Types
 import T3.Match.Types
 
-addUserToLobby :: MonadConc m => ListLobby m -> UserName -> StartCallback m -> m Bool
+addUserToLobby :: (MonadSTM m, MonadConc m) => ListLobby m -> UserName -> StartCallback m -> m Bool
 addUserToLobby lobby un cb = atomically $ do
   lob <- readTVar lobby
   let shouldAdd = isNothing (lookup un lob)
   when shouldAdd $ writeTVar lobby ((un, cb) : lob)
   return shouldAdd
 
-userPairFromLobby :: (MonadConc m, MonadRandom m) => ListLobby m -> m (Maybe ((UserName, StartCallback m), (UserName, StartCallback m)))
+userPairFromLobby :: (MonadSTM m, MonadConc m, MonadRandom m) => ListLobby m -> m (Maybe ((UserName, StartCallback m), (UserName, StartCallback m)))
 userPairFromLobby lobby = do
   a <- getRandom
   b <- getRandom

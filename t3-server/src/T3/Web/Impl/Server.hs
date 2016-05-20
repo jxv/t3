@@ -4,7 +4,7 @@ import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text as T
 import Control.Applicative
-import Control.Monad.Conc.ClassTmp (MonadConc(..))
+import Control.Monad.Conc.Class (MonadConc(..))
 import Control.Concurrent.STM (modifyTVar, readTVar, writeTVar)
 import Control.Monad (mzero, forever)
 import Data.Aeson
