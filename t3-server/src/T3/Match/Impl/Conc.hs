@@ -27,7 +27,7 @@ recvAction :: MonadConc m => XO -> MatchT m Loc
 recvAction xo = do
   md <- get
   let req = _matchReq md xo
-  let timeoutResponse = forfeitIO md (Win $ yinYang xo) (Lose xo)
+  let timeoutResponse = forfeit' md (Win $ yinYang xo) (Lose xo)
   timeoutOrLoc <- lift $ do
     maybe
       (fmap Right req)
@@ -48,24 +48,24 @@ recvAction xo = do
 sendFinal :: MonadConc m => XO -> Final -> MatchT m ()
 sendFinal xo f = do
   md <- get
-  lift $ sendFinalIO md xo f
+  lift $ sendFinal' md xo f
 
-sendFinalIO :: MonadConc m => MatchData m -> XO -> Final -> m ()
-sendFinalIO md xo f = (respXO xo md) (Step (_matchBoard md) (Just f))
+sendFinal' :: MonadConc m => MatchData m -> XO -> Final -> m ()
+sendFinal' md xo f = (respXO xo md) (Step (_matchBoard md) (Just f))
 
 tally :: MonadConc m => Result -> MatchT m ()
 tally res = do
   md <- get
-  lift $ tallyIO md res
+  lift $ tally' md res
 
-tallyIO :: MonadConc m => MatchData m -> Result -> m ()
-tallyIO md res = _matchLog md (_matchActions md) (_matchBoard md) res
+tally' :: MonadConc m => MatchData m -> Result -> m ()
+tally' md res = _matchLog md (_matchActions md) (_matchBoard md) res
 
-forfeitIO :: MonadConc m => MatchData m -> Win XO -> Lose XO -> m ()
-forfeitIO s (Win w) (Lose l) = do
-  tallyIO s (Winner w)
-  sendFinalIO s w WonByDQ
-  sendFinalIO s l LossByDQ
+forfeit' :: MonadConc m => MatchData m -> Win XO -> Lose XO -> m ()
+forfeit' s (Win w) (Lose l) = do
+  tally' s (Winner w)
+  sendFinal' s w WonByDQ
+  sendFinal' s l LossByDQ
 
 updateBoard :: MonadConc m => Board -> MatchT m ()
 updateBoard b = do
@@ -98,7 +98,7 @@ instance MonadConc m => Game (MatchT m) where
     recvAction xo
   forfeit w l = do
     md <- get
-    lift $ forfeitIO md w l
+    lift $ forfeit' md w l
   end (Win w) (Lose l) = do
     tally (Winner w)
     sendFinal w Won
