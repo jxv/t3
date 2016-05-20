@@ -1,8 +1,14 @@
-resolver: lts-5.5
+resolver: lts-5.17
 
 packages:
 - t3-game
 - t3-server
+
+extra-deps:
+  [ test-fixture-0.1.0.0
+  , dejafu-0.3.1.0
+  , dpor-0.1.0.0
+  ]
 
 #flags:
 #  t3-server:

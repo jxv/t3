@@ -57,7 +57,8 @@ library
     , bytestring >= 0.9 && < 0.11
     , text >= 0.11 && < 2.0
     , aeson >= 0.6 && < 0.11
-    , dejafu >= 0.2.0.0 && < 1.0.0.0
+    , dejafu >= 0.3.1.0 && < 1.0.0.0
+    , test-fixture
     , safe
     , unordered-containers
     , containers
