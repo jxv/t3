@@ -15,6 +15,7 @@ import Control.Monad.Trans.Either
 import Control.Monad.State.Strict
 import Control.Monad.Conc.Class
 
+import T3.Core (XO(..), Loc(..), Result(..), Action(..), Board, yinYang)
 import T3.Game
 import T3.Match.Types
 

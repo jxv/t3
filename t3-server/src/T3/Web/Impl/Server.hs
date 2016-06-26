@@ -14,13 +14,13 @@ import Control.Monad.Trans (MonadIO, liftIO)
 import Safe (atMay)
 import Network.HTTP.Types
 
+import T3.Core
 import T3.Web.Types (Request(..), Response(..))
 import T3.Server.Types
 import T3.Server.Class
 import T3.Server.Dispatch.Types
 import T3.Server.Lobby.Types
 import T3.Match.Types
-import T3.Game.Core
 
 badRequest, badFormat, unauthorized :: Response
 badRequest = Response status400 [] Nothing

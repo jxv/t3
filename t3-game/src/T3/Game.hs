@@ -1,27 +1,22 @@
+{-# LANGUAGE DeriveFunctor #-}
 module T3.Game
-  ( module T3.Game.Core
-  , module T3.Game.Class
-  , module T3.Game.Types
-  , run
+  ( Win(..)
+  , Lose(..)
+  , Game(..)
   ) where
 
 import Prelude
-import T3.Game.Core
-import T3.Game.Class
-import T3.Game.Types
+import T3.Core (Loc, XO, Board)
 
-run :: Game m => Board -> m ()
-run b = play b X O 
+newtype Win a = Win a
+  deriving (Eq, Show, Functor)
 
-play :: Game m => Board -> XO -> XO -> m ()
-play b p0 p1 = do
-  loc <- move p0
-  if not (valid loc b)
-    then forfeit (Win p1) (Lose p0)
-    else do
-      let b' = insertXO loc p0 b
-      step b' p0 loc
-      case result b' of
-        Unfinished -> play b' p1 p0
-        Winner _ -> end (Win p0) (Lose p1)
-        Tie -> tie
+newtype Lose a = Lose a
+  deriving (Eq, Show, Functor)
+
+class Monad m => Game m where
+  move :: XO -> m Loc
+  forfeit :: Win XO -> Lose XO -> m ()
+  end :: Win XO -> Lose XO -> m ()
+  tie :: m ()
+  step :: Board -> XO -> Loc -> m ()

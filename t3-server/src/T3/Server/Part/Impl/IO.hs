@@ -18,6 +18,8 @@ import Control.Concurrent.Classy.STM
 import Control.Concurrent.Async
 import Data.IORef
 
+import T3.Core
+import T3.Bot.Random
 import T3.Server.Types
 import T3.Server.Util
 import T3.Server.Lobby.Types
@@ -26,8 +28,6 @@ import T3.Server.Dispatch.Impl.Conc
 import T3.Server.Util
 import T3.Match.Types
 import T3.Match.Impl.Conc (delay)
-import T3.Game.Core
-import T3.Game.Random
 import T3.Util
 
 type GameLogger m = MatchId -> Users -> [Action] -> Board -> Result -> m ()

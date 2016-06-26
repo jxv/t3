@@ -1,9 +1,9 @@
-module T3.Game.Random
+module T3.Bot.Random
   ( randomLoc
   ) where
 
 import Data.Map (keys)
-import T3.Game.Core
+import T3.Core
 import Control.Monad.Random
 import Data.List (notElem)
 

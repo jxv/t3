@@ -5,6 +5,8 @@ module T3.Game.Instance where
 import Prelude
 import Control.Monad.Trans
 import Safe
+
+import T3.Core
 import T3.Game
 
 -- Try it in the REPL

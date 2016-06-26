@@ -21,8 +21,9 @@ import Data.Char (toLower)
 import Data.Aeson hiding (Result)
 import Data.Aeson.Types hiding (Result)
 import Data.Text (Text)
+
+import T3.Core
 import T3.Game
-import T3.Game.Core
 
 type Callback m = Step -> m ()
 

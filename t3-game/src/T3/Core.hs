@@ -4,9 +4,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE OverlappingInstances #-}
 
-module T3.Game.Core
+module T3.Core
   ( XO(..)
   , Loc(..)
   , Action(..)
@@ -149,17 +148,9 @@ instance ToJSON Board where
 instance ToJSON Loc where
   toJSON = dropPrefixJ "_loc"
 
---instance ToJSON Action where
---  toJSON = dropPrefixJ "_act"
+dropPrefixP prefix = genericParseJSON defaultOptions{ fieldLabelModifier = dropPrefix prefix }
 
---instance FromJSON Action where
---  parseJSON = dropPrefixP "_act"
-
--- dropPrefixP :: (Generic a, GFromJSON (Rep a)) => String -> Value -> Parser a
-dropPrefixP prefix = genericParseJSON defaultOptions { fieldLabelModifier = dropPrefix prefix }
-
--- dropPrefixJ :: (Generic a, GToJSON (Rep a)) => String -> a -> Value
-dropPrefixJ prefix = genericToJSON defaultOptions { fieldLabelModifier = dropPrefix prefix }
+dropPrefixJ prefix = genericToJSON defaultOptions{ fieldLabelModifier = dropPrefix prefix }
 
 dropPrefix :: String -> String -> String
 dropPrefix prefix = (\(c:cs) -> toLower c : cs) . drop (length prefix)

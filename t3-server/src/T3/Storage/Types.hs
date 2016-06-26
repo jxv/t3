@@ -10,6 +10,7 @@ import Control.Monad (mzero)
 import Data.Aeson hiding (Result)
 
 import qualified T3.Game as Game
+import T3.Core (XO(..), Loc(..), Result(..), dropPrefixP, dropPrefixJ, yinYang)
 import T3.Game hiding (Action(..))
 import T3.Match.Types hiding (Action(..))
 
@@ -26,10 +27,10 @@ data Playback = Playback
   } deriving (Show, Eq, Generic)
 
 instance ToJSON Action where
-  toJSON = Game.dropPrefixJ "_act"
+  toJSON = dropPrefixJ "_act"
 
 instance FromJSON Action where
-  parseJSON = Game.dropPrefixP "_act"
+  parseJSON = dropPrefixP "_act"
 
 instance ToJSON Playback where
   toJSON pb = object
@@ -40,7 +41,7 @@ instance ToJSON Playback where
     ]
 
 instance FromJSON Playback where
-  parseJSON = Game.dropPrefixP "_pb"
+  parseJSON = dropPrefixP "_pb"
 
 instance ToJSON Result where
   toJSON Tie = object [ "tag" .= String "tie" ]

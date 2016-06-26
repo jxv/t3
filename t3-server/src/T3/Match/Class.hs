@@ -2,7 +2,7 @@ module T3.Match.Class
   ( Match(..)
   ) where
 
-import T3.Game (XO, Loc, Board, Result)
+import T3.Core (XO, Loc, Board, Result)
 import T3.Match.Types (Final)
 
 class Match m where

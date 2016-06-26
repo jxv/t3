@@ -11,8 +11,8 @@ module T3.Server.Dispatch.Types
   , Result(..)
   ) where
 
+import T3.Core (Loc(..), Board, Result(..), Action(..))
 import T3.Server.Types
-import T3.Game
 import T3.Match.Types
 
 data MatchConfig m = MatchConfig
