@@ -1,4 +1,4 @@
-module T3.Server.Dispatch.Impl.Conc
+module T3.Dispatch.Impl
   ( forkMatch
   ) where
 
@@ -11,9 +11,9 @@ import Control.Monad.Conc.Class
 import T3.Core (XO(..), emptyBoard)
 import T3.Game
 import T3.Game.Run (run)
-import T3.Match.Types
-import T3.Match.Impl.Conc (MatchT(..), delay)
-import T3.Server.Dispatch.Types
+import T3.Match hiding (Match(..)) -- types
+import T3.Match.Impl (MatchT(..), delay)
+import T3.Dispatch hiding (Dispatch(..))
 
 forkMatch
   :: MonadConc m

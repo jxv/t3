@@ -1,14 +1,17 @@
-module T3.Server.Lobby.Impl.Conc where
+module T3.Lobby.Impl
+  ( addUserToLobby
+  , userPairFromLobby
+  ) where
 
 import Control.Monad
 import Control.Monad.Random
 import Control.Monad.Conc.Class
 import Control.Monad.STM.Class
-import System.Random
 import Data.Maybe
+import System.Random
 
-import T3.Server.Lobby.Types
-import T3.Match.Types
+import T3.Lobby hiding (Lobby(..))
+import T3.Match hiding (Match(..)) -- types
 
 addUserToLobby :: (MonadSTM m, MonadConc m) => ListLobby m -> UserName -> StartCallback m -> m Bool
 addUserToLobby lobby un cb = atomically $ do

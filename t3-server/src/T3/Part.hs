@@ -1,9 +1,11 @@
-module T3.Server.Part.Class where
+module T3.Part
+  ( Part(..)
+  ) where
 
 import qualified Data.Map as M
 
-import T3.Server.Types
-import T3.Match.Types
+import T3.Server hiding (ServerEsque(..)) -- types
+import T3.Match hiding (Match(..), MatchToken) -- types
 
 class Monad m => Part m where
   tryRegister :: UserName -> UserKey -> m (Maybe (M.Map UserName UserKey))

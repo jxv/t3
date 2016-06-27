@@ -1,6 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS -fno-warn-orphans #-}
-module T3.Storage.Types where
+module T3.Storage
+  ( Storage(..)
+  , Action(..)
+  , Playback(..)
+  ) where
 
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
@@ -12,7 +16,14 @@ import Data.Aeson hiding (Result)
 import qualified T3.Game as Game
 import T3.Core (XO(..), Loc(..), Result(..), dropPrefixP, dropPrefixJ, yinYang)
 import T3.Game hiding (Action(..))
-import T3.Match.Types hiding (Action(..))
+import T3.Match hiding (Action(..))
+
+import qualified Data.Map as M
+
+import T3.Server -- types
+import T3.Dispatch hiding (Action) -- types
+import T3.Lobby -- types
+import T3.Match -- types
 
 data Action = Action
   { _actXO :: XO
@@ -57,3 +68,10 @@ instance FromJSON Result where
       _ -> mzero
     _ -> mzero
   parseJSON _ = mzero
+
+class Monad m => Storage m where
+  storeUsers :: M.Map UserName UserKey -> m ()
+  loadUsers :: m (M.Map UserName UserKey)
+  loadMatchList :: m [MatchId]
+  storePlayback :: Playback -> m ()
+  loadPlayback :: MatchId -> m (Maybe Playback)

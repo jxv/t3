@@ -17,32 +17,22 @@ library
   exposed-modules:
     T3.Serve
     T3.Util
-
-    T3.Web.Class
-    T3.Web.Types
-    T3.Web.Impl.Server
-
-    T3.Storage.Class
-    T3.Storage.Types
-
-    T3.Server.Class
-    T3.Server.Types
+    T3.Web
+    T3.Web.Impl
+    T3.Storage
+    T3.Storage.JsonImpl
+    T3.Server
     T3.Server.Util
-    T3.Server.Impl.Abstract
-    T3.Server.Dispatch.Class
-    T3.Server.Dispatch.Types
-    T3.Server.Dispatch.Impl.Conc
-    T3.Server.Lobby.Class
-    T3.Server.Lobby.Types
-    T3.Server.Lobby.Impl.Conc
-    T3.Server.Part.Class
-    T3.Server.Part.Impl.IO
-
-    T3.Match.Class
-    T3.Match.Types
-    T3.Match.Impl.Conc
+    T3.Server.Impl
+    T3.Dispatch
+    T3.Dispatch.Impl
+    T3.Lobby
+    T3.Lobby.Impl
+    T3.Part
+    T3.Part.Impl
+    T3.Match
+    T3.Match.Impl
   default-extensions:
-    -- OverlappingInstances
     OverloadedStrings
     MultiParamTypeClasses
     TypeFamilies

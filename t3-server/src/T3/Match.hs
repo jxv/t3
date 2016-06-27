@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
-
-module T3.Match.Types
-  ( UserName(..)
+module T3.Match
+  ( Match(..)
+  , UserName(..)
   , MatchId(..)
   , MatchToken(..)
   , Users(..)
@@ -22,8 +22,8 @@ import Data.Aeson hiding (Result)
 import Data.Aeson.Types hiding (Result)
 import Data.Text (Text)
 
-import T3.Core
-import T3.Game
+import T3.Core (XO, Loc, Board, Result, Action(..), dropPrefixP, dropPrefixJ)
+import T3.Game -- types
 
 type Callback m = Step -> m ()
 
@@ -103,3 +103,11 @@ instance ToJSON Final where
     Loss -> "Loss"
     LossByDQ -> "LossByDQ"
     Tied -> "Tied"
+
+class Match m where
+  sendGameState :: XO -> m ()
+  recvAction :: XO -> m Loc
+  sendFinal :: XO -> Final -> m ()
+  tally :: Result -> m ()
+  updateBoard :: Board -> m ()
+  logAction :: XO -> Loc -> m ()
