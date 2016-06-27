@@ -43,14 +43,14 @@ import GHC.Generics
 import Data.Char
 
 import T3.Game
-import T3.Match.Types
-import T3.Server.Types
-import T3.Server.Impl.Abstract
-import T3.Server.Dispatch.Types
-import T3.Server.Dispatch.Impl.Conc
-import T3.Server.Lobby.Types
-import T3.Server.Lobby.Impl.Conc
-import T3.Server.Part.Impl.IO
+import T3.Match -- types
+import T3.Server hiding (ServerEsque(..)) -- types
+import T3.Server.Impl
+import T3.Dispatch hiding (Dispatch(..)) -- types
+import T3.Dispatch.Impl
+import T3.Lobby hiding (Lobby(..)) -- types
+import T3.Lobby.Impl
+import T3.Part.Impl
 import T3.Server.Util
 import T3.Util
 
@@ -90,6 +90,3 @@ serve srv = do
       atomically $ modifyTVar (_srvMatches srv) (M.insert matchId sessCfg)
   threadDelay (1 * 1000000) -- 1 second
   serve srv
-
---
-

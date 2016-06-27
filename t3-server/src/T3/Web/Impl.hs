@@ -1,4 +1,9 @@
-module T3.Web.Impl.Server where
+module T3.Web.Impl
+  ( play
+  , start
+  , randomHandler
+  , register
+  ) where
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as BL
@@ -15,12 +20,11 @@ import Safe (atMay)
 import Network.HTTP.Types
 
 import T3.Core
-import T3.Web.Types (Request(..), Response(..))
-import T3.Server.Types
-import T3.Server.Class
-import T3.Server.Dispatch.Types
-import T3.Server.Lobby.Types
-import T3.Match.Types
+import T3.Web hiding (Web(..))
+import T3.Server
+import T3.Dispatch hiding (Dispatch(..)) -- types
+import T3.Lobby hiding (Lobby(..)) -- types
+import T3.Match hiding (Match(..)) -- types
 
 badRequest, badFormat, unauthorized :: Response
 badRequest = Response status400 [] Nothing

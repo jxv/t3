@@ -1,4 +1,4 @@
-module T3.Server.Impl.Abstract
+module T3.Server.Impl
  ( playMove
  , startMatch
  , randomMatch
@@ -12,13 +12,12 @@ import Control.Monad (mzero, forever)
 import Control.Monad.Trans (MonadIO, liftIO)
 
 import T3.Core
-import T3.Server.Types
+import T3.Server hiding (ServerEsque(..))
 import T3.Server.Util
-import T3.Server.Part.Class
-import T3.Server.Lobby.Class
-import T3.Server.Lobby.Types
-import T3.Storage.Class
-import T3.Match.Types
+import T3.Part
+import T3.Lobby
+import T3.Storage
+import T3.Match
 import T3.Util
 
 playMove :: Part m => MatchId -> MatchToken -> PlayRequest -> m (Maybe PlayResponse)

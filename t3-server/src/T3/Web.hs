@@ -1,5 +1,8 @@
-module T3.Web.Types
-  ( Request(..)
+module T3.Web
+  ( Web(..)
+  , FromRequest(..)
+  , ToResponse(..)
+  , Request(..)
   , Response(..)
   ) where
 
@@ -20,4 +23,15 @@ data Response = Response
   , _respBody :: Maybe ByteString
   } deriving (Show, Eq)
 
+class Monad m => Web m where
+  play :: Request -> m Response
+  start :: Request -> m Response
+  randomHandler :: Request -> m Response
+  register :: Request -> m Response
+  match :: Request -> m Response
 
+class FromRequest a where
+  fromRequest :: Request -> Maybe a
+
+class ToResponse a where
+  toResponse :: a -> Response
