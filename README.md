@@ -1,5 +1,8 @@
 #t3
 
+[![Build Status](https://travis-ci.org/jxv/t3.svg?branch=master)](https://travis-ci.org/jxv/t3)
+
+
 ## Client docs
 
 http://hackage.haskell.org/package/t3-client
