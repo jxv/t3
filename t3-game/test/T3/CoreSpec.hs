@@ -1,8 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
+module T3.CoreSpec (spec) where
 
-module T3.GameSpec (spec) where
-
-import T3.Game.Core
+import T3.Core
 import Test.Hspec
 import Data.Aeson hiding (Result)
 
