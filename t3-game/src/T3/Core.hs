@@ -81,7 +81,10 @@ inside :: Loc -> Board -> Bool
 inside loc b = _locX loc >= 0 && _locX loc < _bSize b && _locY loc >= 0 && _locY loc < _bSize b
 
 valid :: Loc -> Board -> Bool
-valid loc b = inside loc b && not (M.member loc (_bCells b))
+valid loc b = isLocInsideBoard && isCellEmpty
+  where
+    isLocInsideBoard = inside loc b
+    isCellEmpty = not (M.member loc (_bCells b))
 
 insertXO :: Loc -> XO -> Board -> Board
 insertXO loc xo b =
