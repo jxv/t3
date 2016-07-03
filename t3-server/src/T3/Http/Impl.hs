@@ -47,12 +47,10 @@ play req = do
   let mPlayMove = (,,) <$> mMatchId <*> mMatchToken <*> (decode $ _reqBody req)
   case mPlayMove of
     Nothing -> return badFormat
-    Just (matchId, matchToken, playReq) ->
-      fromPlayResponse <$> playMove matchId matchToken playReq
+    Just (matchId, matchToken, playReq) -> response <$> playMove matchId matchToken playReq
   where
-    fromPlayResponse :: Maybe PlayResponse -> Response
-    fromPlayResponse (Just presp) = Response status200 [] (Just $ encode presp)
-    fromPlayResponse Nothing = badRequest
+    response :: PlayResponse -> Response
+    response presp = Response status200 [] (Just $ encode presp)
 
 -- /start
 start :: ServerEsque m => Request -> m Response
@@ -60,11 +58,10 @@ start req = do
   let m = decode $ _reqBody req
   case m of
     Nothing -> return badFormat
-    Just startReq -> fromStartResponse <$> startMatch startReq
+    Just startReq -> response <$> startMatch startReq
   where
-    fromStartResponse :: (Maybe StartResponse) -> Response
-    fromStartResponse (Just sresp) = Response status200 [] (Just $ encode sresp)
-    fromStartResponse Nothing = unauthorized
+    response :: StartResponse -> Response
+    response sresp = Response status200 [] (Just $ encode sresp)
 
 -- /random
 randomHandler :: ServerEsque m => Request -> m Response
@@ -72,11 +69,10 @@ randomHandler req = do
   let m = decode $ _reqBody req
   case m of
     Nothing -> return badFormat
-    Just startReq -> fromStartResponse <$> randomMatch startReq
+    Just startReq -> response <$> randomMatch startReq
   where
-    fromStartResponse :: (Maybe StartResponse) -> Response
-    fromStartResponse (Just sresp) = Response status200 [] (Just $ encode sresp)
-    fromStartResponse Nothing = unauthorized
+    response :: StartResponse -> Response
+    response sresp = Response status200 [] (Just $ encode sresp)
 
 -- /register
 register :: ServerEsque m => Request -> m Response
@@ -88,9 +84,7 @@ register req = do
       let (UserName un) = _rreqName rreq
       if T.null un
         then return badRequest
-        else fromRegisterResponse <$> registerUser rreq
+        else response <$> registerUser rreq
   where
-    fromRegisterResponse :: Maybe RegisterResponse -> Response
-    fromRegisterResponse Nothing = badRequest
-    fromRegisterResponse (Just rresp) = Response status200 [] (Just $ encode rresp)
-
+    response :: RegisterResponse -> Response
+    response rresp = Response status200 [] (Just $ encode rresp)

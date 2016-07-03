@@ -43,6 +43,7 @@ data PlayRequest = PlayRequest
   { _preqCreds :: UserCreds
   , _preqLoc :: Loc
   } deriving (Show, Eq, Generic)
+
 data StartResponse = StartResponse
   { _srespMatchInfo :: MatchInfo
   , _srespUsers :: Users
@@ -68,10 +69,10 @@ data UserConfig m = UserConfig
   }
 
 class Monad m => ServerEsque m where
-  registerUser :: RegisterRequest -> m (Maybe RegisterResponse)
-  playMove :: MatchId -> MatchToken -> PlayRequest -> m (Maybe PlayResponse)
-  startMatch :: StartRequest -> m (Maybe StartResponse)
-  randomMatch :: StartRequest -> m (Maybe StartResponse)
+  registerUser :: RegisterRequest -> m RegisterResponse
+  playMove :: MatchId -> MatchToken -> PlayRequest -> m PlayResponse
+  startMatch :: StartRequest -> m StartResponse
+  randomMatch :: StartRequest -> m StartResponse
 
 instance FromJSON RegisterRequest where
   parseJSON = dropPrefixP "_rreq"
