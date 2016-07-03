@@ -13,12 +13,11 @@ import System.Random
 import T3.Lobby hiding (Lobby(..))
 import T3.Match hiding (Match(..)) -- types
 
-addUserToLobby :: (MonadSTM m, MonadConc m) => ListLobby m -> UserName -> StartCallback m -> m Bool
+addUserToLobby :: (MonadSTM m, MonadConc m) => ListLobby m -> UserName -> StartCallback m -> m ()
 addUserToLobby lobby un cb = atomically $ do
   lob <- readTVar lobby
   let shouldAdd = isNothing (lookup un lob)
   when shouldAdd $ writeTVar lobby ((un, cb) : lob)
-  return shouldAdd
 
 userPairFromLobby :: (MonadSTM m, MonadConc m, MonadRandom m) => ListLobby m -> m (Maybe ((UserName, StartCallback m), (UserName, StartCallback m)))
 userPairFromLobby lobby = do

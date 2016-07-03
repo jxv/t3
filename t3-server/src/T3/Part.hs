@@ -8,8 +8,8 @@ import T3.Server hiding (ServerEsque(..)) -- types
 import T3.Match hiding (Match(..), MatchToken) -- types
 
 class Monad m => Part m where
-  tryRegister :: UserName -> UserKey -> m (Maybe (M.Map UserName UserKey))
-  authenticate :: UserCreds -> m Bool
+  tryRegister :: UserName -> UserKey -> m (M.Map UserName UserKey)
+  authenticate :: UserCreds -> m ()
   randomResponse :: StartRequest -> m StartResponse
-  playResponse :: UserConfig m -> PlayRequest -> m (Maybe PlayResponse)
-  userConfig :: MatchId -> MatchToken -> PlayRequest -> m (Maybe (UserConfig m))
+  playResponse :: UserConfig m -> PlayRequest -> m PlayResponse
+  userConfig :: MatchId -> MatchToken -> PlayRequest -> m (UserConfig m)
