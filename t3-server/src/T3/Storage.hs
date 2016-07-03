@@ -74,4 +74,4 @@ class Monad m => Storage m where
   loadUsers :: m (M.Map UserName UserKey)
   loadMatchList :: m [MatchId]
   storePlayback :: Playback -> m ()
-  loadPlayback :: MatchId -> m (Maybe Playback)
+  loadPlayback :: MatchId -> m Playback

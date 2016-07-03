@@ -104,7 +104,7 @@ instance ToJSON Final where
     LossByDQ -> "LossByDQ"
     Tied -> "Tied"
 
-class Match m where
+class Monad m => Match m where
   sendGameState :: XO -> m ()
   recvAction :: XO -> m Loc
   sendFinal :: XO -> Final -> m ()
