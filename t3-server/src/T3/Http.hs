@@ -1,5 +1,5 @@
-module T3.Web
-  ( Web(..)
+module T3.Http
+  ( Http(..)
   , FromRequest(..)
   , ToResponse(..)
   , Request(..)
@@ -23,7 +23,7 @@ data Response = Response
   , _respBody :: Maybe ByteString
   } deriving (Show, Eq)
 
-class Monad m => Web m where
+class Monad m => Http m where
   play :: Request -> m Response
   start :: Request -> m Response
   randomHandler :: Request -> m Response

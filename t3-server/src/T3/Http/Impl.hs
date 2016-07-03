@@ -1,4 +1,4 @@
-module T3.Web.Impl
+module T3.Http.Impl
   ( play
   , start
   , randomHandler
@@ -15,12 +15,14 @@ import Control.Monad (mzero, forever)
 import Data.Aeson
 import Data.IORef
 import Data.Maybe
+import Data.Text (Text)
+import Data.Text.Conversions
 import Control.Monad.Trans (MonadIO, liftIO)
 import Safe (atMay)
 import Network.HTTP.Types
 
 import T3.Core
-import T3.Web hiding (Web(..))
+import T3.Http hiding (Http(..))
 import T3.Server
 import T3.Dispatch hiding (Dispatch(..)) -- types
 import T3.Lobby hiding (Lobby(..)) -- types
@@ -31,14 +33,19 @@ badRequest = Response status400 [] Nothing
 badFormat = Response status400 [] (Just "FORMATTING ERROR")
 unauthorized = Response status401 [] Nothing
 
--- /api/play/<match-id>/<match-token>
+lookupHeaderText :: HeaderName -> RequestHeaders -> Maybe Text
+lookupHeaderText header headers = do
+  raw <- lookup header headers
+  decodeConvertText (UTF8 raw)
+
+-- /play
 play :: ServerEsque m => Request -> m Response
 play req = do
-  let m = (,,)
-        <$> (MatchId <$> atMay (_reqPath req) 2)
-        <*> (MatchToken <$> atMay (_reqPath req) 3)
-        <*> (decode $ _reqBody req)
-  case m of
+  let headers = _reqHeaders req
+  let mMatchId = MatchId <$> lookupHeaderText "x-match-id" headers
+  let mMatchToken = MatchToken <$> lookupHeaderText "x-match-token" headers
+  let mPlayMove = (,,) <$> mMatchId <*> mMatchToken <*> (decode $ _reqBody req)
+  case mPlayMove of
     Nothing -> return badFormat
     Just (matchId, matchToken, playReq) ->
       fromPlayResponse <$> playMove matchId matchToken playReq
@@ -47,7 +54,7 @@ play req = do
     fromPlayResponse (Just presp) = Response status200 [] (Just $ encode presp)
     fromPlayResponse Nothing = badRequest
 
--- /api/start
+-- /start
 start :: ServerEsque m => Request -> m Response
 start req = do
   let m = decode $ _reqBody req
@@ -59,7 +66,7 @@ start req = do
     fromStartResponse (Just sresp) = Response status200 [] (Just $ encode sresp)
     fromStartResponse Nothing = unauthorized
 
--- /api/random
+-- /random
 randomHandler :: ServerEsque m => Request -> m Response
 randomHandler req = do
   let m = decode $ _reqBody req
@@ -71,7 +78,7 @@ randomHandler req = do
     fromStartResponse (Just sresp) = Response status200 [] (Just $ encode sresp)
     fromStartResponse Nothing = unauthorized
 
--- /api/register
+-- /register
 register :: ServerEsque m => Request -> m Response
 register req = do
   let m = decode (_reqBody req)

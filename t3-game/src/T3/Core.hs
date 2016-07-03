@@ -119,14 +119,22 @@ instance FromJSON Loc where
 instance FromJSON XO where
   parseJSON (String xo)
     | xo' == "x" = pure X
+    | xo' == "X" = pure X
     | xo' == "o" = pure O
+    | xo' == "O" = pure O
     | otherwise = mzero
     where
       xo' = T.map toLower xo
   parseJSON _ = mzero
 
-instance FromJSON (Maybe XO) where
-  parseJSON o@(String s) = if s == " " then pure Nothing  else fmap Just (parseJSON o)
+newtype Cell = Cell { unCell :: Maybe XO }
+  deriving (Show, Eq)
+
+instance FromJSON Cell where
+  parseJSON o@(String s) =
+    if s == " "
+      then pure (Cell Nothing)
+      else fmap (Cell . Just) (parseJSON o)
   parseJSON _ = mzero
 
 instance FromJSON Board where
@@ -134,10 +142,15 @@ instance FromJSON Board where
     where
       size = 3
       board o = do
-        cells :: [[Maybe XO]] <- parseJSON o
+        cells :: [[Cell]] <- parseJSON o
         let correctRowSize = length cells == size
         let correctColSize = and $ map ((== size) . length) cells
-        let pairs = [ (Loc x y, fromJust cell) | y <- [0..pred size], x <- [0..pred size], let cell = cells !! y !! x, isJust cell ]
+        let pairs = 
+              [ (Loc x y, cell)
+              | y <- [0..pred size]
+              , x <- [0..pred size]
+              , cell <- maybeToList . unCell $ cells !! y !! x
+              ]
         if correctRowSize && correctColSize then return pairs else mzero
 
 instance ToJSON Board where

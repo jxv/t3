@@ -39,8 +39,7 @@ spec = do
         Tie
   describe "board json" $ do
     it "parse a cell with X, O, or ' '" $ do
-      decode "\"x\"" `shouldBe` Just (Just X)
-      decode "\"o\"" `shouldBe` Just (Just O)
-      decode "\" \"" `shouldBe` Just (Nothing :: Maybe XO)
+      decode "\"x\"" `shouldBe` (Just X)
+      decode "\"o\"" `shouldBe` (Just O)
     it "parse an empty board" $ do
       decode (encode emptyBoard) `shouldBe` Just emptyBoard

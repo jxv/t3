@@ -17,8 +17,8 @@ library
   exposed-modules:
     T3.Serve
     T3.Util
-    T3.Web
-    T3.Web.Impl
+    T3.Http
+    T3.Http.Impl
     T3.Storage
     T3.Storage.JsonImpl
     T3.Server
@@ -46,8 +46,8 @@ library
     , bytestring
     , text
     , aeson
-    , dejafu >= 0.3.1.0 && < 1.0.0.0
-    , async-dejafu >= 0.1.2.0 && < 1.0.0.0
+    , dejafu
+    , async-dejafu
     , test-fixture
     , safe
     , unordered-containers
@@ -67,5 +67,6 @@ library
     , t3-game
     , random
     , MonadRandom
+    , text-conversions
   default-language:
     Haskell2010
