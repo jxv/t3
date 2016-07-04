@@ -1,6 +1,6 @@
 {-# OPTIONS -fno-warn-orphans #-}
 {-# LANGUAGE DeriveGeneric #-}
-module T3.Serve
+module T3.Server.Serve
   ( GameLogger
   , Server(..)
   , UserConfig(..)

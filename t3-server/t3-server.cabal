@@ -15,13 +15,13 @@ library
   hs-source-dirs:
     src
   exposed-modules:
-    T3.Serve
     T3.Util
     T3.Http
     T3.Http.Impl
     T3.Storage
     T3.Storage.JsonImpl
     T3.Server
+    T3.Server.Serve
     T3.Server.Util
     T3.Server.Impl
     T3.Dispatch
