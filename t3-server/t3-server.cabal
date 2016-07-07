@@ -28,6 +28,7 @@ library
     T3.Dispatch.Impl
     T3.Lobby
     T3.Lobby.Impl
+    T3.Registrar
     T3.Part
     T3.Part.Impl
     T3.Match
