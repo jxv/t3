@@ -16,7 +16,6 @@ import T3.Server hiding (ServerEsque(..))
 import T3.Server.Util
 import T3.Part
 import T3.Lobby
-import T3.Storage
 import T3.Match
 import T3.Util
 import T3.Registrar (Registrar(..))
