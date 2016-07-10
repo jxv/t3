@@ -8,9 +8,9 @@ module T3.Server.Util
 
 import Control.Monad.Random (MonadRandom(..))
 
-import T3.Util
+import T3.Util (genBase64)
 import T3.Server
-import T3.Match
+import T3.Server.Match
 
 toGameState :: Step -> GameState
 toGameState s = GameState (_stepBoard s) (_stepFinal s)

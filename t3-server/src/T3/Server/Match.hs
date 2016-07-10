@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
-module T3.Match
+module T3.Server.Match
   ( Match(..)
   , UserName(..)
   , MatchId(..)

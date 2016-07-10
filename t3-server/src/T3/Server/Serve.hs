@@ -43,16 +43,16 @@ import GHC.Generics
 import Data.Char
 
 import T3.Game
-import T3.Match -- types
+import T3.Util (genBase64)
+import T3.Server.Match -- types
 import T3.Server hiding (ServerEsque(..)) -- types
 import T3.Server.Impl
-import T3.Dispatch hiding (Dispatch(..)) -- types
-import T3.Dispatch.Impl
-import T3.Lobby hiding (Lobby(..)) -- types
-import T3.Lobby.Impl
-import T3.Part.Impl
+import T3.Server.Dispatch hiding (Dispatch(..)) -- types
+import T3.Server.Dispatch.Impl
+import T3.Server.Lobby hiding (Lobby(..)) -- types
+import T3.Server.Lobby.Impl
+import T3.Server.Part.Impl
 import T3.Server.Util
-import T3.Util
 
 forkServer :: (MonadConc m, MonadSTM m, MonadRandom m) => GameLogger m -> Maybe Seconds -> M.Map UserName UserKey -> m (Server m)
 forkServer logger timeoutLimit users = do

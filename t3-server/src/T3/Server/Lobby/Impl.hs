@@ -1,4 +1,4 @@
-module T3.Lobby.Impl
+module T3.Server.Lobby.Impl
   ( addUserToLobby
   , userPairFromLobby
   ) where
@@ -10,8 +10,8 @@ import Control.Monad.STM.Class
 import Data.Maybe
 import System.Random
 
-import T3.Lobby hiding (Lobby(..))
-import T3.Match hiding (Match(..)) -- types
+import T3.Server.Lobby hiding (Lobby(..))
+import T3.Server.Match hiding (Match(..)) -- types
 
 addUserToLobby :: (MonadSTM m, MonadConc m) => ListLobby m -> UserName -> StartCallback m -> m ()
 addUserToLobby lobby un cb = atomically $ do

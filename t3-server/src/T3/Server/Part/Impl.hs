@@ -1,4 +1,4 @@
-module T3.Part.Impl
+module T3.Server.Part.Impl
   ( GameLogger
   , Server(..)
   , authenticate
@@ -22,13 +22,13 @@ import T3.Core
 import T3.Bot.Random
 import T3.Server hiding (ServerEsque(..)) -- types
 import T3.Server.Util
-import T3.Lobby hiding (Lobby(..)) -- types
-import T3.Dispatch hiding (Dispatch(..))
-import T3.Dispatch.Impl
+import T3.Server.Lobby hiding (Lobby(..)) -- types
+import T3.Server.Dispatch hiding (Dispatch(..))
+import T3.Server.Dispatch.Impl
 import T3.Server.Util
-import T3.Match hiding (Types(..))
-import T3.Match.Impl (delay)
-import T3.Util
+import T3.Server.Match hiding (Types(..))
+import T3.Server.Match.Impl (delay)
+import T3.Server.Util
 
 type GameLogger m = MatchId -> Users -> [Action] -> Board -> Result -> m ()
 

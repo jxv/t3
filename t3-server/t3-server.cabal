@@ -15,24 +15,24 @@ library
   hs-source-dirs:
     src
   exposed-modules:
-    T3.Util
     T3.Http
     T3.Http.Impl
-    T3.Storage
-    T3.Storage.JsonImpl
+    T3.Registrar
+    T3.Util
     T3.Server
     T3.Server.Serve
     T3.Server.Util
     T3.Server.Impl
-    T3.Dispatch
-    T3.Dispatch.Impl
-    T3.Lobby
-    T3.Lobby.Impl
-    T3.Registrar
-    T3.Part
-    T3.Part.Impl
-    T3.Match
-    T3.Match.Impl
+    T3.Server.Storage
+    T3.Server.Storage.JsonImpl
+    T3.Server.Dispatch
+    T3.Server.Dispatch.Impl
+    T3.Server.Lobby
+    T3.Server.Lobby.Impl
+    T3.Server.Part
+    T3.Server.Part.Impl
+    T3.Server.Match
+    T3.Server.Match.Impl
   default-extensions:
     OverloadedStrings
     MultiParamTypeClasses

@@ -14,10 +14,10 @@ import Control.Monad.Trans (MonadIO, liftIO)
 import T3.Core
 import T3.Server hiding (ServerEsque(..))
 import T3.Server.Util
-import T3.Part
-import T3.Lobby
-import T3.Match
-import T3.Util
+import T3.Server.Part
+import T3.Server.Lobby
+import T3.Server.Match
+import T3.Server.Util
 import T3.Registrar (Registrar(..))
 
 playMove :: Part m => MatchId -> MatchToken -> PlayRequest -> m PlayResponse

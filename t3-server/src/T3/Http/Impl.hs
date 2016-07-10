@@ -24,9 +24,9 @@ import Network.HTTP.Types
 import T3.Core
 import T3.Http hiding (Http(..))
 import T3.Server
-import T3.Dispatch hiding (Dispatch(..)) -- types
-import T3.Lobby hiding (Lobby(..)) -- types
-import T3.Match hiding (Match(..)) -- types
+import T3.Server.Dispatch hiding (Dispatch(..)) -- types
+import T3.Server.Lobby hiding (Lobby(..)) -- types
+import T3.Server.Match hiding (Match(..)) -- types
 
 badRequest, badFormat, unauthorized :: Response
 badRequest = Response status400 [] Nothing

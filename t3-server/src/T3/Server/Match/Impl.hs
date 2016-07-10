@@ -1,4 +1,4 @@
-module T3.Match.Impl
+module T3.Server.Match.Impl
   ( MatchT(..)
   , sendGameState
   , recvAction
@@ -17,7 +17,7 @@ import Control.Monad.Conc.Class
 
 import T3.Core (XO(..), Loc(..), Result(..), Action(..), Board, yinYang)
 import T3.Game
-import T3.Match hiding (Match(..)) -- types
+import T3.Server.Match hiding (Match(..)) -- types
 
 sendGameState :: MonadConc m => XO -> MatchT m ()
 sendGameState xo = do

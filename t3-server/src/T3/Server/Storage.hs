@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS -fno-warn-orphans #-}
-module T3.Storage
+module T3.Server.Storage
   ( Storage(..)
   , Action(..)
   , Playback(..)
@@ -16,14 +16,14 @@ import Data.Aeson hiding (Result)
 import qualified T3.Game as Game
 import T3.Core (XO(..), Loc(..), Result(..), dropPrefixP, dropPrefixJ, yinYang)
 import T3.Game hiding (Action(..))
-import T3.Match hiding (Action(..))
+import T3.Server.Match hiding (Action(..))
 
 import qualified Data.Map as M
 
 import T3.Server -- types
-import T3.Dispatch hiding (Action) -- types
-import T3.Lobby -- types
-import T3.Match -- types
+import T3.Server.Dispatch hiding (Action) -- types
+import T3.Server.Lobby -- types
+import T3.Server.Match -- types
 
 data Action = Action
   { _actXO :: XO

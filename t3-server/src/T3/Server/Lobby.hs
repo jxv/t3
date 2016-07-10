@@ -1,4 +1,4 @@
-module T3.Lobby
+module T3.Server.Lobby
   ( ListLobby
   , Lobby(..)
   ) where
@@ -6,7 +6,7 @@ module T3.Lobby
 import Control.Monad.STM.Class (TVar)
 import Control.Monad.Conc.Class (STM)
 
-import T3.Match -- types
+import T3.Server.Match -- types
 
 type ListLobby m = TVar (STM m) [(UserName, StartCallback m)]
 

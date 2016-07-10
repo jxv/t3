@@ -1,4 +1,4 @@
-module T3.Dispatch
+module T3.Server.Dispatch
   ( Seconds(..)
   , UserConfig(..)
   , MatchConfig(..)
@@ -14,7 +14,7 @@ module T3.Dispatch
 
 import T3.Core (Loc(..), Board, Result(..), Action(..))
 import T3.Server -- types
-import T3.Match hiding (MatchToken) -- types
+import T3.Server.Match hiding (MatchToken) -- types
 
 data MatchConfig m = MatchConfig
   { _matchCfgX :: UserConfig m
