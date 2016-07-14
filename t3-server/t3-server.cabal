@@ -18,6 +18,7 @@ library
     T3.Http
     T3.Http.Impl
     T3.Registrar
+    T3.Registrar.Impl
     T3.Util
     T3.Server
     T3.Server.Serve
