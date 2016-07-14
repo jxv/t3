@@ -1,5 +1,6 @@
 module T3.Server.Match.Impl
   ( MatchT(..)
+  , MatchData(..)
   , sendGameState
   , recvAction
   , sendFinal
@@ -17,7 +18,17 @@ import Control.Monad.Conc.Class
 
 import T3.Core (XO(..), Loc(..), Result(..), Action(..), Board, yinYang)
 import T3.Game
-import T3.Server.Match hiding (Match(..)) -- types
+import T3.Server (Seconds(..), Callback, Final(..), Step(..))
+
+data MatchData m = MatchData
+  { _matchReq :: XO -> m (Loc, Callback m)
+  , _matchRespX :: Callback m
+  , _matchRespO :: Callback m
+  , _matchLog :: [Action] -> Board -> Result -> m ()
+  , _matchBoard :: Board
+  , _matchActions :: [Action]
+  , _matchTimeoutLimit :: Maybe Seconds
+  }
 
 sendGameState :: MonadConc m => XO -> MatchT m ()
 sendGameState xo = do

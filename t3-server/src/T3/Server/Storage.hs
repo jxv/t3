@@ -20,10 +20,9 @@ import T3.Server.Match hiding (Action(..))
 
 import qualified Data.Map as M
 
-import T3.Server -- types
+import T3.Server (UserName, UserKey, MatchId, Users)
 import T3.Server.Dispatch hiding (Action) -- types
 import T3.Server.Lobby -- types
-import T3.Server.Match -- types
 
 data Action = Action
   { _actXO :: XO

@@ -8,11 +8,11 @@ import Control.Monad.Trans.Either
 import Control.Monad.State.Strict
 import Control.Monad.Conc.Class
 
-import T3.Core (XO(..), emptyBoard)
+import T3.Core (XO(..), Loc(..), Result(..), Action(..), Result, Board, yinYang, emptyBoard)
 import T3.Game
 import T3.Game.Run (run)
-import T3.Server.Match hiding (Match(..)) -- types
-import T3.Server.Match.Impl (MatchT(..), delay)
+import T3.Server (UserInit, Seconds, MatchToken, Callback, UserName, UserConfig(..))
+import T3.Server.Match.Impl (MatchT(..), MatchData(..), delay)
 import T3.Server.Dispatch hiding (Dispatch(..))
 
 forkMatch

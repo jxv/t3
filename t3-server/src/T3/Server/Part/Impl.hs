@@ -26,6 +26,7 @@ import T3.Server.Lobby hiding (Lobby(..)) -- types
 import T3.Server.Dispatch hiding (Dispatch(..))
 import T3.Server.Dispatch.Impl
 import T3.Server.Util
+import T3.Server (MatchInfo(..))
 import T3.Server.Match hiding (Types(..))
 import T3.Server.Match.Impl (delay)
 import T3.Server.Util

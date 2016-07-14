@@ -1,14 +1,5 @@
 module T3.Server.Dispatch
-  ( Seconds(..)
-  , UserConfig(..)
-  , MatchConfig(..)
-  , UserName(..)
-  , MatchToken(..)
-  , Loc(..)
-  , Callback
-  , Action(..)
-  , Board
-  , Result(..)
+  ( MatchConfig(..)
   , Dispatch(..)
   ) where
 

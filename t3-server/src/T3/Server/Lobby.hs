@@ -6,7 +6,7 @@ module T3.Server.Lobby
 import Control.Monad.STM.Class (TVar)
 import Control.Monad.Conc.Class (STM)
 
-import T3.Server.Match -- types
+import T3.Server (UserName, StartCallback)
 
 type ListLobby m = TVar (STM m) [(UserName, StartCallback m)]
 

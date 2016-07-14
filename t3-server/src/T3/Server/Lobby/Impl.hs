@@ -10,8 +10,8 @@ import Control.Monad.STM.Class
 import Data.Maybe
 import System.Random
 
+import T3.Server (UserName, StartCallback)
 import T3.Server.Lobby hiding (Lobby(..))
-import T3.Server.Match hiding (Match(..)) -- types
 
 addUserToLobby :: (MonadSTM m, MonadConc m) => ListLobby m -> UserName -> StartCallback m -> m ()
 addUserToLobby lobby un cb = atomically $ do
