@@ -16,7 +16,6 @@ module T3.Server
   , ServerEsque(..)
   , Step(..)
   , Users(..)
-
   , Final(..)
   , Seconds(..)
   , MatchInfo(..)

@@ -1,30 +1,8 @@
 {-# OPTIONS -fno-warn-orphans #-}
 {-# LANGUAGE DeriveGeneric #-}
 module T3.Server.Serve
-  ( GameLogger
-  , Server(..)
-  , UserConfig(..)
-  , MatchConfig(..)
-  , UserCreds(..)
-  , StartRequest(..)
-  , PlayRequest(..)
-  , GameState(..)
-  , Users(..)
-  , StartResponse(..)
-  , PlayResponse(..)
-  , UserName(..)
-  , UserKey(..)
-  , RegisterRequest(..)
-  , RegisterResponse(..)
-  , forkServer
-  , genBase64
-  , genMatchToken
-  , genMatchId
-  , genUserName
-  , genUserKey
-  , authenticate
-  , authorize
-  , toGameState
+  ( forkServer
+  , serve
   ) where
 
 import qualified Data.Map as M

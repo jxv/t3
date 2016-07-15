@@ -4,8 +4,7 @@ module T3.Server.Part
 
 import qualified Data.Map as M
 
-import T3.Server hiding (ServerEsque(..)) -- types
-import T3.Server.Match hiding (Match(..), MatchToken) -- types
+import T3.Server (StartRequest, StartResponse, PlayRequest, PlayResponse, UserConfig, MatchId, MatchToken)
 
 class Monad m => Part m where
   randomResponse :: StartRequest -> m StartResponse

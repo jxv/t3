@@ -1,12 +1,9 @@
 module T3.Server.Part.Impl
   ( GameLogger
   , Server(..)
-  , authenticate
   , playResponse
-  , tryRegister
-  , userConfig
   , randomResponse
-  , authorize
+  , userConfig
   ) where
 
 import qualified Data.Map as M
@@ -47,19 +44,19 @@ authenticate srv uc = do
   users <- readTVar (_srvUsers srv)
   return $ M.lookup (_ucName uc) users == Just (_ucKey uc)
 
+authorize :: Monad m => UserName -> MatchToken -> MatchConfig m -> Maybe (UserConfig m)
+authorize un mt mc = (userCfgMay $ _matchCfgX mc) <|> (userCfgMay $ _matchCfgO mc)
+  where
+    userCfgMay cfg =
+      if _userCfgUserName cfg == un && _userCfgMatchToken cfg == mt
+        then Just cfg
+        else Nothing
+
 playResponse :: UserConfig IO -> PlayRequest -> IO (Maybe PlayResponse)
 playResponse userCfg playReq = do
   resp <- liftIO newEmptyMVar
   liftIO $ (_userCfgSendLoc userCfg) (_preqLoc playReq, putMVar resp . PlayResponse . toGameState)
   liftIO $ (either id id) <$> race (Just <$> takeMVar resp) (delay (Seconds 60) >> return Nothing)
-
-tryRegister :: Server IO -> UserName -> UserKey -> IO (Maybe (M.Map UserName UserKey))
-tryRegister srv name userKey = atomically $ do
-  users <- readTVar (_srvUsers srv)
-  let users' = M.insert name userKey users
-  if M.member name users
-    then return Nothing
-    else writeTVar (_srvUsers srv) users' >> return (Just users')
 
 userConfig :: Server IO -> MatchId -> MatchToken -> PlayRequest -> IO (Maybe (UserConfig IO))
 userConfig srv matchId matchToken playReq = liftIO . atomically $ do
@@ -104,11 +101,3 @@ randomResponse srv startReq = do
   writeIORef randomSendLocRef (_userCfgSendLoc $ _matchCfgO sessCfg)
   atomically $ modifyTVar (_srvMatches srv) (M.insert matchId sessCfg)
   return $ StartResponse xMatchInfo Users{ _uX = xUN, _uO = oUN } (GameState emptyBoard Nothing)
-
-authorize :: Monad m => UserName -> MatchToken -> MatchConfig m -> Maybe (UserConfig m)
-authorize un mt mc = (userCfgMay $ _matchCfgX mc) <|> (userCfgMay $ _matchCfgO mc)
-  where
-    userCfgMay cfg =
-      if _userCfgUserName cfg == un && _userCfgMatchToken cfg == mt
-        then Just cfg
-        else Nothing
