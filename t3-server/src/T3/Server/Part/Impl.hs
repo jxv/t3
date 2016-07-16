@@ -3,7 +3,6 @@ module T3.Server.Part.Impl
   , Server(..)
   , playResponse
   , randomResponse
-  , userConfig
   ) where
 
 import qualified Data.Map as M
@@ -39,10 +38,22 @@ data Server m = Server
   , _srvTimeoutLimit :: Maybe Seconds
   }
 
-authenticate :: MonadConc m => Server m -> UserCreds -> STM m Bool
-authenticate srv uc = do
-  users <- readTVar (_srvUsers srv)
-  return $ M.lookup (_ucName uc) users == Just (_ucKey uc)
+class Monad m => UserMove m where
+  move :: UserName -> Loc -> m Step
+
+playResponse :: UserMove m => PlayRequest -> m PlayResponse
+playResponse preq = do
+  step <- move (_ucName $ _preqCreds preq) (_preqLoc preq)
+  return $ PlayResponse (toGameState step)
+
+{- -- BEST BY: UserMove Impl
+playResponse :: UserConfig IO -> PlayRequest -> IO (Maybe PlayResponse)
+playResponse userCfg playReq = do
+  resp <- liftIO newEmptyMVar
+  let loc = _preqLoc playReq
+  let callback = putMVar resp . PlayResponse . toGameState
+  _userCfgSendLoc userCfg (loc, callback)
+  (either id id) <$> race (Just <$> takeMVar resp) (delay (Seconds 60) >> return Nothing)
 
 authorize :: Monad m => UserName -> MatchToken -> MatchConfig m -> Maybe (UserConfig m)
 authorize un mt mc = (userCfgMay $ _matchCfgX mc) <|> (userCfgMay $ _matchCfgO mc)
@@ -52,21 +63,11 @@ authorize un mt mc = (userCfgMay $ _matchCfgX mc) <|> (userCfgMay $ _matchCfgO m
         then Just cfg
         else Nothing
 
-playResponse :: UserConfig IO -> PlayRequest -> IO (Maybe PlayResponse)
-playResponse userCfg playReq = do
-  resp <- liftIO newEmptyMVar
-  liftIO $ (_userCfgSendLoc userCfg) (_preqLoc playReq, putMVar resp . PlayResponse . toGameState)
-  liftIO $ (either id id) <$> race (Just <$> takeMVar resp) (delay (Seconds 60) >> return Nothing)
-
-userConfig :: Server IO -> MatchId -> MatchToken -> PlayRequest -> IO (Maybe (UserConfig IO))
-userConfig srv matchId matchToken playReq = liftIO . atomically $ do
-  let creds = _preqCreds playReq
-  authenicated <- authenticate srv creds
-  if not authenicated
-    then return Nothing
-    else do
-      mMatchCfg <- M.lookup matchId <$> readTVar (_srvMatches srv)
-      return $ authorize (_ucName creds) matchToken =<< mMatchCfg
+userConfig :: Server IO -> MatchId -> MatchToken -> UserCreds -> IO (Maybe (UserConfig IO))
+userConfig srv matchId matchToken creds = liftIO . atomically $ do
+  mMatchCfg <- M.lookup matchId <$> readTVar (_srvMatches srv)
+  return $ authorize (_ucName creds) matchToken =<< mMatchCfg
+-}
 
 randomResponse :: Server IO -> StartRequest -> IO StartResponse
 randomResponse srv startReq = do
@@ -88,7 +89,7 @@ randomResponse srv startReq = do
         sendLoc (loc, randomCB)
   let removeSelf = do
         killThread randomThid
-        atomically $ modifyTVar (_srvMatches srv) (M.delete matchId) 
+        atomically $ modifyTVar (_srvMatches srv) (M.delete matchId)
         return ()
   let users = Users { _uX = xUN, _uO = oUN }
   let xMatchInfo = MatchInfo matchId xGT

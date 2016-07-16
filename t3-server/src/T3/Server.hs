@@ -116,7 +116,7 @@ newtype UserKey = UserKey { getUserKey :: Text }
 data UserConfig m = UserConfig
   { _userCfgUserName :: UserName
   , _userCfgMatchToken :: MatchToken
-  , _userCfgSendLoc :: (Loc, Callback m) -> m ()
+  , _userCfgSendLoc :: (Loc, Step -> m ()) -> m ()
   }
 
 class Monad m => ServerEsque m where

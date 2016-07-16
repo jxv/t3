@@ -22,7 +22,7 @@ import T3.Registrar (Registrar(..))
 
 playMove :: Part m => MatchId -> MatchToken -> PlayRequest -> m PlayResponse
 playMove matchId matchToken playReq = do
-  userCfg <- userConfig matchId matchToken playReq
+  userCfg <- userConfig matchId matchToken (_preqCreds playReq)
   playResponse userCfg playReq
 
 startMatch :: (Lobby m, Part m, MonadConc m, Registrar m) => StartRequest -> m StartResponse
