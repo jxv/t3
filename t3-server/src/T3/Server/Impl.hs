@@ -12,7 +12,7 @@ import Control.Monad (mzero, forever)
 import Control.Monad.Trans (MonadIO, liftIO)
 
 import T3.Core
-import T3.Server hiding (ServerEsque(..))
+import T3.Server hiding (Server(..))
 import T3.Server.Util
 import T3.Server.Part
 import T3.Server.Lobby

@@ -16,12 +16,10 @@ import Data.IORef
 
 import T3.Core
 import T3.Bot.Random
-import T3.Server hiding (ServerEsque(..)) -- types
-import T3.Server.Util
+import T3.Server hiding (Server(..)) -- types
 import T3.Server.Lobby hiding (Lobby(..)) -- types
 import T3.Server.Dispatch hiding (Dispatch(..))
 import T3.Server.Dispatch.Impl
-import T3.Server.Util
 import T3.Server (MatchInfo(..))
 import T3.Server.Match hiding (Types(..))
 import T3.Server.Match.Impl (delay)

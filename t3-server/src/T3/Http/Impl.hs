@@ -1,8 +1,8 @@
 module T3.Http.Impl
-  ( play
-  , start
+  ( playHandler
+  , startHandler
   , randomHandler
-  , register
+  , registerHandler
   ) where
 
 import qualified Data.Map as M
@@ -23,7 +23,7 @@ import Network.HTTP.Types
 
 import T3.Http hiding (Http(..))
 import T3.Server
-  ( ServerEsque(..)
+  ( Server(..)
   , StartResponse(..)
   , RegisterRequest(..)
   , RegisterResponse(..)
@@ -43,8 +43,8 @@ lookupHeaderText header headers = do
   decodeConvertText (UTF8 raw)
 
 -- /play
-play :: ServerEsque m => Request -> m Response
-play req = do
+playHandler :: Server m => Request -> m Response
+playHandler req = do
   let headers = _reqHeaders req
   let mMatchId = MatchId <$> lookupHeaderText "x-match-id" headers
   let mMatchToken = MatchToken <$> lookupHeaderText "x-match-token" headers
@@ -57,8 +57,8 @@ play req = do
     response presp = Response status200 [] (Just $ encode presp)
 
 -- /start
-start :: ServerEsque m => Request -> m Response
-start req = do
+startHandler :: Server m => Request -> m Response
+startHandler req = do
   let m = decode $ _reqBody req
   case m of
     Nothing -> return badFormat
@@ -68,7 +68,7 @@ start req = do
     response sresp = Response status200 [] (Just $ encode sresp)
 
 -- /random
-randomHandler :: ServerEsque m => Request -> m Response
+randomHandler :: Server m => Request -> m Response
 randomHandler req = do
   let m = decode $ _reqBody req
   case m of
@@ -79,8 +79,8 @@ randomHandler req = do
     response sresp = Response status200 [] (Just $ encode sresp)
 
 -- /register
-register :: ServerEsque m => Request -> m Response
-register req = do
+registerHandler :: Server m => Request -> m Response
+registerHandler req = do
   let m = decode (_reqBody req)
   case m of
     Nothing -> return badFormat

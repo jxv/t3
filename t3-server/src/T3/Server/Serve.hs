@@ -23,7 +23,7 @@ import Data.Char
 import T3.Game
 import T3.Util (genBase64)
 import T3.Server.Match -- types
-import T3.Server hiding (ServerEsque(..)) -- types
+import T3.Server hiding (Server(..)) -- types
 import T3.Server.Impl
 import T3.Server.Dispatch hiding (Dispatch(..)) -- types
 import T3.Server.Dispatch.Impl

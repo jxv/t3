@@ -13,7 +13,7 @@ module T3.Server
   , UserCreds(..)
   , GameState(..)
   , UserConfig(..)
-  , ServerEsque(..)
+  , Server(..)
   , Step(..)
   , Users(..)
   , Final(..)
@@ -119,7 +119,7 @@ data UserConfig m = UserConfig
   , _userCfgSendLoc :: (Loc, Step -> m ()) -> m ()
   }
 
-class Monad m => ServerEsque m where
+class Monad m => Server m where
   registerUser :: RegisterRequest -> m RegisterResponse
   playMove :: MatchId -> MatchToken -> PlayRequest -> m PlayResponse
   startMatch :: StartRequest -> m StartResponse
