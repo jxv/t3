@@ -28,7 +28,7 @@ import T3.Server.Util
 type GameLogger m = MatchId -> Users -> [Action] -> Board -> Result -> m ()
 
 data Server m = Server
-  { _srvLobby :: ListLobby m
+  { _srvLobby :: TVar (STM m) [(UserName, StartCallback m)]
   , _srvMatches :: TVar (STM m) (M.Map MatchId (MatchConfig m))
   , _srvUsers :: TVar (STM m) (M.Map UserName UserKey)
   , _srvDie :: m ()
@@ -74,29 +74,46 @@ randomResponse srv startReq = do
   oGT <- genMatchToken
   let xUN = _ucName (_sreqCreds startReq)
   let oUN = UserName "random"
-  randomStep <- newEmptyMVar
-  let randomCB = putMVar randomStep
+  let users = Users { _uX = xUN, _uO = oUN }
+
+  -- ref for send location callback, currently does nothing
+  -- There's a cyclic dependency between the callback usage and creation, thus the IORef usage.
   randomSendLocRef <- newIORef (const $ return ())
-  randomThid <- fork . forever $ do
-    step <- takeMVar randomStep
-    mLoc <- randomLoc (_stepBoard step)
-    case mLoc of
-      Nothing -> return ()
-      Just loc -> do
-        sendLoc <- readIORef randomSendLocRef
-        sendLoc (loc, randomCB)
+
+  -- fork off random bot, get back callback and thread id
+  (randomCB, randomThid) <- do
+    randomStep <- newEmptyMVar
+    let cb = putMVar randomStep
+    thid <- fork . forever $ do
+      step <- takeMVar randomStep
+      mLoc <- randomLoc (_stepBoard step)
+      case mLoc of
+        Nothing -> return ()
+        Just loc -> do
+          sendLoc <- readIORef randomSendLocRef
+          sendLoc (loc, cb)
+    return (cb, thid)
+
+  -- callback to remove match from insertion
   let removeSelf = do
         killThread randomThid
         atomically $ modifyTVar (_srvMatches srv) (M.delete matchId)
         return ()
-  let users = Users { _uX = xUN, _uO = oUN }
-  let xMatchInfo = MatchInfo matchId xGT
+
+  -- start and fork match, get callback structure
   sessCfg <- forkMatch
     (_srvTimeoutLimit srv)
     (xUN, xGT, const $ return ())
     (oUN, oGT, randomCB)
     (\_ _ _ -> return ())
     removeSelf
+
+  -- set, send location callback
   writeIORef randomSendLocRef (_userCfgSendLoc $ _matchCfgO sessCfg)
+
+  -- insert match
   atomically $ modifyTVar (_srvMatches srv) (M.insert matchId sessCfg)
+
+  -- response for user
+  let xMatchInfo = MatchInfo matchId xGT
   return $ StartResponse xMatchInfo Users{ _uX = xUN, _uO = oUN } (GameState emptyBoard Nothing)

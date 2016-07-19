@@ -15,7 +15,7 @@ import T3.Core
 import T3.Server hiding (Server(..))
 import T3.Server.Util
 import T3.Server.Part
-import T3.Server.Lobby
+import T3.Server.Lobby hiding (ListLobby)
 import T3.Server.Match
 import T3.Server.Util
 import T3.Registrar (Registrar(..))
@@ -27,13 +27,8 @@ playMove matchId matchToken playReq = do
 
 startMatch :: (Lobby m, Part m, MonadConc m, Registrar m) => StartRequest -> m StartResponse
 startMatch startReq = do
-  resp <- newEmptyMVar
   authenticate (_sreqCreds startReq)
-  addUserToLobby
-    (_ucName $ _sreqCreds startReq)
-    (\matchInfo users step -> putMVar resp $ StartResponse matchInfo users (toGameState step))
-  sresp <- takeMVar resp
-  return sresp
+  addUserToLobby (_ucName $ _sreqCreds startReq)
 
 randomMatch :: (Part m, Registrar m) => StartRequest -> m StartResponse
 randomMatch startReq = do
