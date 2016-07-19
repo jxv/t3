@@ -16,6 +16,7 @@ library
     src
   exposed-modules:
     T3.Http
+    T3.Http.Serve
     T3.Http.Impl
     T3.Registrar
     T3.Registrar.Impl
