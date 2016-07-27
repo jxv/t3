@@ -1,9 +1,9 @@
 {-# OPTIONS -fno-warn-orphans #-}
 {-# LANGUAGE DeriveGeneric #-}
-module T3.Server.Serve
-  ( forkServer
-  , serve
-  ) where
+module T3.Server.Serve () where
+--  ( forkServer
+--  , serve
+--  ) where
 
 import qualified Data.Map as M
 import qualified Data.Text as T
@@ -32,6 +32,7 @@ import T3.Server.Lobby.Impl
 import T3.Server.Part.Impl
 import T3.Server.Util
 
+{-
 forkServer :: (MonadConc m, MonadSTM m, MonadRandom m) => GameLogger m -> Maybe Seconds -> M.Map UserName UserKey -> m (Server m)
 forkServer logger timeoutLimit users = do
   lobby <- atomically $ newTVar []
@@ -67,4 +68,5 @@ serve srv = do
         removeSelf
       atomically $ modifyTVar (_srvMatches srv) (M.insert matchId sessCfg)
   threadDelay (1 * 1000000) -- 1 second
-  serve srv
+serve srv
+-}

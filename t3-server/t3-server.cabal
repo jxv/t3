@@ -35,6 +35,9 @@ library
     T3.Server.Part.Impl
     T3.Server.Match
     T3.Server.Match.Impl
+    T3.Server.MatchManager
+    T3.Server.MatchManager.Impl
+    T3.Server.Game.Impl
   default-extensions:
     OverloadedStrings
     MultiParamTypeClasses
