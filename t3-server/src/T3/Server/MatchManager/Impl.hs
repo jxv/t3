@@ -1,16 +1,16 @@
 module T3.Server.MatchManager.Impl
-  ( dispatchMatch
-  , dispatchMatchWithRandomBot
-  , getUsers
-  , sendLocation
-  , killMatch
+  ( -- ( dispatchMatch
+  -- , dispatchMatchWithRandomBot
+  -- , getUsers
+  -- , sendLocation
+  -- , killMatch
   ) where
 
 import Control.Monad.Trans (lift)
 import Control.Monad.Trans.Reader (ReaderT(..))
 import Control.Concurrent.Classy.Chan (writeChan, readChan, newChan)
 import Control.Concurrent.Classy.STM (TVar)
-import Control.Monad.Conc.Class (STM, MonadConc, fork, atomically)
+import Control.Monad.Conc.Class (STM, MonadConc, fork, atomically, ThreadId)
 import Data.Map (Map)
 import T3.Core (Loc(..), XO, Board)
 import T3.Game (Win, Lose, Game(..))
@@ -18,6 +18,7 @@ import T3.Game.Run (run)
 import T3.Server (MatchId(..), UserName(..), Users(..), Step(..), UserInit)
 import T3.Server.Util ()
 
+{-
 data UserConfig m = UserConfig
   { _userCfgUserName :: UserName
   , _userCfgSendLoc :: (Loc, Step -> m ()) -> m ()
@@ -43,23 +44,11 @@ data GameRecord m = GameRecord
 
 class Monad m => Alpha m where
   genMatchId :: m MatchId
-  genGameRecord :: (Connection, Step -> m ())  -> (Connection, Step -> m ()) -> m (GameRecord m)
+  genGameRecord :: Connection -> Connection -> m (GameRecord m)
   noMatchId :: m a
   noUserName :: m a
 
 newtype GameT m a = GameT { unGameT :: ReaderT (GameRecord m) m a }
-
--- type UserInit = m (Step -> m (), m (Loc, Step -> m ()))
-
-{-
-instance Monad m => Game (GameT m) where
-  move xo = do
-    rec <- asks _gameRecordMove
-    lift $ rec xo
-  forfeit win lose = do
-    rec <- asks _gameRecordForfeit
-    lift $ rec win lose
--}
 
 runGame :: Monad m => GameT m () -> GameRecord m -> m ()
 runGame stack record = runReaderT (unGameT stack) record
@@ -84,12 +73,14 @@ dispatchMatch tvarMatches tvarMatchKillers (xUserName, xConnection) (oUserName, 
   -- insert match config
   atomically $ do
     return ()
-  -- start match
-  thid <- fork $ do
-    gameRecord <- genGameRecord x o
-    runGame (run emptyBoard) gameRecord
+  thid <- forkGame x o
   -- kill funciton thread here? 
   return matchId
+
+forkGame :: (MonadConc m) => Connection -> Connection -> m (ThreadId m)
+forkGame x o = fork $ do
+  gameRecord <- genGameRecord x o
+  runGame (run emptyBoard) gameRecord
 
 dispatchMatchWithRandomBot :: Monad m => UserName -> m MatchId
 dispatchMatchWithRandomBot userName = do
@@ -106,27 +97,4 @@ sendLocation matchId userName loc = do
 killMatch :: Alpha m => MatchId -> m ()
 killMatch matchId = do
   noMatchId
-
--- runMatch :: (MonadConc m, Game n) => m ()
-
-{-
-forkMatch
-  :: MonadConc m
-  => Maybe Seconds
-  -> (UserName, MatchToken, Callback m)
-  -> (UserName, MatchToken, Callback m)
-  -> ([Action] -> Board -> Result -> m ())
-  -> m ()
-  -> m (MatchConfig m)
-forkMatch timeoutLimit (xUI, xGT, xCB) (oUI, oGT, oCB) logger done = do
-  xChan <- newChan
-  oChan <- newChan
-  let x = (xCB, readChan xChan)
-  let o = (oCB, readChan oChan)
-  thid <- fork $ runMatch timeoutLimit x o logger done
-  return $ MatchConfig
-    (UserConfig xUI xGT (writeChan xChan))
-    (UserConfig oUI oGT (writeChan oChan))
-    (killThread thid >> done)
--}
-
+  -}

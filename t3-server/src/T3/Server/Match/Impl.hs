@@ -1,124 +1,69 @@
 module T3.Server.Match.Impl
-  ( MatchT(..)
-  , MatchData(..)
-  , sendGameState
+  ( sendGameState
   , recvAction
   , sendFinal
   , tally
   , updateBoard
   , logAction
-  , delay
   ) where
 
-import Control.Concurrent.Async
-import Control.Monad.Trans.Class
-import Control.Monad.Trans.Either
-import Control.Monad.State.Strict
-import Control.Monad.Conc.Class
-
 import T3.Core (XO(..), Loc(..), Result(..), Action(..), Board, yinYang)
-import T3.Game
+import T3.Game (Win(..), Lose(..))
 import T3.Server (Seconds(..), Callback, Final(..), Step(..))
+import T3.Server.Connection (Connection)
 
-data MatchData m = MatchData
-  { _matchReq :: XO -> m (Loc, Callback m)
-  , _matchRespX :: Callback m
-  , _matchRespO :: Callback m
-  , _matchLog :: [Action] -> Board -> Result -> m ()
-  , _matchBoard :: Board
-  , _matchActions :: [Action]
-  , _matchTimeoutLimit :: Maybe Seconds
-  }
+class Monad m => HasBoard m where
+  getBoard :: m Board
+  putBoard :: Board -> m ()
 
-sendGameState :: MonadConc m => XO -> MatchT m ()
+class Monad m => HasActions m where
+  getActions :: m [Action]
+  appendAction :: Action -> m ()
+
+class Monad m => HasConnection m where
+  getConnection :: XO -> m Connection
+
+class Monad m => Transmitter m where
+  sendStep :: Connection -> Step -> m ()
+  recvLoc :: Connection -> m Loc
+
+class Monad m => MatchLogger m where
+  logMatch :: [Action] -> Board -> Result -> m ()
+
+class Monad m => Timeout m where
+  timeout :: m a -> m () -> m a
+
+sendGameState :: (HasBoard m, HasConnection m, Transmitter m) => XO -> m ()
 sendGameState xo = do
-  md <- get
-  lift $ (respXO xo md) (Step (_matchBoard md) Nothing)
+  board <- getBoard
+  conn <- getConnection xo
+  sendStep conn (Step board Nothing)
 
-recvAction :: MonadConc m => XO -> MatchT m Loc
+recvAction :: (HasBoard m, HasConnection m, HasActions m, Transmitter m, MatchLogger m, Timeout m) => XO -> m Loc
 recvAction xo = do
-  md <- get
-  let req = _matchReq md xo
-  let timeoutResponse = forfeit' md (Win $ yinYang xo) (Lose xo)
-  timeoutOrLoc <- lift $ do
-    maybe
-      (fmap Right req)
-      (\secs -> race (delay secs >> return timeoutResponse) req)
-      (_matchTimeoutLimit md)
-  case timeoutOrLoc of
-    Left timeout -> MatchT $ lift (left timeout)
-    Right (loc, resp) -> do
-      updateResp resp
-      return loc
-  where
-    updateResp resp = do
-      md <- get
-      put $ case xo of
-        X -> md{ _matchRespX = resp }
-        O -> md{ _matchRespO = resp }
+  conn <- getConnection xo
+  timeout (recvLoc conn) (timeoutForfeit (Win $ yinYang xo) (Lose xo))
 
-sendFinal :: MonadConc m => XO -> Final -> MatchT m ()
-sendFinal xo f = do
-  md <- get
-  lift $ sendFinal' md xo f
+sendFinal :: (HasBoard m, HasConnection m, Transmitter m) => XO -> Final -> m ()
+sendFinal xo final = do
+  board <- getBoard
+  conn <- getConnection xo
+  sendStep conn (Step board (Just final))
 
-sendFinal' :: MonadConc m => MatchData m -> XO -> Final -> m ()
-sendFinal' md xo f = (respXO xo md) (Step (_matchBoard md) (Just f))
+tally :: (HasBoard m, HasActions m, MatchLogger m) => Result -> m ()
+tally result = do
+  actions <- getActions
+  board <- getBoard
+  logMatch actions board result
 
-tally :: MonadConc m => Result -> MatchT m ()
-tally res = do
-  md <- get
-  lift $ tally' md res
+timeoutForfeit :: (HasBoard m, HasConnection m, HasActions m, Transmitter m, MatchLogger m) => Win XO -> Lose XO -> m ()
+timeoutForfeit (Win w) (Lose l) = do
+  tally (Winner w)
+  sendFinal w WonByDQ
+  sendFinal l LossByDQ
 
-tally' :: MonadConc m => MatchData m -> Result -> m ()
-tally' md res = _matchLog md (_matchActions md) (_matchBoard md) res
+updateBoard :: HasBoard m => Board -> m ()
+updateBoard board = putBoard board
 
-forfeit' :: MonadConc m => MatchData m -> Win XO -> Lose XO -> m ()
-forfeit' s (Win w) (Lose l) = do
-  tally' s (Winner w)
-  sendFinal' s w WonByDQ
-  sendFinal' s l LossByDQ
-
-updateBoard :: MonadConc m => Board -> MatchT m ()
-updateBoard b = do
-  md <- get
-  put $ md{ _matchBoard = b }
-
-logAction :: MonadConc m => XO -> Loc -> MatchT m ()
-logAction xo loc = do
-  md <- get
-  put md{ _matchActions = _matchActions md ++ [Action xo loc] }
-
-respXO :: MonadConc m => XO -> MatchData m -> Callback m
-respXO X = _matchRespX
-respXO O = _matchRespO
-
-delay :: MonadConc m => Seconds -> m ()
-delay (Seconds n) = threadDelay (n * 1000000)
-
-newtype MatchT m a = MatchT { unMatchT :: StateT (MatchData m) (EitherT (m ()) m) a }
-  deriving (Functor, Applicative, Monad, MonadState (MatchData m))
-
-instance MonadTrans MatchT where
-  lift ma = MatchT . StateT $ \md -> do
-    a <- EitherT (fmap return ma)
-    return (a, md)
-
-instance MonadConc m => Game (MatchT m) where
-  move xo = do
-    sendGameState xo
-    recvAction xo
-  forfeit w l = do
-    md <- get
-    lift $ forfeit' md w l
-  end (Win w) (Lose l) = do
-    tally (Winner w)
-    sendFinal w Won
-    sendFinal l Loss
-  tie = do
-    tally Tie
-    sendFinal X Tied
-    sendFinal O Tied
-  step b xo loc = do
-    logAction xo loc
-    updateBoard b
+logAction :: HasActions m => XO -> Loc -> m ()
+logAction xo loc = appendAction (Action xo loc)

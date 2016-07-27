@@ -22,6 +22,7 @@ library
     T3.Registrar.Impl
     T3.Util
     T3.Server
+    T3.Server.Connection
     T3.Server.Serve
     T3.Server.Util
     T3.Server.Impl

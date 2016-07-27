@@ -1,8 +1,8 @@
 module T3.Server.Part.Impl
-  ( GameLogger
-  , Server(..)
-  , playResponse
-  , randomResponse
+  ( -- ( GameLogger
+  -- , Server(..)
+  -- , playResponse
+  -- , randomResponse
   ) where
 
 import qualified Data.Map as M
@@ -22,9 +22,10 @@ import T3.Server.Dispatch hiding (Dispatch(..))
 import T3.Server.Dispatch.Impl
 import T3.Server (MatchInfo(..))
 import T3.Server.Match hiding (Types(..))
-import T3.Server.Match.Impl (delay)
+-- import T3.Server.Match.Impl (delay)
 import T3.Server.Util
 
+{-
 type GameLogger m = MatchId -> Users -> [Action] -> Board -> Result -> m ()
 
 data Server m = Server
@@ -117,3 +118,4 @@ randomResponse srv startReq = do
   -- response for user
   let xMatchInfo = MatchInfo matchId xGT
   return $ StartResponse xMatchInfo Users{ _uX = xUN, _uO = oUN } (GameState emptyBoard Nothing)
+-}
