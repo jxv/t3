@@ -1,4 +1,4 @@
-module T3.Server.Game.Impl
+module T3.Server.GameImpl
   ( move
   , forfeit
   , end

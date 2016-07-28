@@ -1,4 +1,4 @@
-module T3.Server.Impl
+module T3.ServerImpl
  ( playMove
  , startMatch
  , randomMatch

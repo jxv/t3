@@ -1,4 +1,4 @@
-module T3.Registrar.Impl
+module T3.RegistrarImpl
   ( register
   , authenticate
   ) where

@@ -1,4 +1,4 @@
-module T3.Server.Dispatch.Impl () where
+module T3.Server.DispatchImpl () where
 
 import Control.Concurrent.Classy.Chan
 import Control.Monad.Trans.Class

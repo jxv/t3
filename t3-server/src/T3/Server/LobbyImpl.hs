@@ -1,4 +1,4 @@
-module T3.Server.Lobby.Impl
+module T3.Server.LobbyImpl
   ( addUserToLobby
   , userPairFromLobby
   ) where

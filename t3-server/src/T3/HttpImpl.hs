@@ -1,4 +1,4 @@
-module T3.Http.Impl
+module T3.HttpImpl
   ( playHandler
   , startHandler
   , randomHandler

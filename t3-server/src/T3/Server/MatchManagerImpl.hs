@@ -1,4 +1,4 @@
-module T3.Server.MatchManager.Impl
+module T3.Server.MatchManagerImpl
   ( -- ( dispatchMatch
   -- , dispatchMatchWithRandomBot
   -- , getUsers

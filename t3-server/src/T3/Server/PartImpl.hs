@@ -1,30 +1,4 @@
-module T3.Server.Part.Impl
-  ( -- ( GameLogger
-  -- , Server(..)
-  -- , playResponse
-  -- , randomResponse
-  ) where
-
-import qualified Data.Map as M
-import Control.Applicative
-import Control.Monad.Conc.Class
-import Control.Monad.Trans (MonadIO, liftIO)
-import Control.Monad (mzero, forever)
-import Control.Concurrent.Classy.STM
-import Control.Concurrent.Async
-import Data.IORef
-
-import T3.Core
-import T3.Bot.Random
-import T3.Server hiding (Server(..)) -- types
-import T3.Server.Lobby hiding (Lobby(..)) -- types
-import T3.Server.Dispatch hiding (Dispatch(..))
-import T3.Server.Dispatch.Impl
-import T3.Server (MatchInfo(..))
-import T3.Server.Match hiding (Types(..))
--- import T3.Server.Match.Impl (delay)
-import T3.Server.Util
-
+module T3.Server.PartImpl () where
 {-
 type GameLogger m = MatchId -> Users -> [Action] -> Board -> Result -> m ()
 

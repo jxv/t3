@@ -1,4 +1,4 @@
-module T3.Server.Storage.JsonImpl
+module T3.Server.StorageImpl
   ( writePlayback
   ) where
 
