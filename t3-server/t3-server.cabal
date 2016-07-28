@@ -22,10 +22,10 @@ library
     T3.RegistrarImpl
     T3.Util
     T3.Server
+    T3.ServerImpl
     T3.Server.Connection
     T3.Server.Serve
     T3.Server.Util
-    T3.ServerImpl
     T3.Server.Storage
     T3.Server.StorageImpl
     T3.Server.Dispatch
@@ -38,6 +38,11 @@ library
     T3.Server.MatchImpl
     T3.Server.MatchManager
     T3.Server.MatchManagerImpl
+    T3.Server.MatchLogger
+    T3.Server.MatchTransmitter
+    T3.Server.HasMatchState
+    T3.Server.HasConnection
+    T3.Server.OnTimeout
     T3.Server.GameImpl
   default-extensions:
     OverloadedStrings
