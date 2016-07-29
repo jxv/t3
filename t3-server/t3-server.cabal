@@ -28,6 +28,7 @@ library
     T3.Server.Serve
     T3.Server.Util
     T3.Server.GameImpl
+    T3.Server.GameInstance
     T3.Server.Console
     T3.Server.ConsoleImpl
     T3.Server.Storage
