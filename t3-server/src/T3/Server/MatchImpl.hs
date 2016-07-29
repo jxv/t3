@@ -16,6 +16,9 @@ import T3.Server.HasConnection (HasConnection(..))
 import T3.Server.MatchTransmitter (MatchTransmitter(..))
 import T3.Server.MatchLogger (MatchLogger(..))
 import T3.Server.OnTimeout (OnTimeout(..))
+import T3.Server.Stoppable (Stoppable(..))
+import T3.Server.Milliseconds (Milliseconds)
+import T3.Server.HasTimeoutLimit (HasTimeoutLimit(..))
 
 sendGameState :: (HasMatchState m, HasConnection m, MatchTransmitter m) => XO -> m ()
 sendGameState xo = do
@@ -23,10 +26,19 @@ sendGameState xo = do
   conn <- getConnection xo
   sendStep conn (Step board Nothing)
 
-recvAction :: (HasMatchState m, HasConnection m, MatchTransmitter m, MatchLogger m, OnTimeout m) => XO -> m Loc
+recvAction :: (HasMatchState m, HasConnection m, MatchTransmitter m, MatchLogger m, OnTimeout m, HasTimeoutLimit m, Stoppable m) => XO -> m Loc
 recvAction xo = do
   conn <- getConnection xo
-  onTimeout (recvLoc conn) (timeoutForfeit (Win $ yinYang xo) (Lose xo))
+  maybeTimeoutLimit <- getTimeoutLimit
+  case maybeTimeoutLimit of
+    Nothing -> recvLoc conn
+    Just ms -> do
+      maybeLoc <- onTimeout (recvLoc conn) ms
+      case maybeLoc of
+        Just loc -> return loc
+        Nothing -> do
+          timeoutForfeit (Win $ yinYang xo) (Lose xo)
+          stop
 
 sendFinal :: (HasMatchState m, HasConnection m, MatchTransmitter m) => XO -> Final -> m ()
 sendFinal xo final = do

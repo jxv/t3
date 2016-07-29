@@ -24,8 +24,12 @@ library
     T3.Server
     T3.ServerImpl
     T3.Server.Connection
+    T3.Server.Milliseconds
     T3.Server.Serve
     T3.Server.Util
+    T3.Server.GameImpl
+    T3.Server.Console
+    T3.Server.ConsoleImpl
     T3.Server.Storage
     T3.Server.StorageImpl
     T3.Server.Dispatch
@@ -38,12 +42,25 @@ library
     T3.Server.MatchImpl
     T3.Server.MatchManager
     T3.Server.MatchManagerImpl
+    T3.Server.MatchInstance
+    T3.Server.MatchInstanceImpl
     T3.Server.MatchLogger
+    T3.Server.MatchLoggerImpl
     T3.Server.MatchTransmitter
+    T3.Server.MatchTransmitterImpl
     T3.Server.HasMatchState
+    T3.Server.HasMatchStateImpl
     T3.Server.HasConnection
+    T3.Server.HasConnectionImpl
+    T3.Server.HasCallbacks
+    T3.Server.HasCallbacksImpl
+    T3.Server.ConnectionCallback
+    T3.Server.ConnectionCallbackImpl
     T3.Server.OnTimeout
-    T3.Server.GameImpl
+    T3.Server.OnTimeoutImpl
+    T3.Server.HasTimeoutLimit
+    T3.Server.HasTimeoutLimitImpl
+    T3.Server.Stoppable
   default-extensions:
     OverloadedStrings
     MultiParamTypeClasses
@@ -80,5 +97,6 @@ library
     , random
     , MonadRandom
     , text-conversions
+    , either
   default-language:
     Haskell2010
