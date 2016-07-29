@@ -42,8 +42,8 @@ library
     T3.Server.MatchImpl
     T3.Server.MatchManager
     T3.Server.MatchManagerImpl
-    T3.Server.MatchInstance
-    T3.Server.MatchInstanceImpl
+    T3.Server.MatchInfo
+    T3.Server.MatchInfoImpl
     T3.Server.MatchLogger
     T3.Server.MatchLoggerImpl
     T3.Server.MatchTransmitter
