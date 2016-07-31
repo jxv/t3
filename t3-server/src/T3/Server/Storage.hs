@@ -8,9 +8,10 @@ module T3.Server.Storage
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.HashMap.Lazy as HML
-import qualified Data.Map as M
+import qualified Data.Map as Map
 import GHC.Generics
 import Control.Monad (mzero)
+import Data.Map (Map)
 import Data.Aeson hiding (Result)
 
 import qualified T3.Game as Game
@@ -29,8 +30,8 @@ data Playback = Playback
   } deriving (Show, Eq, Generic)
 
 class Monad m => Storage m where
-  storeUsers :: M.Map UserName UserKey -> m ()
-  loadUsers :: m (M.Map UserName UserKey)
+  storeUsers :: Map UserName UserKey -> m ()
+  loadUsers :: m (Map UserName UserKey)
   loadMatchList :: m [MatchId]
   storePlayback :: Playback -> m ()
   loadPlayback :: MatchId -> m Playback

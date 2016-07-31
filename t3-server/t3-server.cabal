@@ -58,7 +58,6 @@ library
     T3.Server.ConnectionCallback
     T3.Server.ConnectionCallbackImpl
     T3.Server.OnTimeout
-    T3.Server.OnTimeoutImpl
     T3.Server.HasTimeoutLimit
     T3.Server.HasTimeoutLimitImpl
     T3.Server.Stoppable
@@ -99,5 +98,6 @@ library
     , MonadRandom
     , text-conversions
     , either
+    , exceptions
   default-language:
     Haskell2010
