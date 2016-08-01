@@ -9,19 +9,15 @@ import qualified Control.Monad.STM as IO
 import Control.Concurrent.Async (race)
 import Control.Monad.State (StateT(..), MonadState(..), gets, evalStateT)
 import Control.Monad.IO.Class (MonadIO(..))
-import Control.Monad.Conc.Class (MonadConc(..), threadDelay)
-import Control.Monad.STM.Class (MonadSTM(..))
-import Control.Monad.Catch (MonadCatch(..), MonadMask(..), MonadThrow(..))
+import Control.Monad.Conc.Class (threadDelay)
 import Data.Map (Map)
 
 import T3.Game (Game(..))
-import T3.Core (Loc)
+import T3.Core (Loc, Action, Board)
 
 import qualified T3.Server.ConsoleImpl as Console
 import qualified T3.Server.GameImpl as Game
 import qualified T3.Server.MatchImpl as Match
-import qualified T3.Server.HasMatchState as HasMatchState
-import qualified T3.Server.HasConnection as HasConnection
 import qualified T3.Server.MatchTransmitterImpl as MatchTransmitter
 import qualified T3.Server.ConnectionCallbackImpl as ConnectionCallback
 import qualified T3.Server.MatchLoggerImpl as MatchLogger
@@ -43,14 +39,28 @@ import T3.Server.Storage (Storage(..))
 import T3.Server.MatchInfo (MatchInfo(..))
 
 data GameState m = GameState
-  { _gameStateConnectionMap :: Map Connection (m (Loc, Step -> m ()), Step -> m ())
+  { _gameStateCallbacks :: Callbacks m
   , _gameStateTimeoutLimit :: Maybe Milliseconds
-  , _gameStateUsers :: Users
-  , _gameStateMatchId :: MatchId
+  , _gameStateMatchInfo :: MatchInfoData
+  , _gameStateMatchState :: MatchStateData
   }
 
+data Callbacks m = Callbacks
+  { _callbacksConnectionMap :: Map Connection (m (Loc, Step -> m ()), Step -> m ())
+  }
+
+data MatchInfoData = MatchInfoData
+  { _matchInfoUsers :: Users
+  , _matchInfoMatchId :: MatchId
+  } deriving (Show, Eq)
+
+data MatchStateData = MatchStateData
+  { _matchStateBoard :: Board
+  , _matchStateActions :: [Action]
+  } deriving (Show, Eq)
+
 newtype GameM a = GameM { unGameM :: StateT (GameState GameM) IO a }
-  deriving (Functor, Applicative, Monad, MonadIO, MonadState (GameState GameM)) -- , MonadThrow, MonadMask, MonadCatch)
+  deriving (Functor, Applicative, Monad, MonadIO, MonadState (GameState GameM))
 
 runGameM :: GameM a -> GameState GameM -> IO (a, GameState GameM)
 runGameM game st = runStateT (unGameM game) st
@@ -70,13 +80,13 @@ instance Stoppable GameM where
   stop = undefined
 
 instance HasMatchState GameM where
-  getBoard = HasMatchState.getBoard
-  putBoard = HasMatchState.putBoard
-  getActions = HasMatchState.getActions
-  appendAction = HasMatchState.appendAction
+  getBoard = undefined
+  putBoard = undefined
+  getActions = undefined
+  appendAction = undefined
 
 instance HasConnection GameM where
-  getConnection = HasConnection.getConnection
+  getConnection = undefined
 
 instance MatchTransmitter GameM where
   sendStep = MatchTransmitter.sendStep
@@ -88,17 +98,17 @@ instance ConnectionCallback GameM where
   putRespond = ConnectionCallback.putRespond
 
 instance HasCallbacks GameM where
-  getCallbacks = gets _gameStateConnectionMap
+  getCallbacks = gets (_callbacksConnectionMap . _gameStateCallbacks)
   putCallbacks connectionMap = do
     gameState <- get
-    put $ gameState{ _gameStateConnectionMap = connectionMap }
+    put $ gameState{ _gameStateCallbacks = (_gameStateCallbacks gameState){ _callbacksConnectionMap = connectionMap } }
 
 instance MatchLogger GameM where
   logMatch = MatchLogger.logMatch
 
 instance MatchInfo GameM where
-  getUsers = gets _gameStateUsers
-  getMatchId = gets _gameStateMatchId
+  getUsers = gets (_matchInfoUsers . _gameStateMatchInfo)
+  getMatchId = gets (_matchInfoMatchId . _gameStateMatchInfo)
 
 instance OnTimeout GameM where
   onTimeout callee ms = do
@@ -109,6 +119,11 @@ instance OnTimeout GameM where
       Right (b, st') -> do
         put st'
         return $ Just b
+    where
+      delay :: Milliseconds -> IO ()
+      delay (Milliseconds ms) = threadDelay (scaleFromNano * ms)
+        where
+          scaleFromNano = 1000
 
 instance HasTimeoutLimit GameM where
   getTimeoutLimit = gets _gameStateTimeoutLimit
@@ -122,8 +137,3 @@ instance Storage GameM where
   loadMatchList = undefined
   storePlayback = undefined
   loadPlayback = undefined
-
-delay :: Milliseconds -> IO ()
-delay (Milliseconds ms) = threadDelay (scaleFromNano * ms)
-  where
-    scaleFromNano = 1000
