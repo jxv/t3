@@ -149,10 +149,3 @@ instance HasTimeoutLimit GameM where
 
 instance Console GameM where
   printStdout = Console.printStdout
-
-instance Storage GameM where
-  storeUsers _ = return ()
-  loadUsers = undefined
-  loadMatchList = undefined
-  storePlayback = undefined
-  loadPlayback = undefined
