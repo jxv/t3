@@ -13,7 +13,7 @@ import Control.Monad.Conc.Class (threadDelay)
 import Data.Map (Map)
 
 import T3.Game (Game(..))
-import T3.Core (Loc, Action, Board)
+import T3.Core (Loc, Action, Board, XO(..))
 
 import qualified T3.Server.ConsoleImpl as Console
 import qualified T3.Server.GameImpl as Game
@@ -43,7 +43,13 @@ data GameState m = GameState
   , _gameStateTimeoutLimit :: Maybe Milliseconds
   , _gameStateMatchInfo :: MatchInfoData
   , _gameStateMatchState :: MatchStateData
+  , _gameStateConnections :: Connections
   }
+
+data Connections = Connections
+  { _connectionsX :: Connection
+  , _connectionsO :: Connection
+  } deriving (Show, Eq)
 
 data Callbacks m = Callbacks
   { _callbacksConnectionMap :: Map Connection (m (Loc, Step -> m ()), Step -> m ())
@@ -67,6 +73,10 @@ runGameM game st = runStateT (unGameM game) st
 
 instance Game GameM where
   move = Game.move
+  forfeit = Game.forfeit
+  end = Game.end
+  tie = Game.tie
+  step = Game.step
 
 instance Match GameM where
   sendGameState = Match.sendGameState
@@ -91,7 +101,11 @@ instance HasMatchState GameM where
     put gameState{ _gameStateMatchState = matchState{ _matchStateActions = _matchStateActions matchState ++ [action] } }
 
 instance HasConnection GameM where
-  getConnection = undefined
+  getConnection xo = do
+    connections <- gets _gameStateConnections
+    return $ case xo of
+      X -> _connectionsX connections
+      O -> _connectionsO connections
 
 instance MatchTransmitter GameM where
   sendStep = MatchTransmitter.sendStep
