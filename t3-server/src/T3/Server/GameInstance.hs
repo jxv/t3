@@ -88,7 +88,7 @@ instance Match GameM where
   logAction = Match.logAction
 
 instance Stoppable GameM where
-  stop = undefined
+  stop = GameM $ MaybeT $ return Nothing
 
 instance HasMatchState GameM where
   getBoard = gets (_matchStateBoard . _gameStateMatchState)
