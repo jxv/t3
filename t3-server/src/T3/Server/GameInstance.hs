@@ -7,6 +7,7 @@ module T3.Server.GameInstance
 import qualified Control.Concurrent as IO
 import qualified Control.Monad.STM as IO
 import Control.Concurrent.Async (race)
+import Control.Monad.Trans.Maybe (MaybeT(..))
 import Control.Monad.State (StateT(..), MonadState(..), gets, evalStateT)
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.Conc.Class (threadDelay)
@@ -65,11 +66,11 @@ data MatchStateData = MatchStateData
   , _matchStateActions :: [Action]
   } deriving (Show, Eq)
 
-newtype GameM a = GameM { unGameM :: StateT (GameState GameM) IO a }
+newtype GameM a = GameM { unGameM :: MaybeT (StateT (GameState GameM) IO) a }
   deriving (Functor, Applicative, Monad, MonadIO, MonadState (GameState GameM))
 
-runGameM :: GameM a -> GameState GameM -> IO (a, GameState GameM)
-runGameM game st = runStateT (unGameM game) st
+runGameM :: GameM a -> GameState GameM -> IO (Maybe a, GameState GameM)
+runGameM game st = runStateT (runMaybeT (unGameM game)) st
 
 instance Game GameM where
   move = Game.move
@@ -132,12 +133,12 @@ instance MatchInfo GameM where
 instance OnTimeout GameM where
   onTimeout callee ms = do
     st <- get
-    a <- liftIO $ race (liftIO $ delay 3000) (liftIO $ runGameM callee st)
-    case a of
+    eitherOfMaybeAndGameState <- liftIO $ race (liftIO $ delay 3000) (liftIO $ runGameM callee st)
+    case eitherOfMaybeAndGameState of
       Left _ -> return Nothing
-      Right (b, st') -> do
+      Right (maybeA, st') -> do
         put st'
-        return $ Just b
+        return maybeA
     where
       delay :: Milliseconds -> IO ()
       delay (Milliseconds ms) = threadDelay (scaleFromNano * ms)
