@@ -80,10 +80,15 @@ instance Stoppable GameM where
   stop = undefined
 
 instance HasMatchState GameM where
-  getBoard = undefined
-  putBoard = undefined
-  getActions = undefined
-  appendAction = undefined
+  getBoard = gets (_matchStateBoard . _gameStateMatchState)
+  putBoard board = do
+    gameState <- get
+    put $ gameState{ _gameStateMatchState = (_gameStateMatchState gameState){ _matchStateBoard = board } }
+  getActions = gets (_matchStateActions . _gameStateMatchState)
+  appendAction action = do
+    gameState <- get
+    let matchState = _gameStateMatchState gameState
+    put gameState{ _gameStateMatchState = matchState{ _matchStateActions = _matchStateActions matchState ++ [action] } }
 
 instance HasConnection GameM where
   getConnection = undefined
