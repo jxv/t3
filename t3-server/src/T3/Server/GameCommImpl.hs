@@ -1,4 +1,4 @@
-module T3.Server.MatchImpl
+module T3.Server.GameCommImpl
   ( sendGameState
   , recvAction
   , sendFinal

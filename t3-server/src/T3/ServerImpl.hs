@@ -16,7 +16,6 @@ import T3.Server hiding (Server(..))
 import T3.Server.Util
 import T3.Server.Part
 import T3.Server.Lobby hiding (ListLobby)
-import T3.Server.Match
 import T3.Server.Util
 import T3.Registrar (Registrar(..))
 

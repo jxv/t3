@@ -17,7 +17,6 @@ import Data.Aeson hiding (Result)
 import qualified T3.Game as Game
 import T3.Core (XO(..), Loc(..), Result(..), dropPrefixP, dropPrefixJ, yinYang, Action(..))
 import T3.Game
-import T3.Server.Match
 import T3.Server (UserName, UserKey, MatchId, Users)
 import T3.Server.Dispatch
 import T3.Server.Lobby -- types

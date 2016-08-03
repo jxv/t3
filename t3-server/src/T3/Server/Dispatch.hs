@@ -5,7 +5,6 @@ module T3.Server.Dispatch
 
 import T3.Core (Loc(..), Board, Result(..), Action(..))
 import T3.Server -- types
-import T3.Server.Match hiding (MatchToken) -- types
 
 data MatchConfig m = MatchConfig
   { _matchCfgX :: UserConfig m
@@ -16,8 +15,8 @@ data MatchConfig m = MatchConfig
 class Monad m => Dispatch m where
   forkMatch
     :: Maybe Seconds
-    -> (UserName, MatchToken, Callback m)
-    -> (UserName, MatchToken, Callback m)
+    -> (UserName, Callback m)
+    -> (UserName, Callback m)
     -> ([Action] -> Board -> Result -> m ())
     -> m ()
     -> m (MatchConfig m)

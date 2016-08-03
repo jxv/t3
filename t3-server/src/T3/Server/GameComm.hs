@@ -1,11 +1,11 @@
-module T3.Server.Match
-  ( Match(..)
+module T3.Server.GameComm
+  ( GameComm(..)
   ) where
 
 import T3.Core (XO, Loc, Board, Result)
 import T3.Server (Final)
 
-class Monad m => Match m where
+class Monad m => GameComm m where
   sendGameState :: XO -> m ()
   recvAction :: XO -> m Loc
   sendFinal :: XO -> Final -> m ()

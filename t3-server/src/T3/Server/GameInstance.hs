@@ -18,14 +18,14 @@ import T3.Core (Loc, Action, Board, XO(..))
 
 import qualified T3.Server.ConsoleImpl as Console
 import qualified T3.Server.GameImpl as Game
-import qualified T3.Server.MatchImpl as Match
+import qualified T3.Server.GameCommImpl as GameComm
 import qualified T3.Server.MatchTransmitterImpl as MatchTransmitter
 import qualified T3.Server.ConnectionCallbackImpl as ConnectionCallback
 import qualified T3.Server.MatchLoggerImpl as MatchLogger
 import T3.Server.Connection (Connection)
 import T3.Server.Milliseconds (Milliseconds(..))
 import T3.Server (Step(..), Users, MatchId)
-import T3.Server.Match (Match(..))
+import T3.Server.GameComm (GameComm(..))
 import T3.Server.MatchLogger (MatchLogger(..))
 import T3.Server.HasMatchState (HasMatchState(..))
 import T3.Server.HasConnection (HasConnection(..))
@@ -79,13 +79,13 @@ instance Game GameM where
   tie = Game.tie
   step = Game.step
 
-instance Match GameM where
-  sendGameState = Match.sendGameState
-  recvAction = Match.recvAction
-  sendFinal = Match.sendFinal
-  tally = Match.tally
-  updateBoard = Match.updateBoard
-  logAction = Match.logAction
+instance GameComm GameM where
+  sendGameState = GameComm.sendGameState
+  recvAction = GameComm.recvAction
+  sendFinal = GameComm.sendFinal
+  tally = GameComm.tally
+  updateBoard = GameComm.updateBoard
+  logAction = GameComm.logAction
 
 instance Stoppable GameM where
   stop = GameM $ MaybeT $ return Nothing
