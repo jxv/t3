@@ -1,9 +1,9 @@
-module T3.Server.GameComm
+module T3.Match.GameComm
   ( GameComm(..)
   ) where
 
 import T3.Core (XO, Loc, Board, Result)
-import T3.Server (Final)
+import T3.Match.Types (Final)
 
 class Monad m => GameComm m where
   sendGameState :: XO -> m ()

@@ -1,12 +1,12 @@
-module T3.Server.MatchTransmitterImpl
+module T3.Match.MatchTransmitterImpl
   ( sendStep
   , recvLoc
   ) where
 
 import T3.Core (Loc)
-import T3.Server (Step)
-import T3.Server.Connection (Connection)
-import T3.Server.ConnectionCallback (ConnectionCallback(..))
+import T3.Match.Types (Step)
+import T3.Match.Connection (Connection)
+import T3.Match.ConnectionCallback (ConnectionCallback(..))
 
 sendStep :: ConnectionCallback m => Connection -> Step -> m ()
 sendStep connection step = do

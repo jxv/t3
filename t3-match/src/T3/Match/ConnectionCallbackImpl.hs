@@ -1,4 +1,4 @@
-module T3.Server.ConnectionCallbackImpl
+module T3.Match.ConnectionCallbackImpl
   ( getRequest
   , getRespond
   , putRespond
@@ -8,9 +8,9 @@ import qualified Data.Map as Map ((!), insert)
 import Data.Map (Map)
 
 import T3.Core (Loc)
-import T3.Server (Step)
-import T3.Server.Connection (Connection)
-import T3.Server.HasCallbacks (HasCallbacks(..))
+import T3.Match.Types (Step)
+import T3.Match.Connection (Connection)
+import T3.Match.HasCallbacks (HasCallbacks(..))
 
 getRequest :: HasCallbacks m => Connection -> m (Loc, Step -> m ())
 getRequest connection = do

@@ -1,10 +1,10 @@
-module T3.Server.MatchTransmitter
+module T3.Match.MatchTransmitter
   ( MatchTransmitter(..)
   ) where
 
 import T3.Core (Loc)
-import T3.Server.Connection (Connection)
-import T3.Server (Step)
+import T3.Match.Types (Step)
+import T3.Match.Connection (Connection)
 
 class Monad m => MatchTransmitter m where
   sendStep :: Connection -> Step -> m ()

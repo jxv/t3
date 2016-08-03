@@ -1,8 +1,8 @@
-module T3.Server.MatchInfo
+module T3.Match.MatchInfo
   ( MatchInfo(..)
   ) where
 
-import T3.Server (Users, MatchId)
+import T3.Match.Types (Users, MatchId)
 
 class Monad m => MatchInfo m where
   getUsers :: m Users

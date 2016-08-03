@@ -1,6 +1,5 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE UndecidableInstances #-}
-module T3.Server.Match
+module T3.Match
   ( MatchState(..)
   , Connections(..)
   , Callbacks(..)
@@ -24,28 +23,27 @@ import T3.Game (Game(..))
 import T3.Game.Run (run)
 import T3.Core (Loc, Action, Board, XO(..), emptyBoard)
 
-import qualified T3.Server.ConsoleImpl as Console
-import qualified T3.Server.GameImpl as Game
-import qualified T3.Server.GameCommImpl as GameComm
-import qualified T3.Server.MatchTransmitterImpl as MatchTransmitter
-import qualified T3.Server.ConnectionCallbackImpl as ConnectionCallback
-import qualified T3.Server.MatchLoggerImpl as MatchLogger
-import T3.Server.Connection (Connection)
-import T3.Server.Milliseconds (Milliseconds(..), delay)
-import T3.Server (Step(..), Users, MatchId)
-import T3.Server.GameComm (GameComm(..))
-import T3.Server.MatchLogger (MatchLogger(..))
-import T3.Server.HasMatchState (HasMatchState(..))
-import T3.Server.HasConnection (HasConnection(..))
-import T3.Server.MatchTransmitter (MatchTransmitter(..))
-import T3.Server.ConnectionCallback (ConnectionCallback(..))
-import T3.Server.Stoppable (Stoppable(..))
-import T3.Server.HasCallbacks (HasCallbacks(..))
-import T3.Server.OnTimeout (OnTimeout(..))
-import T3.Server.HasTimeoutLimit (HasTimeoutLimit(..))
-import T3.Server.Console (Console(..))
-import T3.Server.Storage (Storage(..))
-import T3.Server.MatchInfo (MatchInfo(..))
+import qualified T3.Match.ConsoleImpl as Console
+import qualified T3.Match.GameImpl as Game
+import qualified T3.Match.GameCommImpl as GameComm
+import qualified T3.Match.MatchTransmitterImpl as MatchTransmitter
+import qualified T3.Match.ConnectionCallbackImpl as ConnectionCallback
+import qualified T3.Match.MatchLoggerImpl as MatchLogger
+import T3.Match.Types (Step(..), Users, MatchId)
+import T3.Match.Connection (Connection)
+import T3.Match.Milliseconds (Milliseconds(..), delay)
+import T3.Match.GameComm (GameComm(..))
+import T3.Match.MatchLogger (MatchLogger(..))
+import T3.Match.HasMatchState (HasMatchState(..))
+import T3.Match.HasConnection (HasConnection(..))
+import T3.Match.MatchTransmitter (MatchTransmitter(..))
+import T3.Match.ConnectionCallback (ConnectionCallback(..))
+import T3.Match.Stoppable (Stoppable(..))
+import T3.Match.HasCallbacks (HasCallbacks(..))
+import T3.Match.OnTimeout (OnTimeout(..))
+import T3.Match.HasTimeoutLimit (HasTimeoutLimit(..))
+import T3.Match.Console (Console(..))
+import T3.Match.MatchInfo (MatchInfo(..))
 
 newtype Match a = Match { unMatch :: MaybeT (StateT (MatchState Match) IO) a }
   deriving (Functor, Applicative, Monad, MonadIO, MonadState (MatchState Match))

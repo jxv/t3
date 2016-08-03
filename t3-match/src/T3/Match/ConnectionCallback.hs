@@ -1,10 +1,10 @@
-module T3.Server.ConnectionCallback
+module T3.Match.ConnectionCallback
   ( ConnectionCallback(..)
   ) where
 
 import T3.Core (Loc)
-import T3.Server (Step)
-import T3.Server.Connection (Connection)
+import T3.Match.Types (Step)
+import T3.Match.Connection (Connection)
 
 class Monad m => ConnectionCallback m where
   getRequest :: Connection -> m (Loc, Step -> m ())

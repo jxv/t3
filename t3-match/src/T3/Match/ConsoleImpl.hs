@@ -1,4 +1,4 @@
-module T3.Server.ConsoleImpl
+module T3.Match.ConsoleImpl
   ( printStdout
   ) where
 

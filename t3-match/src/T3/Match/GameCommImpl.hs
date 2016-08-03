@@ -1,4 +1,4 @@
-module T3.Server.GameCommImpl
+module T3.Match.GameCommImpl
   ( sendGameState
   , recvAction
   , sendFinal
@@ -9,16 +9,16 @@ module T3.Server.GameCommImpl
 
 import T3.Core (XO(..), Loc(..), Result(..), Action(..), Board, yinYang)
 import T3.Game (Win(..), Lose(..))
-import T3.Server (Seconds(..), Callback, Final(..), Step(..))
-import T3.Server.Connection (Connection)
-import T3.Server.HasMatchState (HasMatchState(..))
-import T3.Server.HasConnection (HasConnection(..))
-import T3.Server.MatchTransmitter (MatchTransmitter(..))
-import T3.Server.MatchLogger (MatchLogger(..))
-import T3.Server.OnTimeout (OnTimeout(..))
-import T3.Server.Stoppable (Stoppable(..))
-import T3.Server.Milliseconds (Milliseconds)
-import T3.Server.HasTimeoutLimit (HasTimeoutLimit(..))
+import T3.Match.Types (Seconds(..), Callback, Final(..), Step(..))
+import T3.Match.Connection (Connection)
+import T3.Match.HasMatchState (HasMatchState(..))
+import T3.Match.HasConnection (HasConnection(..))
+import T3.Match.MatchTransmitter (MatchTransmitter(..))
+import T3.Match.MatchLogger (MatchLogger(..))
+import T3.Match.OnTimeout (OnTimeout(..))
+import T3.Match.Stoppable (Stoppable(..))
+import T3.Match.Milliseconds (Milliseconds)
+import T3.Match.HasTimeoutLimit (HasTimeoutLimit(..))
 
 sendGameState :: (HasMatchState m, HasConnection m, MatchTransmitter m) => XO -> m ()
 sendGameState xo = do

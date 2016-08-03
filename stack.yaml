@@ -2,6 +2,7 @@ resolver: nightly-2016-07-03
 
 packages:
 - t3-game
+- t3-match
 - t3-server
 
 extra-deps:

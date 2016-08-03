@@ -1,4 +1,4 @@
-module T3.Server.HasMatchState
+module T3.Match.HasMatchState
   ( HasMatchState(..)
   ) where
 

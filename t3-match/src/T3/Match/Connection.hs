@@ -1,9 +1,9 @@
-module T3.Server.Connection
+module T3.Match.Connection
   ( Connection
   , mkConnection
   ) where
 
-import T3.Server (MatchId, UserName)
+import T3.Match.Types (MatchId, UserName)
 
 newtype Connection = Connection (MatchId, UserName)
   deriving (Show, Eq, Ord)

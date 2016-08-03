@@ -1,4 +1,4 @@
-module T3.Server.Console
+module T3.Match.Console
   ( Console(..)
   ) where
 

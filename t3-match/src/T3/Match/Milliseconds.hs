@@ -1,4 +1,4 @@
-module T3.Server.Milliseconds
+module T3.Match.Milliseconds
   ( Milliseconds(..)
   , delay
   ) where

@@ -1,4 +1,4 @@
-module T3.Server.GameImpl
+module T3.Match.GameImpl
   ( move
   , forfeit
   , end
@@ -8,8 +8,8 @@ module T3.Server.GameImpl
 
 import T3.Game (Win(..), Lose(..))
 import T3.Core (XO(..), Loc(..), Result(..), Action(..), Board, yinYang)
-import T3.Server (Final(..))
-import T3.Server.GameComm (GameComm(..))
+import T3.Match.Types (Final(..))
+import T3.Match.GameComm (GameComm(..))
 
 move :: GameComm m => XO -> m Loc
 move xo = do

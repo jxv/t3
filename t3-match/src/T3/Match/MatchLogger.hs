@@ -1,4 +1,4 @@
-module T3.Server.MatchLogger
+module T3.Match.MatchLogger
   ( MatchLogger(..)
   ) where
 

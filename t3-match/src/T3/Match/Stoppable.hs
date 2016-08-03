@@ -1,4 +1,4 @@
-module T3.Server.Stoppable
+module T3.Match.Stoppable
   ( Stoppable(..)
   ) where
 
