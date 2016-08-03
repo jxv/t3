@@ -17,7 +17,6 @@ import Control.Concurrent.Async (race)
 import Control.Monad.Trans.Maybe (MaybeT(..))
 import Control.Monad.State (StateT(..), MonadState(..), gets, evalStateT)
 import Control.Monad.IO.Class (MonadIO(..))
-import Control.Monad.Conc.Class (threadDelay)
 import Data.Map (Map)
 import Data.Functor (void)
 
@@ -32,7 +31,7 @@ import qualified T3.Server.MatchTransmitterImpl as MatchTransmitter
 import qualified T3.Server.ConnectionCallbackImpl as ConnectionCallback
 import qualified T3.Server.MatchLoggerImpl as MatchLogger
 import T3.Server.Connection (Connection)
-import T3.Server.Milliseconds (Milliseconds(..))
+import T3.Server.Milliseconds (Milliseconds(..), delay)
 import T3.Server (Step(..), Users, MatchId)
 import T3.Server.GameComm (GameComm(..))
 import T3.Server.MatchLogger (MatchLogger(..))
@@ -153,11 +152,6 @@ instance OnTimeout Match where
       Right (maybeA, st') -> do
         put st'
         return maybeA
-
-delay :: Milliseconds -> IO ()
-delay (Milliseconds ms) = threadDelay (scaleFromNano * ms)
-  where
-    scaleFromNano = 1000
 
 instance HasTimeoutLimit Match where
   getTimeoutLimit = gets _timeoutLimit
