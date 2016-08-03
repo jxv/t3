@@ -8,6 +8,7 @@ module T3.Server.Match
   , GameState(..)
   , Match 
   , runMatch
+  , startMatch
   ) where
 
 import qualified Control.Concurrent as IO
@@ -18,9 +19,11 @@ import Control.Monad.State (StateT(..), MonadState(..), gets, evalStateT)
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.Conc.Class (threadDelay)
 import Data.Map (Map)
+import Data.Functor (void)
 
 import T3.Game (Game(..))
-import T3.Core (Loc, Action, Board, XO(..))
+import T3.Game.Run (run)
+import T3.Core (Loc, Action, Board, XO(..), emptyBoard)
 
 import qualified T3.Server.ConsoleImpl as Console
 import qualified T3.Server.GameImpl as Game
@@ -61,6 +64,8 @@ data Connections = Connections
   , _connectionsO :: Connection
   } deriving (Show, Eq)
 
+type Callback m = (m (Loc, Step -> m ()), Step -> m ())
+
 data Callbacks m = Callbacks
   { _callbacksConnectionMap :: Map Connection (m (Loc, Step -> m ()), Step -> m ())
   }
@@ -77,6 +82,9 @@ data GameState = GameState
 
 runMatch :: Match a -> MatchState Match -> IO (Maybe a, MatchState Match)
 runMatch game st = runStateT (runMaybeT (unMatch game)) st
+
+startMatch :: MatchState Match -> IO ()
+startMatch = void . runMatch (run emptyBoard)
 
 instance Game Match where
   move = Game.move
@@ -139,17 +147,17 @@ instance MatchInfo Match where
 instance OnTimeout Match where
   onTimeout callee ms = do
     st <- get
-    eitherOfMaybeAndMatchState <- liftIO $ race (liftIO $ delay 3000) (liftIO $ runMatch callee st)
+    eitherOfMaybeAndMatchState <- liftIO $ race (liftIO $ delay ms) (liftIO $ runMatch callee st)
     case eitherOfMaybeAndMatchState of
       Left _ -> return Nothing
       Right (maybeA, st') -> do
         put st'
         return maybeA
-    where
-      delay :: Milliseconds -> IO ()
-      delay (Milliseconds ms) = threadDelay (scaleFromNano * ms)
-        where
-          scaleFromNano = 1000
+
+delay :: Milliseconds -> IO ()
+delay (Milliseconds ms) = threadDelay (scaleFromNano * ms)
+  where
+    scaleFromNano = 1000
 
 instance HasTimeoutLimit Match where
   getTimeoutLimit = gets _timeoutLimit
