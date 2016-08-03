@@ -28,7 +28,6 @@ library
     T3.Server.Serve
     T3.Server.Util
     T3.Server.GameImpl
-    T3.Server.GameInstance
     T3.Server.GameComm
     T3.Server.GameCommImpl
     T3.Server.Console
@@ -41,6 +40,7 @@ library
     T3.Server.LobbyImpl
     T3.Server.Part
     T3.Server.PartImpl
+    T3.Server.Match
     T3.Server.MatchManager
     T3.Server.MatchManagerImpl
     T3.Server.MatchInfo

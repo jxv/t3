@@ -1,7 +1,13 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE UndecidableInstances #-}
-module T3.Server.GameInstance
-  (
+module T3.Server.Match
+  ( MatchState(..)
+  , Connections(..)
+  , Callbacks(..)
+  , MatchInfoState(..)
+  , GameState(..)
+  , Match 
+  , runMatch
   ) where
 
 import qualified Control.Concurrent as IO
@@ -39,12 +45,15 @@ import T3.Server.Console (Console(..))
 import T3.Server.Storage (Storage(..))
 import T3.Server.MatchInfo (MatchInfo(..))
 
-data GameState m = GameState
-  { _gameStateCallbacks :: Callbacks m
-  , _gameStateTimeoutLimit :: Maybe Milliseconds
-  , _gameStateMatchInfo :: MatchInfoData
-  , _gameStateMatchState :: MatchStateData
-  , _gameStateConnections :: Connections
+newtype Match a = Match { unMatch :: MaybeT (StateT (MatchState Match) IO) a }
+  deriving (Functor, Applicative, Monad, MonadIO, MonadState (MatchState Match))
+
+data MatchState m = MatchState
+  { _callbacks :: Callbacks m
+  , _timeoutLimit :: Maybe Milliseconds
+  , _matchInfoState :: MatchInfoState
+  , _gameState :: GameState
+  , _connections :: Connections
   }
 
 data Connections = Connections
@@ -56,30 +65,27 @@ data Callbacks m = Callbacks
   { _callbacksConnectionMap :: Map Connection (m (Loc, Step -> m ()), Step -> m ())
   }
 
-data MatchInfoData = MatchInfoData
+data MatchInfoState = MatchInfoState
   { _matchInfoUsers :: Users
   , _matchInfoMatchId :: MatchId
   } deriving (Show, Eq)
 
-data MatchStateData = MatchStateData
-  { _matchStateBoard :: Board
-  , _matchStateActions :: [Action]
+data GameState = GameState
+  { _gameBoard :: Board
+  , _gameActions :: [Action]
   } deriving (Show, Eq)
 
-newtype GameM a = GameM { unGameM :: MaybeT (StateT (GameState GameM) IO) a }
-  deriving (Functor, Applicative, Monad, MonadIO, MonadState (GameState GameM))
+runMatch :: Match a -> MatchState Match -> IO (Maybe a, MatchState Match)
+runMatch game st = runStateT (runMaybeT (unMatch game)) st
 
-runGameM :: GameM a -> GameState GameM -> IO (Maybe a, GameState GameM)
-runGameM game st = runStateT (runMaybeT (unGameM game)) st
-
-instance Game GameM where
+instance Game Match where
   move = Game.move
   forfeit = Game.forfeit
   end = Game.end
   tie = Game.tie
   step = Game.step
 
-instance GameComm GameM where
+instance GameComm Match where
   sendGameState = GameComm.sendGameState
   recvAction = GameComm.recvAction
   sendFinal = GameComm.sendFinal
@@ -87,54 +93,54 @@ instance GameComm GameM where
   updateBoard = GameComm.updateBoard
   logAction = GameComm.logAction
 
-instance Stoppable GameM where
-  stop = GameM $ MaybeT $ return Nothing
+instance Stoppable Match where
+  stop = Match $ MaybeT $ return Nothing
 
-instance HasMatchState GameM where
-  getBoard = gets (_matchStateBoard . _gameStateMatchState)
+instance HasMatchState Match where
+  getBoard = gets (_gameBoard . _gameState)
   putBoard board = do
-    gameState <- get
-    put $ gameState{ _gameStateMatchState = (_gameStateMatchState gameState){ _matchStateBoard = board } }
-  getActions = gets (_matchStateActions . _gameStateMatchState)
+    matchState <- get
+    put $ matchState{ _gameState = (_gameState matchState){ _gameBoard = board } }
+  getActions = gets (_gameActions . _gameState)
   appendAction action = do
-    gameState <- get
-    let matchState = _gameStateMatchState gameState
-    put gameState{ _gameStateMatchState = matchState{ _matchStateActions = _matchStateActions matchState ++ [action] } }
+    matchState <- get
+    let gameState = _gameState matchState
+    put matchState{ _gameState = gameState{ _gameActions = _gameActions gameState ++ [action] } }
 
-instance HasConnection GameM where
+instance HasConnection Match where
   getConnection xo = do
-    connections <- gets _gameStateConnections
+    connections <- gets _connections
     return $ case xo of
       X -> _connectionsX connections
       O -> _connectionsO connections
 
-instance MatchTransmitter GameM where
+instance MatchTransmitter Match where
   sendStep = MatchTransmitter.sendStep
   recvLoc = MatchTransmitter.recvLoc
 
-instance ConnectionCallback GameM where
+instance ConnectionCallback Match where
   getRequest = ConnectionCallback.getRequest
   getRespond = ConnectionCallback.getRespond
   putRespond = ConnectionCallback.putRespond
 
-instance HasCallbacks GameM where
-  getCallbacks = gets (_callbacksConnectionMap . _gameStateCallbacks)
+instance HasCallbacks Match where
+  getCallbacks = gets (_callbacksConnectionMap . _callbacks)
   putCallbacks connectionMap = do
-    gameState <- get
-    put $ gameState{ _gameStateCallbacks = (_gameStateCallbacks gameState){ _callbacksConnectionMap = connectionMap } }
+    matchState <- get
+    put $ matchState{ _callbacks = (_callbacks matchState){ _callbacksConnectionMap = connectionMap } }
 
-instance MatchLogger GameM where
+instance MatchLogger Match where
   logMatch = MatchLogger.logMatch
 
-instance MatchInfo GameM where
-  getUsers = gets (_matchInfoUsers . _gameStateMatchInfo)
-  getMatchId = gets (_matchInfoMatchId . _gameStateMatchInfo)
+instance MatchInfo Match where
+  getUsers = gets (_matchInfoUsers . _matchInfoState)
+  getMatchId = gets (_matchInfoMatchId . _matchInfoState)
 
-instance OnTimeout GameM where
+instance OnTimeout Match where
   onTimeout callee ms = do
     st <- get
-    eitherOfMaybeAndGameState <- liftIO $ race (liftIO $ delay 3000) (liftIO $ runGameM callee st)
-    case eitherOfMaybeAndGameState of
+    eitherOfMaybeAndMatchState <- liftIO $ race (liftIO $ delay 3000) (liftIO $ runMatch callee st)
+    case eitherOfMaybeAndMatchState of
       Left _ -> return Nothing
       Right (maybeA, st') -> do
         put st'
@@ -145,8 +151,8 @@ instance OnTimeout GameM where
         where
           scaleFromNano = 1000
 
-instance HasTimeoutLimit GameM where
-  getTimeoutLimit = gets _gameStateTimeoutLimit
+instance HasTimeoutLimit Match where
+  getTimeoutLimit = gets _timeoutLimit
 
-instance Console GameM where
+instance Console Match where
   printStdout = Console.printStdout
