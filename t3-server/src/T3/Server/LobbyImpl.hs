@@ -1,4 +1,4 @@
-module T3.Server.Lobby.Impl
+module T3.Server.LobbyImpl
   ( addUserToLobby
   , userPairFromLobby
   ) where
@@ -10,14 +10,21 @@ import Control.Monad.STM.Class
 import Data.Maybe
 import System.Random
 
-import T3.Server (UserName, StartCallback)
+import T3.Server (UserName, StartCallback, StartResponse(..))
+import T3.Server.Util (toGameState)
 import T3.Server.Lobby hiding (Lobby(..))
 
-addUserToLobby :: (MonadSTM m, MonadConc m) => ListLobby m -> UserName -> StartCallback m -> m ()
-addUserToLobby lobby un cb = atomically $ do
-  lob <- readTVar lobby
-  let shouldAdd = isNothing (lookup un lob)
-  when shouldAdd $ writeTVar lobby ((un, cb) : lob)
+type ListLobby m = TVar (STM m) [(UserName, StartCallback m)]
+
+addUserToLobby :: (MonadSTM m, MonadConc m) => ListLobby m -> UserName -> m StartResponse
+addUserToLobby lobby un = do
+  resp <- newEmptyMVar
+  let startCallback matchInfo users step = putMVar resp $ StartResponse matchInfo users (toGameState step)
+  atomically $ do
+    lob <- readTVar lobby
+    let shouldAdd = isNothing (lookup un lob)
+    when shouldAdd $ writeTVar lobby ((un, startCallback) : lob)
+  takeMVar resp
 
 userPairFromLobby :: (MonadSTM m, MonadConc m, MonadRandom m) => ListLobby m -> m (Maybe ((UserName, StartCallback m), (UserName, StartCallback m)))
 userPairFromLobby lobby = do

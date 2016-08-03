@@ -1,59 +1,7 @@
 {-# OPTIONS -fno-warn-orphans #-}
 {-# LANGUAGE DeriveGeneric #-}
-module T3.Server.Serve
-  ( GameLogger
-  , Server(..)
-  , UserConfig(..)
-  , MatchConfig(..)
-  , UserCreds(..)
-  , StartRequest(..)
-  , PlayRequest(..)
-  , GameState(..)
-  , Users(..)
-  , StartResponse(..)
-  , PlayResponse(..)
-  , UserName(..)
-  , UserKey(..)
-  , RegisterRequest(..)
-  , RegisterResponse(..)
-  , forkServer
-  , genBase64
-  , genMatchToken
-  , genMatchId
-  , genUserName
-  , genUserKey
-  , authenticate
-  , authorize
-  , toGameState
-  ) where
-
-import qualified Data.Map as M
-import qualified Data.Text as T
-
-import Control.Applicative
-import Control.Monad.Conc.Class
-import Control.Concurrent.Classy.STM
-import Control.Monad
-import Control.Monad.Random
-import Data.Aeson hiding (Result)
-import Data.Aeson.Types (Options(..), defaultOptions, Parser)
-import Data.Text (Text)
-import System.Random
-import GHC.Generics
-import Data.Char
-
-import T3.Game
-import T3.Util (genBase64)
-import T3.Server.Match -- types
-import T3.Server hiding (ServerEsque(..)) -- types
-import T3.Server.Impl
-import T3.Server.Dispatch hiding (Dispatch(..)) -- types
-import T3.Server.Dispatch.Impl
-import T3.Server.Lobby hiding (Lobby(..)) -- types
-import T3.Server.Lobby.Impl
-import T3.Server.Part.Impl
-import T3.Server.Util
-
+module T3.Server.Serve () where
+{-
 forkServer :: (MonadConc m, MonadSTM m, MonadRandom m) => GameLogger m -> Maybe Seconds -> M.Map UserName UserKey -> m (Server m)
 forkServer logger timeoutLimit users = do
   lobby <- atomically $ newTVar []
@@ -89,4 +37,5 @@ serve srv = do
         removeSelf
       atomically $ modifyTVar (_srvMatches srv) (M.insert matchId sessCfg)
   threadDelay (1 * 1000000) -- 1 second
-  serve srv
+serve srv
+-}

@@ -1,9 +1,9 @@
-name:              t3-server
-synopsis:            tic-tac-toe server
-description:         Please see README.md
-version:           0.2.0
-cabal-version:     >= 1.10
-build-type:        Simple
+name: t3-match
+synopsis: tic-tac-toe match
+description:  Please see README.md
+version: 0.1.0
+cabal-version: >= 1.10
+build-type: Simple
 license: BSD3
 license-file: LICENSE
 author: Joe Vargas
@@ -15,26 +15,28 @@ library
   hs-source-dirs:
     src
   exposed-modules:
-    T3.Http
-    T3.Http.Serve
-    T3.HttpImpl
-    T3.Registrar
-    T3.RegistrarImpl
-    T3.Util
-    T3.Server
-    T3.ServerImpl
-    T3.Server.Serve
-    T3.Server.Util
-    T3.Server.Storage
-    T3.Server.StorageImpl
-    T3.Server.Dispatch
-    T3.Server.DispatchImpl
-    T3.Server.Lobby
-    T3.Server.LobbyImpl
-    T3.Server.Part
-    T3.Server.PartImpl
-    T3.Server.MatchManager
-    T3.Server.MatchManagerImpl
+    T3.Match
+    T3.Match.Types
+    T3.Match.HasMatchState
+    T3.Match.HasConnection
+    T3.Match.HasCallbacks
+    T3.Match.Connection
+    T3.Match.Milliseconds
+    T3.Match.GameImpl
+    T3.Match.GameComm
+    T3.Match.GameCommImpl
+    T3.Match.Console
+    T3.Match.ConsoleImpl
+    T3.Match.MatchInfo
+    T3.Match.MatchLogger
+    T3.Match.MatchLoggerImpl
+    T3.Match.MatchTransmitter
+    T3.Match.MatchTransmitterImpl
+    T3.Match.ConnectionCallback
+    T3.Match.ConnectionCallbackImpl
+    T3.Match.OnTimeout
+    T3.Match.HasTimeoutLimit
+    T3.Match.Stoppable
   default-extensions:
     OverloadedStrings
     MultiParamTypeClasses
@@ -68,7 +70,6 @@ library
     , hashmap
     , either
     , t3-game
-    , t3-match
     , random
     , MonadRandom
     , text-conversions

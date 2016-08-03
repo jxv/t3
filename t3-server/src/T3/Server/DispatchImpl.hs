@@ -1,6 +1,4 @@
-module T3.Server.Dispatch.Impl
-  ( forkMatch
-  ) where
+module T3.Server.DispatchImpl () where
 
 import Control.Concurrent.Classy.Chan
 import Control.Monad.Trans.Class
@@ -12,9 +10,10 @@ import T3.Core (XO(..), Loc(..), Result(..), Action(..), Result, Board, yinYang,
 import T3.Game
 import T3.Game.Run (run)
 import T3.Server (UserInit, Seconds, MatchToken, Callback, UserName, UserConfig(..))
-import T3.Server.Match.Impl (MatchT(..), MatchData(..), delay)
+-- import T3.Server.Match.Impl (MatchT(..), MatchData(..), delay)
 import T3.Server.Dispatch hiding (Dispatch(..))
 
+{-
 forkMatch
   :: MonadConc m
   => Maybe Seconds
@@ -45,3 +44,4 @@ runMatch timeoutLimit (xCB, xReq) (oCB, oReq) logger done = do
   matchResult <- runEitherT (evalStateT (unMatchT $ run b) matchDat)
   either id (const $ return ()) matchResult
   done
+-}

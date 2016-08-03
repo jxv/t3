@@ -13,10 +13,9 @@ module T3.Server
   , UserCreds(..)
   , GameState(..)
   , UserConfig(..)
-  , ServerEsque(..)
+  , Server(..)
   , Step(..)
   , Users(..)
-
   , Final(..)
   , Seconds(..)
   , MatchInfo(..)
@@ -117,10 +116,10 @@ newtype UserKey = UserKey { getUserKey :: Text }
 data UserConfig m = UserConfig
   { _userCfgUserName :: UserName
   , _userCfgMatchToken :: MatchToken
-  , _userCfgSendLoc :: (Loc, Callback m) -> m ()
+  , _userCfgSendLoc :: (Loc, Step -> m ()) -> m ()
   }
 
-class Monad m => ServerEsque m where
+class Monad m => Server m where
   registerUser :: RegisterRequest -> m RegisterResponse
   playMove :: MatchId -> MatchToken -> PlayRequest -> m PlayResponse
   startMatch :: StartRequest -> m StartResponse
