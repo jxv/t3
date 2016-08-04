@@ -5,9 +5,6 @@ module T3.Match.Types
   , Step(..)
   , Users(..)
   , Final(..)
-  , Seconds(..)
-  , Callback
-  , UserInit
   ) where
 
 import GHC.Generics
@@ -17,20 +14,10 @@ import Data.Text (Text)
 
 import T3.Core (XO, Loc, Board, Result, Action(..), dropPrefixP, dropPrefixJ)
 
-type Callback m = Step -> m ()
-
-type UserInit m = (Callback m, m (Loc, Callback m))
-
-newtype Seconds = Seconds Int
-  deriving (Num, Show, Eq, Ord, Enum)
-
 newtype UserName = UserName { getUserName :: Text }
   deriving (Show, Eq, Ord, FromJSON, ToJSON)
 
 newtype MatchId = MatchId { getMatchId :: Text }
-  deriving (Show, Eq, Ord, FromJSON, ToJSON)
-
-newtype MatchToken = MatchToken { getMatchToken :: Text }
   deriving (Show, Eq, Ord, FromJSON, ToJSON)
 
 data Users = Users

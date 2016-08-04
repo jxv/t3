@@ -9,7 +9,7 @@ module T3.Match.GameCommImpl
 
 import T3.Core (XO(..), Loc(..), Result(..), Action(..), Board, yinYang)
 import T3.Game (Win(..), Lose(..))
-import T3.Match.Types (Seconds(..), Callback, Final(..), Step(..))
+import T3.Match.Types (Final(..), Step(..))
 import T3.Match.HasMatchState (HasMatchState(..))
 import T3.Match.MatchTransmitter (MatchTransmitter(..))
 import T3.Match.MatchLogger (MatchLogger(..))
