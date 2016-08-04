@@ -58,3 +58,8 @@ updateBoard board = putBoard board
 
 logAction :: HasState m => XO -> Loc -> m ()
 logAction xo loc = appendAction (Action xo loc)
+
+appendAction :: HasState m => Action -> m ()
+appendAction action = do
+  actions <- getActions
+  putActions $ actions ++ [action]

@@ -80,11 +80,11 @@ instance HasState Match where
   getBoard = gets _board
   putBoard board = do
     matchState <- get
-    put $ matchState{ _board = board }
+    put matchState{ _board = board }
   getActions = gets _actions
-  appendAction action = do
+  putActions actions = do
     matchState <- get
-    put matchState{ _actions = _actions matchState ++ [action] }
+    put matchState{ _actions = actions }
 
 instance Transmitter Match where
   sendStep xo step = do

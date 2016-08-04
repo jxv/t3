@@ -8,4 +8,4 @@ class Monad m => HasState m where
   getBoard :: m Board
   putBoard :: Board -> m ()
   getActions :: m [Action]
-  appendAction :: Action -> m ()
+  putActions :: [Action] -> m ()
