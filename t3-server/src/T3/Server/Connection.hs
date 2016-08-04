@@ -1,4 +1,4 @@
-module T3.Match.Connection
+module T3.Server.Connection
   ( Connection
   , mkConnection
   ) where

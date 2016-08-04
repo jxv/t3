@@ -18,9 +18,6 @@ library
     T3.Match
     T3.Match.Types
     T3.Match.HasMatchState
-    T3.Match.HasConnection
-    T3.Match.HasCallbacks
-    T3.Match.Connection
     T3.Match.Milliseconds
     T3.Match.GameImpl
     T3.Match.GameComm
@@ -31,9 +28,6 @@ library
     T3.Match.MatchLogger
     T3.Match.MatchLoggerImpl
     T3.Match.MatchTransmitter
-    T3.Match.MatchTransmitterImpl
-    T3.Match.ConnectionCallback
-    T3.Match.ConnectionCallbackImpl
     T3.Match.OnTimeout
     T3.Match.HasTimeoutLimit
     T3.Match.Stoppable
