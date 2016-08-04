@@ -12,7 +12,6 @@ import Control.Monad.Trans.Maybe (MaybeT(..))
 import Control.Monad.State (StateT(..), MonadState(..), gets, evalStateT)
 import Control.Monad.Reader (ReaderT(..), MonadReader(..), asks)
 import Control.Monad.IO.Class (MonadIO(..))
-import Data.Map (Map)
 import Data.Functor (void)
 
 import T3.Game (Game(..))
