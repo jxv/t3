@@ -1,9 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 module T3.Match.Types
-  ( MatchId(..)
-  , UserName(..)
-  , Step(..)
-  , Users(..)
+  ( Step(..)
   , Final(..)
   ) where
 
@@ -12,18 +9,7 @@ import Control.Monad (mzero)
 import Data.Aeson (ToJSON(..), FromJSON(..), Value(..))
 import Data.Text (Text)
 
-import T3.Core (XO, Loc, Board, Result, Action(..), dropPrefixP, dropPrefixJ)
-
-newtype UserName = UserName { getUserName :: Text }
-  deriving (Show, Eq, Ord, FromJSON, ToJSON)
-
-newtype MatchId = MatchId { getMatchId :: Text }
-  deriving (Show, Eq, Ord, FromJSON, ToJSON)
-
-data Users = Users
-  { _uX :: UserName
-  , _uO :: UserName
-  } deriving (Show, Eq, Generic)
+import T3.Core (Board, dropPrefixP, dropPrefixJ)
 
 data Step = Step
   { _stepBoard :: Board
@@ -37,12 +23,6 @@ data Final
   | LossByDQ
   | Tied
   deriving (Show, Eq)
-
-instance FromJSON Users where
-  parseJSON = dropPrefixP "_u"
-
-instance ToJSON Users where
-  toJSON = dropPrefixJ "_u"
 
 instance FromJSON Final where
   parseJSON (String "Won") = pure Won

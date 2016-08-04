@@ -24,7 +24,6 @@ library
     T3.Match.GameCommImpl
     T3.Match.Console
     T3.Match.ConsoleImpl
-    T3.Match.MatchInfo
     T3.Match.MatchLogger
     T3.Match.MatchTransmitter
     T3.Match.OnTimeout
