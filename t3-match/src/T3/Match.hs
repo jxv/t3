@@ -1,10 +1,7 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module T3.Match
   ( MatchEnv(..)
   , Callbacks(..)
-  , MatchState(..)
   , Match 
-  , runMatch
   , startMatch
   ) where
 
