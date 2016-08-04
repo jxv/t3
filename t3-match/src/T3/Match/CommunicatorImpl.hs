@@ -1,4 +1,4 @@
-module T3.Match.GameCommImpl
+module T3.Match.CommunicatorImpl
   ( sendGameState
   , recvAction
   , sendFinal
@@ -10,20 +10,20 @@ module T3.Match.GameCommImpl
 import T3.Core (XO(..), Loc(..), Result(..), Action(..), Board, yinYang)
 import T3.Game (Win(..), Lose(..))
 import T3.Match.Types (Final(..), Step(..))
-import T3.Match.HasMatchState (HasMatchState(..))
-import T3.Match.MatchTransmitter (MatchTransmitter(..))
-import T3.Match.MatchLogger (MatchLogger(..))
+import T3.Match.HasState (HasState(..))
+import T3.Match.Transmitter (Transmitter(..))
+import T3.Match.Logger (Logger(..))
 import T3.Match.OnTimeout (OnTimeout(..))
 import T3.Match.Stoppable (Stoppable(..))
 import T3.Match.Milliseconds (Milliseconds)
 import T3.Match.HasTimeoutLimit (HasTimeoutLimit(..))
 
-sendGameState :: (HasMatchState m, MatchTransmitter m) => XO -> m ()
+sendGameState :: (HasState m, Transmitter m) => XO -> m ()
 sendGameState xo = do
   board <- getBoard
   sendStep xo (Step board Nothing)
 
-recvAction :: (HasMatchState m, MatchTransmitter m, MatchLogger m, OnTimeout m, HasTimeoutLimit m, Stoppable m) => XO -> m Loc
+recvAction :: (HasState m, Transmitter m, Logger m, OnTimeout m, HasTimeoutLimit m, Stoppable m) => XO -> m Loc
 recvAction xo = do
   maybeTimeoutLimit <- getTimeoutLimit
   case maybeTimeoutLimit of
@@ -36,25 +36,25 @@ recvAction xo = do
           timeoutForfeit (Win $ yinYang xo) (Lose xo)
           stop
 
-sendFinal :: (HasMatchState m, MatchTransmitter m) => XO -> Final -> m ()
+sendFinal :: (HasState m, Transmitter m) => XO -> Final -> m ()
 sendFinal xo final = do
   board <- getBoard
   sendStep xo (Step board (Just final))
 
-tally :: (HasMatchState m, MatchLogger m) => Result -> m ()
+tally :: (HasState m, Logger m) => Result -> m ()
 tally result = do
   actions <- getActions
   board <- getBoard
-  logMatch actions board result
+  logIt actions board result
 
-timeoutForfeit :: (HasMatchState m, MatchTransmitter m, MatchLogger m) => Win XO -> Lose XO -> m ()
+timeoutForfeit :: (HasState m, Transmitter m, Logger m) => Win XO -> Lose XO -> m ()
 timeoutForfeit (Win w) (Lose l) = do
   tally (Winner w)
   sendFinal w WonByDQ
   sendFinal l LossByDQ
 
-updateBoard :: HasMatchState m => Board -> m ()
+updateBoard :: HasState m => Board -> m ()
 updateBoard board = putBoard board
 
-logAction :: HasMatchState m => XO -> Loc -> m ()
+logAction :: HasState m => XO -> Loc -> m ()
 logAction xo loc = appendAction (Action xo loc)

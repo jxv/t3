@@ -17,15 +17,15 @@ library
   exposed-modules:
     T3.Match
     T3.Match.Types
-    T3.Match.HasMatchState
+    T3.Match.HasState
     T3.Match.Milliseconds
     T3.Match.GameImpl
-    T3.Match.GameComm
-    T3.Match.GameCommImpl
+    T3.Match.Communicator
+    T3.Match.CommunicatorImpl
     T3.Match.Console
     T3.Match.ConsoleImpl
-    T3.Match.MatchLogger
-    T3.Match.MatchTransmitter
+    T3.Match.Logger
+    T3.Match.Transmitter
     T3.Match.OnTimeout
     T3.Match.HasTimeoutLimit
     T3.Match.Stoppable

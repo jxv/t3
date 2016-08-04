@@ -24,13 +24,13 @@ import T3.Core (Loc, Action, Board, Result, XO(..), emptyBoard)
 
 import qualified T3.Match.ConsoleImpl as Console
 import qualified T3.Match.GameImpl as Game
-import qualified T3.Match.GameCommImpl as GameComm
+import qualified T3.Match.CommunicatorImpl as Communicator
 import T3.Match.Types (Step(..))
 import T3.Match.Milliseconds (Milliseconds(..), delay)
-import T3.Match.GameComm (GameComm(..))
-import T3.Match.MatchLogger (MatchLogger(..))
-import T3.Match.HasMatchState (HasMatchState(..))
-import T3.Match.MatchTransmitter (MatchTransmitter(..))
+import T3.Match.Communicator (Communicator(..))
+import T3.Match.Transmitter (Transmitter(..))
+import T3.Match.Logger (Logger(..))
+import T3.Match.HasState (HasState(..))
 import T3.Match.Stoppable (Stoppable(..))
 import T3.Match.OnTimeout (OnTimeout(..))
 import T3.Match.HasTimeoutLimit (HasTimeoutLimit(..))
@@ -68,18 +68,18 @@ instance Game Match where
   tie = Game.tie
   step = Game.step
 
-instance GameComm Match where
-  sendGameState = GameComm.sendGameState
-  recvAction = GameComm.recvAction
-  sendFinal = GameComm.sendFinal
-  tally = GameComm.tally
-  updateBoard = GameComm.updateBoard
-  logAction = GameComm.logAction
+instance Communicator Match where
+  sendGameState = Communicator.sendGameState
+  recvAction = Communicator.recvAction
+  sendFinal = Communicator.sendFinal
+  tally = Communicator.tally
+  updateBoard = Communicator.updateBoard
+  logAction = Communicator.logAction
 
 instance Stoppable Match where
   stop = Match $ MaybeT $ return Nothing
 
-instance HasMatchState Match where
+instance HasState Match where
   getBoard = gets _board
   putBoard board = do
     matchState <- get
@@ -89,7 +89,7 @@ instance HasMatchState Match where
     matchState <- get
     put matchState{ _actions = _actions matchState ++ [action] }
 
-instance MatchTransmitter Match where
+instance Transmitter Match where
   sendStep xo step = do
     send <- asks (_callbacksSend . flip _callbacks xo)
     liftIO $ send step
@@ -97,8 +97,8 @@ instance MatchTransmitter Match where
     recv <- asks (_callbacksRecv . flip _callbacks xo)
     liftIO recv
 
-instance MatchLogger Match where
-  logMatch actions board result = do
+instance Logger Match where
+  logIt actions board result = do
     logger <- asks _logger
     liftIO $ logger actions board result
 
