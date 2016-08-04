@@ -3,18 +3,18 @@ module T3.Match.MatchTransmitterImpl
   , recvLoc
   ) where
 
-import T3.Core (Loc)
+import T3.Core (Loc, XO)
 import T3.Match.Types (Step)
 import T3.Match.Connection (Connection)
 import T3.Match.ConnectionCallback (ConnectionCallback(..))
 
-sendStep :: ConnectionCallback m => Connection -> Step -> m ()
-sendStep connection step = do
-  respond <- getRespond connection
+sendStep :: ConnectionCallback m => XO -> Step -> m ()
+sendStep xo step = do
+  respond <- getRespond xo
   respond step
 
-recvLoc :: ConnectionCallback m => Connection -> m Loc
-recvLoc connection = do
-  (loc, respond) <- getRequest connection
-  putRespond connection respond
+recvLoc :: ConnectionCallback m => XO -> m Loc
+recvLoc xo = do
+  (loc, respond) <- getRequest xo
+  putRespond xo respond
   return loc

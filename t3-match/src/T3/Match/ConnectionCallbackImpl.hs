@@ -7,25 +7,24 @@ module T3.Match.ConnectionCallbackImpl
 import qualified Data.Map as Map ((!), insert)
 import Data.Map (Map)
 
-import T3.Core (Loc)
+import T3.Core (Loc, XO)
 import T3.Match.Types (Step)
-import T3.Match.Connection (Connection)
 import T3.Match.HasCallbacks (HasCallbacks(..))
 
-getRequest :: HasCallbacks m => Connection -> m (Loc, Step -> m ())
-getRequest connection = do
+getRequest :: HasCallbacks m => XO -> m (Loc, Step -> m ())
+getRequest xo = do
   callbacks <- getCallbacks
-  fst $ callbacks Map.! connection
+  fst $ callbacks Map.! xo
 
-getRespond :: HasCallbacks m => Connection -> m (Step -> m ())
-getRespond connection = do
+getRespond :: HasCallbacks m => XO -> m (Step -> m ())
+getRespond xo = do
   callbacks <- getCallbacks
-  return . snd $ callbacks Map.! connection
+  return . snd $ callbacks Map.! xo
 
-putRespond :: HasCallbacks m => Connection -> (Step -> m ()) -> m ()
-putRespond connection respond = do
+putRespond :: HasCallbacks m => XO -> (Step -> m ()) -> m ()
+putRespond xo respond = do
   callbacks <- getCallbacks
-  let callback = callbacks Map.! connection
+  let callback = callbacks Map.! xo
   let callback' = (fst callback, respond)
-  let callbacks' = Map.insert connection callback' callbacks
+  let callbacks' = Map.insert xo callback' callbacks
   putCallbacks callbacks'

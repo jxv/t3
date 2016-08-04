@@ -1,7 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module T3.Match
   ( MatchState(..)
-  , Connections(..)
   , Callbacks(..)
   , MatchInfoState(..)
   , GameState(..)
@@ -53,18 +52,12 @@ data MatchState m = MatchState
   , _timeoutLimit :: Maybe Milliseconds
   , _matchInfoState :: MatchInfoState
   , _gameState :: GameState
-  , _connections :: Connections
   }
-
-data Connections = Connections
-  { _connectionsX :: Connection
-  , _connectionsO :: Connection
-  } deriving (Show, Eq)
 
 type Callback m = (m (Loc, Step -> m ()), Step -> m ())
 
 data Callbacks m = Callbacks
-  { _callbacksConnectionMap :: Map Connection (m (Loc, Step -> m ()), Step -> m ())
+  { _callbacksConnectionMap :: Map XO (m (Loc, Step -> m ()), Step -> m ())
   }
 
 data MatchInfoState = MatchInfoState
@@ -111,13 +104,6 @@ instance HasMatchState Match where
     matchState <- get
     let gameState = _gameState matchState
     put matchState{ _gameState = gameState{ _gameActions = _gameActions gameState ++ [action] } }
-
-instance HasConnection Match where
-  getConnection xo = do
-    connections <- gets _connections
-    return $ case xo of
-      X -> _connectionsX connections
-      O -> _connectionsO connections
 
 instance MatchTransmitter Match where
   sendStep = MatchTransmitter.sendStep

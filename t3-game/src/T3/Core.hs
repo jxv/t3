@@ -37,7 +37,7 @@ import Data.Maybe
 data XO
   = X
   | O
-  deriving (Show, Eq, Generic, ToJSON)
+  deriving (Show, Eq, Ord, Generic, ToJSON)
 
 data Loc = Loc
   { _locX :: Int
