@@ -2,7 +2,6 @@
 module T3.Match
   ( MatchState(..)
   , Callbacks(..)
-  , MatchInfoState(..)
   , GameState(..)
   , Match 
   , runMatch
@@ -20,12 +19,11 @@ import Data.Functor (void)
 
 import T3.Game (Game(..))
 import T3.Game.Run (run)
-import T3.Core (Loc, Action, Board, XO(..), emptyBoard)
+import T3.Core (Loc, Action, Board, Result, XO(..), emptyBoard)
 
 import qualified T3.Match.ConsoleImpl as Console
 import qualified T3.Match.GameImpl as Game
 import qualified T3.Match.GameCommImpl as GameComm
-import qualified T3.Match.MatchLoggerImpl as MatchLogger
 import T3.Match.Types (Step(..), Users, MatchId)
 import T3.Match.Milliseconds (Milliseconds(..), delay)
 import T3.Match.GameComm (GameComm(..))
@@ -36,7 +34,6 @@ import T3.Match.Stoppable (Stoppable(..))
 import T3.Match.OnTimeout (OnTimeout(..))
 import T3.Match.HasTimeoutLimit (HasTimeoutLimit(..))
 import T3.Match.Console (Console(..))
-import T3.Match.MatchInfo (MatchInfo(..))
 
 newtype Match a = Match { unMatch :: MaybeT (StateT MatchState IO) a }
   deriving (Functor, Applicative, Monad, MonadIO, MonadState MatchState)
@@ -44,19 +41,14 @@ newtype Match a = Match { unMatch :: MaybeT (StateT MatchState IO) a }
 data MatchState = MatchState
   { _callbacks :: XO -> Callbacks
   , _timeoutLimit :: Maybe Milliseconds
-  , _matchInfoState :: MatchInfoState
   , _gameState :: GameState
+  , _logger :: [Action] -> Board -> Result -> IO ()
   }
 
 data Callbacks = Callbacks
   { _callbacksRecv :: IO Loc
   , _callbacksSend :: Step -> IO ()
   }
-
-data MatchInfoState = MatchInfoState
-  { _matchInfoUsers :: Users
-  , _matchInfoMatchId :: MatchId
-  } deriving (Show, Eq)
 
 data GameState = GameState
   { _gameBoard :: Board
@@ -107,11 +99,9 @@ instance MatchTransmitter Match where
     liftIO recv
 
 instance MatchLogger Match where
-  logMatch = MatchLogger.logMatch
-
-instance MatchInfo Match where
-  getUsers = gets (_matchInfoUsers . _matchInfoState)
-  getMatchId = gets (_matchInfoMatchId . _matchInfoState)
+  logMatch actions board result = do
+    logger <- gets _logger
+    liftIO $ logger actions board result
 
 instance OnTimeout Match where
   onTimeout callee ms = do

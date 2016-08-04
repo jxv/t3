@@ -26,7 +26,6 @@ library
     T3.Match.ConsoleImpl
     T3.Match.MatchInfo
     T3.Match.MatchLogger
-    T3.Match.MatchLoggerImpl
     T3.Match.MatchTransmitter
     T3.Match.OnTimeout
     T3.Match.HasTimeoutLimit
