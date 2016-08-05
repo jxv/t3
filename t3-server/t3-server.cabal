@@ -54,3 +54,28 @@ library
     , exceptions
   default-language:
     Haskell2010
+
+test-suite t3-server-test
+  type:
+    exitcode-stdio-1.0
+  hs-source-dirs:
+    test
+  main-is:
+    Spec.hs
+  build-depends:
+      base
+    , t3-game
+    , t3-match
+    , t3-server
+    , hspec
+    , aeson
+  ghc-options:
+    -threaded -rtsopts -with-rtsopts=-N
+  default-language:
+    Haskell2010
+
+source-repository head
+  type:
+    git
+  location:
+    https://github.com/jxv/t3
