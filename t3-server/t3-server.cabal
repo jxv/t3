@@ -16,6 +16,8 @@ library
     src
   exposed-modules:
     T3.Server
+    T3.Server.Lobby
+    T3.Server.Matches
   default-extensions:
     OverloadedStrings
     MultiParamTypeClasses
@@ -25,6 +27,7 @@ library
     FlexibleInstances
     EmptyDataDecls
     TupleSections
+    LambdaCase
   build-depends:
       base >= 4 && < 5
     , bytestring
