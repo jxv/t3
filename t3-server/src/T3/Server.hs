@@ -13,8 +13,11 @@ import T3.Match.Types (Step)
 import T3.Server.Lobby
 import T3.Server.Matches
 
-type ClientId = String
-type MatchId = String
+newtype ClientId = ClientId String
+  deriving (Show, Eq)
+
+newtype MatchId = MatchId String
+  deriving (Show, Eq)
 
 class Monad m => GetClientPair m where
   getClientPair :: m (ClientId, ClientId)
@@ -39,16 +42,19 @@ data MatchCallbacks = MatchCallbacks
   , _matchCallbacksSend :: Loc -> IO ()
   }
 
+dispatcher :: (GetClientPair m, ForkMatch m, GenMatchId m, GetLogger m, GetTimeoutLimit m, InsertMatch m) => m ()
+dispatcher = dispatchMatch >> dispatcher
+
 dispatchMatch :: (GetClientPair m, ForkMatch m, GenMatchId m, GetLogger m, GetTimeoutLimit m, InsertMatch m) => m ()
 dispatchMatch = do
-  (userA, userB) <- getClientPair
+  (clientA, clientB) <- getClientPair
   matchId <- genMatchId
   logger <- getLogger
   timeoutLimit <- getTimeoutLimit
-  (threadId, xoMatchCallbacks) <- forkMatch (logger matchId userA userB) timeoutLimit
-  let users = xoMap userA userB
-  let matchCallbacks user = case user of userA -> xoMatchCallbacks X; userB -> xoMatchCallbacks O
-  insertMatch matchId threadId users matchCallbacks
+  (threadId, xoMatchCallbacks) <- forkMatch (logger matchId clientA clientB) timeoutLimit
+  let clients = xoMap clientA clientB
+  let matchCallbacks client = case client of clientA -> xoMatchCallbacks X; clientB -> xoMatchCallbacks O
+  insertMatch matchId threadId clients matchCallbacks
 
 xoMap :: a -> a -> XO -> a
 xoMap x _ X = x
@@ -92,9 +98,9 @@ forkMatch' logger timeoutLimit = do
   return (threadId, fmap snd cb)
 
 stdoutLogger :: MatchId -> ClientId -> ClientId -> [Action] -> Board -> Result -> IO ()
-stdoutLogger matchId userA userB actions board result = do
+stdoutLogger matchId clientA clientB actions board result = do
   putStrLn $ show matchId
-  putStrLn $ show (userA, userB)
+  putStrLn $ show (clientA, clientB)
   putStrLn $ show actions
   putStrLn $ show board
   putStrLn $ show result
