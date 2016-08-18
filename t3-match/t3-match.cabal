@@ -48,6 +48,7 @@ library
     , stm
     , text
     , transformers
+    , t3-core
     , t3-game
   default-language:
     Haskell2010

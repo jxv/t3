@@ -1,5 +1,5 @@
-name: t3-game
-version: 3.0.0
+name: t3-bot
+version: 0.1.0
 synopsis: tic-tac-toe
 description: Please see README.md
 homepage: http://github.com/jxv/t3#readme
@@ -16,18 +16,10 @@ library
   hs-source-dirs:
     src
   exposed-modules:
-    T3.Game
-    T3.Game.Run
-    T3.Game.ConsoleImpl
+    T3.Bot.Random
   build-depends:
       base >= 4.7 && < 5
-    , aeson
-    , text
-    , bytestring
-    , mtl
     , containers
-    , safe
-    , vector
     , MonadRandom
     , t3-core
   default-language:
@@ -43,9 +35,8 @@ test-suite t3-game-test
   build-depends:
       base
     , t3-core
-    , t3-game
+    , t3-bot
     , hspec
-    , aeson
   ghc-options:
     -threaded -rtsopts -with-rtsopts=-N
   default-language:

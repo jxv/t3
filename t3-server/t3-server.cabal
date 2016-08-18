@@ -48,6 +48,7 @@ library
     , hashable
     , hashmap
     , either
+    , t3-core
     , t3-game
     , t3-match
     , random

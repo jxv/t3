@@ -3,9 +3,10 @@ module T3.Bot.Random
   ) where
 
 import Data.Map (keys)
-import T3.Core
-import Control.Monad.Random
+import Control.Monad.Random (MonadRandom(getRandom))
 import Data.List (notElem)
+
+import T3.Core
 
 randomLoc :: MonadRandom m => Board -> m (Maybe Loc)
 randomLoc b 

@@ -10,8 +10,8 @@ import T3.Match
 import T3.Match.Milliseconds (Milliseconds(..), Delayer(..))
 import T3.Match.Types (Step)
 
-import T3.Server.Lobby
-import T3.Server.Matches
+import T3.Server.Lobby ()
+import T3.Server.Matches ()
 
 newtype ClientId = ClientId String
   deriving (Show, Eq)
