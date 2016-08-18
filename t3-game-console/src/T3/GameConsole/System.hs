@@ -8,13 +8,14 @@ import Prelude hiding (putStrLn, getLine)
 import Control.Monad.State (StateT, evalStateT, MonadState(put, get))
 import Control.Monad.IO.Class (MonadIO)
 
-import qualified T3.Game.BoardManagerImpl as BoardManager
+import qualified T3.Game.BoardManagerImpl as BoardManager (isOpenLoc, getResult)
 import T3.Core (Board, emptyBoard, boardList)
 import T3.Game.Game (Game(..))
 import T3.Game.HasBoard (HasBoard(..))
 import T3.Game.BoardManager (BoardManager(..))
 
 import qualified T3.GameConsole.GameImpl as Game
+import qualified T3.GameConsole.BoardManagerImpl as BoardManager (insertAtLoc)
 import qualified T3.GameConsole.ConsoleImpl as Console
 import T3.GameConsole.Console (Console(..))
 
@@ -30,21 +31,8 @@ instance HasBoard System where
 
 instance BoardManager System where
   isOpenLoc = BoardManager.isOpenLoc
-  insertAtLoc loc xo = do
-    BoardManager.insertAtLoc loc xo
-    board <- getBoard
-    step board xo loc
+  insertAtLoc = BoardManager.insertAtLoc
   getResult = BoardManager.getResult
-
-step b p loc = do
-  let d = boardList b
-  let cell mcell = maybe " " show mcell
-  putStrLn $ show p ++ " moved to " ++ show loc
-  putStrLn $ cell (d !! 0) ++ "|" ++  cell (d !! 1) ++ "|" ++ cell (d !! 2)
-  putStrLn "-+-+-"
-  putStrLn $ cell (d !! 3) ++ "|" ++  cell (d !! 4) ++ "|" ++ cell (d !! 5)
-  putStrLn "-+-+-"
-  putStrLn $ cell (d !! 6) ++ "|" ++  cell (d !! 7) ++ "|" ++ cell (d !! 8)
 
 instance Console System where
   putStrLn = Console.putStrLn

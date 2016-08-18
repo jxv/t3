@@ -19,6 +19,7 @@ library
     T3.GameConsole.System
     T3.GameConsole.Console
     T3.GameConsole.ConsoleImpl
+    T3.GameConsole.BoardManagerImpl
     T3.GameConsole.GameImpl
   build-depends:
       base >= 4.7 && < 5
