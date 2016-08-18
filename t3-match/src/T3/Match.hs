@@ -14,7 +14,7 @@ import Control.Monad.Reader (ReaderT(..), MonadReader(..), asks)
 import Control.Monad.IO.Class (MonadIO(..))
 import Data.Functor (void)
 
-import qualified T3.Game.BoardManagerImpl as BoardManager
+import qualified T3.Game.BoardManagerImpl as BoardManager (isOpenLoc, getResult)
 import T3.Game.Run (run)
 import T3.Game.Game (Game(..))
 import T3.Game.HasBoard (HasBoard(..))
@@ -24,6 +24,7 @@ import T3.Core (Loc, Action, Board, Result, XO(..), emptyBoard)
 import qualified T3.Match.ConsoleImpl as Console
 import qualified T3.Match.GameImpl as Game
 import qualified T3.Match.CommunicatorImpl as Communicator
+import qualified T3.Match.BoardManagerImpl as BoardManager (insertAtLoc)
 import T3.Match.Types (Step(..))
 import T3.Match.Milliseconds (Milliseconds(..), delay)
 import T3.Match.Communicator (Communicator(..))
@@ -68,11 +69,7 @@ instance Game Match where
 
 instance BoardManager Match where
   isOpenLoc = BoardManager.isOpenLoc
-  insertAtLoc loc xo = do
-    BoardManager.insertAtLoc loc xo
-    logAction xo loc
-    board <- getBoard
-    updateBoard board
+  insertAtLoc = BoardManager.insertAtLoc
   getResult = BoardManager.getResult
 
 instance Communicator Match where

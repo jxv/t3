@@ -20,6 +20,7 @@ library
     T3.Match.HasActions
     T3.Match.Milliseconds
     T3.Match.GameImpl
+    T3.Match.BoardManagerImpl
     T3.Match.Communicator
     T3.Match.CommunicatorImpl
     T3.Match.Console
