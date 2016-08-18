@@ -3,10 +3,9 @@ module T3.Match.GameImpl
   , forfeit
   , end
   , tie
-  , step
   ) where
 
-import T3.Game (Win(..), Lose(..))
+import T3.Game.Game (Win(Win), Lose(Lose))
 import T3.Core (XO(..), Loc(..), Result(..), Action(..), Board, yinYang)
 import T3.Match.Types (Final(..))
 import T3.Match.Communicator (Communicator(..))
@@ -33,8 +32,3 @@ tie = do
   tally Tie
   sendFinal X Tied
   sendFinal O Tied
-
-step :: Communicator m => Board -> XO -> Loc -> m ()
-step b xo loc = do
-  logAction xo loc
-  updateBoard b

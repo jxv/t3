@@ -14,8 +14,11 @@ import Control.Monad.Reader (ReaderT(..), MonadReader(..), asks)
 import Control.Monad.IO.Class (MonadIO(..))
 import Data.Functor (void)
 
-import T3.Game (Game(..))
+import qualified T3.Game.BoardManagerImpl as BoardManager
 import T3.Game.Run (run)
+import T3.Game.Game (Game(..))
+import T3.Game.HasBoard (HasBoard(..))
+import T3.Game.BoardManager (BoardManager(..))
 import T3.Core (Loc, Action, Board, Result, XO(..), emptyBoard)
 
 import qualified T3.Match.ConsoleImpl as Console
@@ -26,7 +29,7 @@ import T3.Match.Milliseconds (Milliseconds(..), delay)
 import T3.Match.Communicator (Communicator(..))
 import T3.Match.Transmitter (Transmitter(..))
 import T3.Match.Logger (Logger(..))
-import T3.Match.HasState (HasState(..))
+import T3.Match.HasActions (HasActions(..))
 import T3.Match.Stoppable (Stoppable(..))
 import T3.Match.OnTimeout (OnTimeout(..))
 import T3.Match.HasTimeoutLimit (HasTimeoutLimit(..))
@@ -55,14 +58,22 @@ runMatch :: Match a -> MatchState -> MatchEnv -> IO (Maybe a, MatchState)
 runMatch game st env = runStateT (runReaderT (runMaybeT (unMatch game)) env) st
 
 startMatch :: MatchEnv -> IO ()
-startMatch = void . runMatch (run emptyBoard) MatchState{ _board = emptyBoard, _actions = [] }
+startMatch = void . runMatch run MatchState{ _board = emptyBoard, _actions = [] }
 
 instance Game Match where
   move = Game.move
   forfeit = Game.forfeit
   end = Game.end
   tie = Game.tie
-  step = Game.step
+
+instance BoardManager Match where
+  isOpenLoc = BoardManager.isOpenLoc
+  insertAtLoc loc xo = do
+    BoardManager.insertAtLoc loc xo
+    logAction xo loc
+    board <- getBoard
+    updateBoard board
+  getResult = BoardManager.getResult
 
 instance Communicator Match where
   sendGameState = Communicator.sendGameState
@@ -75,11 +86,13 @@ instance Communicator Match where
 instance Stoppable Match where
   stop = Match $ MaybeT $ return Nothing
 
-instance HasState Match where
+instance HasBoard Match where
   getBoard = gets _board
   putBoard board = do
     matchState <- get
     put matchState{ _board = board }
+
+instance HasActions Match where
   getActions = gets _actions
   putActions actions = do
     matchState <- get

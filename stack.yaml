@@ -4,6 +4,7 @@ packages:
 - t3-core
 - t3-bot
 - t3-game
+- t3-game-console
 - t3-match
 - t3-server
 

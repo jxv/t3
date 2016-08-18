@@ -17,7 +17,7 @@ library
   exposed-modules:
     T3.Match
     T3.Match.Types
-    T3.Match.HasState
+    T3.Match.HasActions
     T3.Match.Milliseconds
     T3.Match.GameImpl
     T3.Match.Communicator
