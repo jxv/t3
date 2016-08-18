@@ -15,7 +15,7 @@ library
   hs-source-dirs:
     src
   exposed-modules:
-    T3.Match
+    T3.Match.System
     T3.Match.Types
     T3.Match.HasActions
     T3.Match.Milliseconds

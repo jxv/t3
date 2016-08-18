@@ -1,8 +1,8 @@
-module T3.Match
-  ( MatchEnv(..)
+module T3.Match.System
+  ( Env(..)
   , Callbacks(..)
-  , Match 
-  , startMatch
+  , System
+  , io
   ) where
 
 import qualified Control.Concurrent as IO
@@ -36,10 +36,10 @@ import T3.Match.OnTimeout (OnTimeout(..))
 import T3.Match.HasTimeoutLimit (HasTimeoutLimit(..))
 import T3.Match.Console (Console(..))
 
-newtype Match a = Match { unMatch :: MaybeT (ReaderT MatchEnv (StateT MatchState IO)) a }
-  deriving (Functor, Applicative, Monad, MonadIO, MonadReader MatchEnv, MonadState MatchState)
+newtype System a = System { unSystem :: MaybeT (ReaderT Env (StateT Data IO)) a }
+  deriving (Functor, Applicative, Monad, MonadIO, MonadReader Env, MonadState Data)
 
-data MatchEnv = MatchEnv
+data Env = Env
   { _callbacks :: XO -> Callbacks
   , _timeoutLimit :: Maybe Milliseconds
   , _logger :: [Action] -> Board -> Result -> IO ()
@@ -50,29 +50,31 @@ data Callbacks = Callbacks
   , _callbacksSend :: Step -> IO ()
   }
 
-data MatchState = MatchState
+data Data = Data
   { _board :: Board
   , _actions :: [Action]
   } deriving (Show, Eq)
 
-runMatch :: Match a -> MatchState -> MatchEnv -> IO (Maybe a, MatchState)
-runMatch game st env = runStateT (runReaderT (runMaybeT (unMatch game)) env) st
+allSystemsGo :: System a -> Env -> Data -> IO (Maybe a, Data)
+allSystemsGo system env dat = runStateT (runReaderT (runMaybeT (unSystem system)) env) dat
 
-startMatch :: MatchEnv -> IO ()
-startMatch = void . runMatch run MatchState{ _board = emptyBoard, _actions = [] }
+io :: System () -> Env -> IO ()
+io system env = void $ allSystemsGo system env dat
+  where
+    dat = Data{ _board = emptyBoard, _actions = [] }
 
-instance Game Match where
+instance Game System where
   move = Game.move
   forfeit = Game.forfeit
   end = Game.end
   tie = Game.tie
 
-instance BoardManager Match where
+instance BoardManager System where
   isOpenLoc = BoardManager.isOpenLoc
   insertAtLoc = BoardManager.insertAtLoc
   getResult = BoardManager.getResult
 
-instance Communicator Match where
+instance Communicator System where
   sendGameState = Communicator.sendGameState
   recvAction = Communicator.recvAction
   sendFinal = Communicator.sendFinal
@@ -80,22 +82,22 @@ instance Communicator Match where
   updateBoard = Communicator.updateBoard
   logAction = Communicator.logAction
 
-instance Stoppable Match where
-  stop = Match $ MaybeT $ return Nothing
+instance Stoppable System where
+  stop = System . MaybeT $ return Nothing
 
-instance HasBoard Match where
+instance HasBoard System where
   getBoard = gets _board
   putBoard board = do
-    matchState <- get
-    put matchState{ _board = board }
+    dat <- get
+    put dat{ _board = board }
 
-instance HasActions Match where
+instance HasActions System where
   getActions = gets _actions
   putActions actions = do
     matchState <- get
     put matchState{ _actions = actions }
 
-instance Transmitter Match where
+instance Transmitter System where
   sendStep xo step = do
     send <- asks (_callbacksSend . flip _callbacks xo)
     liftIO $ send step
@@ -103,24 +105,24 @@ instance Transmitter Match where
     recv <- asks (_callbacksRecv . flip _callbacks xo)
     liftIO recv
 
-instance Logger Match where
+instance Logger System where
   logIt actions board result = do
     logger <- asks _logger
     liftIO $ logger actions board result
 
-instance OnTimeout Match where
-  onTimeout callee ms = do
+instance OnTimeout System where
+  onTimeout system ms = do
     env <- ask
-    st <- get
-    eitherOfMaybeAndMatchState <- liftIO $ race (liftIO $ delay ms) (liftIO $ runMatch callee st env)
-    case eitherOfMaybeAndMatchState of
+    dat <- get
+    eitherOfMaybeAndData <- liftIO $ race (liftIO $ delay ms) (liftIO $ allSystemsGo system env dat)
+    case eitherOfMaybeAndData of
       Left _ -> return Nothing
-      Right (maybeA, st') -> do
-        put st'
+      Right (maybeA, dat') -> do
+        put dat'
         return maybeA
 
-instance HasTimeoutLimit Match where
+instance HasTimeoutLimit System where
   getTimeoutLimit = asks _timeoutLimit
 
-instance Console Match where
+instance Console System where
   printStdout = Console.printStdout

@@ -6,7 +6,8 @@ import Control.Concurrent (forkIO, ThreadId)
 import Control.Concurrent.Chan (newChan, Chan, writeChan, readChan)
 
 import T3.Core (Loc, XO(..), Action, Board, Result)
-import T3.Match
+import T3.Game.Run (run)
+import T3.Match.System
 import T3.Match.Milliseconds (Milliseconds(..), Delayer(..))
 import T3.Match.Types (Step)
 
@@ -85,15 +86,15 @@ makeCallbacks' = do
     )
 
 class Monad m => ForkStartMatch m where
-  forkStartMatch :: MatchEnv -> m ThreadId
+  forkStartMatch :: Env -> m ThreadId
 
-forkStartMatch' :: MatchEnv -> IO ThreadId
-forkStartMatch' = forkIO . startMatch
+forkStartMatch' :: Env -> IO ThreadId
+forkStartMatch' = forkIO . io run
 
 forkMatch' :: (MakeCallbacks m, ForkStartMatch m) => ([Action] -> Board -> Result -> IO ()) -> Maybe Milliseconds -> m (ThreadId, XO -> MatchCallbacks)
 forkMatch' logger timeoutLimit = do
   cb <- xoMap <$> makeCallbacks <*> makeCallbacks
-  let env = MatchEnv{ _callbacks = fmap fst cb, _timeoutLimit = timeoutLimit, _logger = logger }
+  let env = Env{ _callbacks = fmap fst cb, _timeoutLimit = timeoutLimit, _logger = logger }
   threadId <- forkStartMatch env
   return (threadId, fmap snd cb)
 
