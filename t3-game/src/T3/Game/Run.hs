@@ -2,7 +2,7 @@ module T3.Game.Run
   ( run
   ) where
 
-import T3.Core (Loc(..), Result(..), XO(..), Board, valid, insertXO, result)
+import T3.Core (Result(Unfinished, Winner, Tie), XO(X, O), Board, valid, insertXO, result)
 
 import T3.Game.BoardManager (BoardManager(isOpenLoc, insertAtLoc, getResult))
 import T3.Game.Game (Game(move, forfeit, end, tie), Win(Win), Lose(Lose))
