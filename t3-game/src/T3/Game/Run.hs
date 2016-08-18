@@ -2,21 +2,24 @@ module T3.Game.Run
   ( run
   ) where
 
-import T3.Core (Loc(..), Result(..), XO(..), Board, valid, insertXO, result)
-import T3.Game (Game(..), Win(..), Lose(..))
+import T3.Core (Result(Unfinished, Winner, Tie), XO(X, O), Board, valid, insertXO, result)
 
-run :: Game m => Board -> m ()
-run b = play b X O 
+import T3.Game.BoardManager (BoardManager(isOpenLoc, insertAtLoc, getResult))
+import T3.Game.Game (Game(move, forfeit, end, tie), Win(Win), Lose(Lose))
 
-play :: Game m => Board -> XO -> XO -> m ()
-play b p0 p1 = do
+run :: (Game m, BoardManager m) => m ()
+run = play X O
+
+play :: (Game m, BoardManager m) => XO -> XO -> m ()
+play p0 p1 = do
   loc <- move p0
-  if not (valid loc b)
-    then forfeit (Win p1) (Lose p0)
-    else do
-      let b' = insertXO loc p0 b
-      step b' p0 loc
-      case result b' of
-        Unfinished -> play b' p1 p0
+  isValid <- isOpenLoc loc
+  if isValid
+    then do
+      insertAtLoc loc p0
+      res <- getResult
+      case res of
+        Unfinished -> play p1 p0
         Winner _ -> end (Win p0) (Lose p1)
         Tie -> tie
+    else forfeit (Win p1) (Lose p0)

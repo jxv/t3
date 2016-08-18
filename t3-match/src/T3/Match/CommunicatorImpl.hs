@@ -8,9 +8,11 @@ module T3.Match.CommunicatorImpl
   ) where
 
 import T3.Core (XO(..), Loc(..), Result(..), Action(..), Board, yinYang)
-import T3.Game (Win(..), Lose(..))
+import T3.Game.Game (Win(Win), Lose(Lose))
+import T3.Game.HasBoard (HasBoard(..))
+
 import T3.Match.Types (Final(..), Step(..))
-import T3.Match.HasState (HasState(..))
+import T3.Match.HasActions (HasActions(..))
 import T3.Match.Transmitter (Transmitter(..))
 import T3.Match.Logger (Logger(..))
 import T3.Match.OnTimeout (OnTimeout(..))
@@ -18,12 +20,12 @@ import T3.Match.Stoppable (Stoppable(..))
 import T3.Match.Milliseconds (Milliseconds)
 import T3.Match.HasTimeoutLimit (HasTimeoutLimit(..))
 
-sendGameState :: (HasState m, Transmitter m) => XO -> m ()
+sendGameState :: (HasBoard m, Transmitter m) => XO -> m ()
 sendGameState xo = do
   board <- getBoard
   sendStep xo (Step board Nothing)
 
-recvAction :: (HasState m, Transmitter m, Logger m, OnTimeout m, HasTimeoutLimit m, Stoppable m) => XO -> m Loc
+recvAction :: (HasBoard m, HasActions m, Transmitter m, Logger m, OnTimeout m, HasTimeoutLimit m, Stoppable m) => XO -> m Loc
 recvAction xo = do
   maybeTimeoutLimit <- getTimeoutLimit
   case maybeTimeoutLimit of
@@ -36,30 +38,30 @@ recvAction xo = do
           timeoutForfeit (Win $ yinYang xo) (Lose xo)
           stop
 
-sendFinal :: (HasState m, Transmitter m) => XO -> Final -> m ()
+sendFinal :: (HasBoard m, Transmitter m) => XO -> Final -> m ()
 sendFinal xo final = do
   board <- getBoard
   sendStep xo (Step board (Just final))
 
-tally :: (HasState m, Logger m) => Result -> m ()
+tally :: (HasBoard m, HasActions m, Logger m) => Result -> m ()
 tally result = do
   actions <- getActions
   board <- getBoard
   logIt actions board result
 
-timeoutForfeit :: (HasState m, Transmitter m, Logger m) => Win XO -> Lose XO -> m ()
+timeoutForfeit :: (HasBoard m, HasActions m, Transmitter m, Logger m) => Win XO -> Lose XO -> m ()
 timeoutForfeit (Win w) (Lose l) = do
   tally (Winner w)
   sendFinal w WonByDQ
   sendFinal l LossByDQ
 
-updateBoard :: HasState m => Board -> m ()
+updateBoard :: HasBoard m => Board -> m ()
 updateBoard board = putBoard board
 
-logAction :: HasState m => XO -> Loc -> m ()
+logAction :: HasActions m => XO -> Loc -> m ()
 logAction xo loc = appendAction (Action xo loc)
 
-appendAction :: HasState m => Action -> m ()
+appendAction :: HasActions m => Action -> m ()
 appendAction action = do
   actions <- getActions
   putActions $ actions ++ [action]

@@ -1,11 +1,10 @@
 {-# LANGUAGE DeriveFunctor #-}
-module T3.Game
+module T3.Game.Game
   ( Win(..)
   , Lose(..)
   , Game(..)
   ) where
 
-import Prelude
 import T3.Core (Loc, XO, Board)
 
 newtype Win a = Win a
@@ -19,4 +18,3 @@ class Monad m => Game m where
   forfeit :: Win XO -> Lose XO -> m ()
   end :: Win XO -> Lose XO -> m ()
   tie :: m ()
-  step :: Board -> XO -> Loc -> m ()

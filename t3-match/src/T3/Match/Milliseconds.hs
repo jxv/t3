@@ -1,6 +1,6 @@
 module T3.Match.Milliseconds
   ( Milliseconds(..)
-  , delay
+  , Delayer(..)
   ) where
 
 import Control.Monad.Conc.Class (threadDelay)
@@ -8,7 +8,10 @@ import Control.Monad.Conc.Class (threadDelay)
 newtype Milliseconds = Milliseconds Int
   deriving (Show, Eq, Ord, Num)
 
-delay :: Milliseconds -> IO ()
-delay (Milliseconds ms) = threadDelay (scaleFromNano * ms)
-  where
-    scaleFromNano = 1000
+class Monad m => Delayer m where
+  delay :: Milliseconds -> m ()
+
+instance Delayer IO where
+  delay (Milliseconds ms) = threadDelay (scaleFromNano * ms)
+    where
+      scaleFromNano = 1000

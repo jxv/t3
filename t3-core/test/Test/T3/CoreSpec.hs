@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module T3.CoreSpec (spec) where
+module Test.T3.CoreSpec (spec) where
 
 import T3.Core
 import Test.Hspec
