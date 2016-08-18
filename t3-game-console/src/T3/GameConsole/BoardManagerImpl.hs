@@ -2,8 +2,9 @@ module T3.GameConsole.BoardManagerImpl
   ( insertAtLoc
   ) where
 
-import qualified T3.Game.BoardManagerImpl as BoardManager
 import Prelude hiding (putStrLn)
+
+import qualified T3.Game.BoardManagerImpl as BoardManager
 import T3.Core (boardList, Loc, XO)
 import T3.Game.HasBoard (HasBoard(getBoard))
 

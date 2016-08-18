@@ -3,7 +3,6 @@ module T3.GameConsole.System
   , io
   ) where
 
-
 import Prelude hiding (putStrLn, getLine)
 import Control.Monad.State (StateT, evalStateT, MonadState(put, get))
 import Control.Monad.IO.Class (MonadIO)
