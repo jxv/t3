@@ -1,4 +1,4 @@
-module T3.Match.Parts
+module T3.GameCallbacks.Parts
   ( Communicator(..)
   , Console(..)
   , Stoppable(..)
@@ -12,8 +12,8 @@ module T3.Match.Parts
 import Data.Text (Text)
 
 import T3.Core (XO, Loc, Board, Result, Action)
-import T3.Match.Types (Final, Step)
-import T3.Match.Milliseconds (Milliseconds)
+import T3.GameCallbacks.Types (Final, Step)
+import T3.GameCallbacks.Milliseconds (Milliseconds)
 
 class Monad m => Communicator m where
   sendGameState :: XO -> m ()

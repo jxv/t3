@@ -1,4 +1,4 @@
-module T3.Match.CommunicatorImpl
+module T3.GameCallbacks.CommunicatorImpl
   ( sendGameState
   , recvAction
   , sendFinal
@@ -11,9 +11,9 @@ import T3.Core (XO, Loc, Result(Winner), Action(Action), Board, yinYang)
 import T3.Game.Types (Win(Win), Lose(Lose))
 import T3.Game.Parts (HasBoard(getBoard, putBoard))
 
-import T3.Match.Types (Final(..), Step(..))
-import T3.Match.Milliseconds (Milliseconds)
-import T3.Match.Parts
+import T3.GameCallbacks.Types (Final(..), Step(..))
+import T3.GameCallbacks.Milliseconds (Milliseconds)
+import T3.GameCallbacks.Parts
   ( HasActions(putActions, getActions)
   , Transmitter(sendStep, recvLoc)
   , Finalizer(finalize)

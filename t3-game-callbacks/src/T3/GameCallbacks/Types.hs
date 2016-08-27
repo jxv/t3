@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
-module T3.Match.Types
+module T3.GameCallbacks.Types
   ( Step(..)
   , Final(..)
   ) where

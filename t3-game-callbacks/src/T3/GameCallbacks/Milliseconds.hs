@@ -1,4 +1,4 @@
-module T3.Match.Milliseconds
+module T3.GameCallbacks.Milliseconds
   ( Milliseconds(..)
   , Delayer(..)
   ) where

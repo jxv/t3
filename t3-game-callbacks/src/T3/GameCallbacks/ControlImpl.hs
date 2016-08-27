@@ -1,4 +1,4 @@
-module T3.Match.ControlImpl
+module T3.GameCallbacks.ControlImpl
   ( move
   , forfeit
   , end
@@ -8,8 +8,8 @@ module T3.Match.ControlImpl
 import T3.Core (XO(X,O), Loc, Result(..), Action(..))
 import T3.Game.Types (Win(Win), Lose(Lose))
 
-import T3.Match.Types (Final(..))
-import T3.Match.Parts (Communicator(..))
+import T3.GameCallbacks.Types (Final(..))
+import T3.GameCallbacks.Parts (Communicator(..))
 
 move :: Communicator m => XO -> m Loc
 move xo = do

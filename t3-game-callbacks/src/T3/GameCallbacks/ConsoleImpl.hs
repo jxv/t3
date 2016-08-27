@@ -1,4 +1,4 @@
-module T3.Match.ConsoleImpl
+module T3.GameCallbacks.ConsoleImpl
   ( printStdout
   ) where
 

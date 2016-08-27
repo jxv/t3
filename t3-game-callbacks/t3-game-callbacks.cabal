@@ -1,5 +1,5 @@
-name: t3-match
-synopsis: tic-tac-toe match
+name: t3-game-callbacks
+synopsis: tic-tac-toe game interfacing through callbacks
 description:  Please see README.md
 version: 0.1.0
 cabal-version: >= 1.10
@@ -15,14 +15,14 @@ library
   hs-source-dirs:
     src
   exposed-modules:
-    T3.Match.System
-    T3.Match.Types
-    T3.Match.Parts
-    T3.Match.Milliseconds
-    T3.Match.ControlImpl
-    T3.Match.BoardManagerImpl
-    T3.Match.CommunicatorImpl
-    T3.Match.ConsoleImpl
+    T3.GameCallbacks.System
+    T3.GameCallbacks.Types
+    T3.GameCallbacks.Parts
+    T3.GameCallbacks.Milliseconds
+    T3.GameCallbacks.ControlImpl
+    T3.GameCallbacks.BoardManagerImpl
+    T3.GameCallbacks.CommunicatorImpl
+    T3.GameCallbacks.ConsoleImpl
   default-extensions:
     OverloadedStrings
     MultiParamTypeClasses

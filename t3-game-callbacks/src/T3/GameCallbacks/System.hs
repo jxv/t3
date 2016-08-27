@@ -1,4 +1,4 @@
-module T3.Match.System
+module T3.GameCallbacks.System
   ( Env(..)
   , Callbacks(..)
   , System
@@ -19,13 +19,13 @@ import T3.Core (Loc, Action, Board, Result, XO(..), emptyBoard)
 import T3.Game.Run (run)
 import T3.Game.Parts (Control(..), HasBoard(..), BoardManager(..))
 
-import qualified T3.Match.ConsoleImpl as Console
-import qualified T3.Match.ControlImpl as Control
-import qualified T3.Match.CommunicatorImpl as Communicator
-import qualified T3.Match.BoardManagerImpl as BoardManager (insertAtLoc)
-import T3.Match.Types (Step(..))
-import T3.Match.Milliseconds (Milliseconds(..), delay)
-import T3.Match.Parts
+import qualified T3.GameCallbacks.ConsoleImpl as Console
+import qualified T3.GameCallbacks.ControlImpl as Control
+import qualified T3.GameCallbacks.CommunicatorImpl as Communicator
+import qualified T3.GameCallbacks.BoardManagerImpl as BoardManager (insertAtLoc)
+import T3.GameCallbacks.Types (Step(..))
+import T3.GameCallbacks.Milliseconds (Milliseconds(..), delay)
+import T3.GameCallbacks.Parts
   ( Communicator(..)
   , Transmitter(..)
   , Finalizer(..)
@@ -42,7 +42,7 @@ newtype System a = System { unSystem :: MaybeT (ReaderT Env (StateT Data IO)) a 
 data Env = Env
   { _callbacks :: XO -> Callbacks
   , _timeoutLimit :: Maybe Milliseconds
-  , _logger :: [Action] -> Board -> Result -> IO ()
+  , _finalize :: [Action] -> Board -> Result -> IO ()
   }
 
 data Callbacks = Callbacks
@@ -105,8 +105,8 @@ instance Transmitter System where
 
 instance Finalizer System where
   finalize actions board result = do
-    logger <- asks _logger
-    liftIO $ logger actions board result
+    f <- asks _finalize
+    liftIO $ f actions board result
 
 instance OnTimeout System where
   onTimeout system ms = do
