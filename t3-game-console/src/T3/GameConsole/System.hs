@@ -9,14 +9,12 @@ import Control.Monad.IO.Class (MonadIO)
 
 import qualified T3.Game.BoardManagerImpl as BoardManager (isOpenLoc, getResult)
 import T3.Core (Board, emptyBoard, boardList)
-import T3.Game.Game (Game(..))
-import T3.Game.HasBoard (HasBoard(..))
-import T3.Game.BoardManager (BoardManager(..))
+import T3.Game.Parts (Control(..), HasBoard(..), BoardManager(..))
 
-import qualified T3.GameConsole.GameImpl as Game
+import qualified T3.GameConsole.ControlImpl as Control
 import qualified T3.GameConsole.BoardManagerImpl as BoardManager (insertAtLoc)
 import qualified T3.GameConsole.ConsoleImpl as Console
-import T3.GameConsole.Console (Console(..))
+import T3.GameConsole.Parts (Console(..))
 
 newtype System a = System { unSystem :: StateT Board IO a }
   deriving (Functor, Applicative, Monad, MonadState Board, MonadIO)
@@ -37,8 +35,8 @@ instance Console System where
   putStrLn = Console.putStrLn
   getLine = Console.getLine
 
-instance Game System where
-  move = Game.move
-  forfeit = Game.forfeit
-  tie = Game.tie
-  end = Game.end
+instance Control System where
+  move = Control.move
+  forfeit = Control.forfeit
+  tie = Control.tie
+  end = Control.end

@@ -1,4 +1,4 @@
-module T3.GameConsole.GameImpl
+module T3.GameConsole.ControlImpl
   ( move
   , forfeit
   , end
@@ -9,9 +9,9 @@ import Prelude hiding (putStrLn, getLine)
 import Safe (readMay)
 
 import T3.Core (Loc(..), XO(..), Board, boardList)
-import T3.Game.Game (Win(Win), Lose(Lose))
+import T3.Game.Types (Win(Win), Lose(Lose))
 
-import T3.GameConsole.Console (Console(putStrLn, getLine))
+import T3.GameConsole.Parts (Console(putStrLn, getLine))
 
 move :: Console m => XO -> m Loc
 move xo = do

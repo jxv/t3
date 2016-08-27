@@ -15,26 +15,26 @@ import Control.Monad.IO.Class (MonadIO(..))
 import Data.Functor (void)
 
 import qualified T3.Game.BoardManagerImpl as BoardManager (isOpenLoc, getResult)
-import T3.Game.Run (run)
-import T3.Game.Game (Game(..))
-import T3.Game.HasBoard (HasBoard(..))
-import T3.Game.BoardManager (BoardManager(..))
 import T3.Core (Loc, Action, Board, Result, XO(..), emptyBoard)
+import T3.Game.Run (run)
+import T3.Game.Parts (Control(..), HasBoard(..), BoardManager(..))
 
 import qualified T3.Match.ConsoleImpl as Console
-import qualified T3.Match.GameImpl as Game
+import qualified T3.Match.ControlImpl as Control
 import qualified T3.Match.CommunicatorImpl as Communicator
 import qualified T3.Match.BoardManagerImpl as BoardManager (insertAtLoc)
 import T3.Match.Types (Step(..))
 import T3.Match.Milliseconds (Milliseconds(..), delay)
-import T3.Match.Communicator (Communicator(..))
-import T3.Match.Transmitter (Transmitter(..))
-import T3.Match.Logger (Logger(..))
-import T3.Match.HasActions (HasActions(..))
-import T3.Match.Stoppable (Stoppable(..))
-import T3.Match.OnTimeout (OnTimeout(..))
-import T3.Match.HasTimeoutLimit (HasTimeoutLimit(..))
-import T3.Match.Console (Console(..))
+import T3.Match.Parts
+  ( Communicator(..)
+  , Transmitter(..)
+  , Finalizer(..)
+  , HasActions(..)
+  , Stoppable(..)
+  , OnTimeout(..)
+  , HasTimeoutLimit(..)
+  , Console(..)
+  )
 
 newtype System a = System { unSystem :: MaybeT (ReaderT Env (StateT Data IO)) a }
   deriving (Functor, Applicative, Monad, MonadIO, MonadReader Env, MonadState Data)
@@ -59,15 +59,13 @@ allSystemsGo :: System a -> Env -> Data -> IO (Maybe a, Data)
 allSystemsGo system env dat = runStateT (runReaderT (runMaybeT (unSystem system)) env) dat
 
 io :: System () -> Env -> IO ()
-io system env = void $ allSystemsGo system env dat
-  where
-    dat = Data{ _board = emptyBoard, _actions = [] }
+io system env = void $ allSystemsGo system env Data{ _board = emptyBoard, _actions = [] }
 
-instance Game System where
-  move = Game.move
-  forfeit = Game.forfeit
-  end = Game.end
-  tie = Game.tie
+instance Control System where
+  move = Control.move
+  forfeit = Control.forfeit
+  end = Control.end
+  tie = Control.tie
 
 instance BoardManager System where
   isOpenLoc = BoardManager.isOpenLoc
@@ -105,8 +103,8 @@ instance Transmitter System where
     recv <- asks (_callbacksRecv . flip _callbacks xo)
     liftIO recv
 
-instance Logger System where
-  logIt actions board result = do
+instance Finalizer System where
+  finalize actions board result = do
     logger <- asks _logger
     liftIO $ logger actions board result
 

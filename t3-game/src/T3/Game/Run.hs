@@ -4,13 +4,16 @@ module T3.Game.Run
 
 import T3.Core (Result(Unfinished, Winner, Tie), XO(X, O), Board, valid, insertXO, result)
 
-import T3.Game.BoardManager (BoardManager(isOpenLoc, insertAtLoc, getResult))
-import T3.Game.Game (Game(move, forfeit, end, tie), Win(Win), Lose(Lose))
+import T3.Game.Types (Win(Win), Lose(Lose))
+import T3.Game.Parts
+  ( BoardManager(isOpenLoc, insertAtLoc, getResult)
+  , Control(move, forfeit, end, tie)
+  )
 
-run :: (Game m, BoardManager m) => m ()
+run :: (Control m, BoardManager m) => m ()
 run = play X O
 
-play :: (Game m, BoardManager m) => XO -> XO -> m ()
+play :: (Control m, BoardManager m) => XO -> XO -> m ()
 play p0 p1 = do
   loc <- move p0
   isValid <- isOpenLoc loc

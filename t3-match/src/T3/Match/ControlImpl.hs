@@ -1,14 +1,15 @@
-module T3.Match.GameImpl
+module T3.Match.ControlImpl
   ( move
   , forfeit
   , end
   , tie
   ) where
 
-import T3.Game.Game (Win(Win), Lose(Lose))
-import T3.Core (XO(..), Loc(..), Result(..), Action(..), Board, yinYang)
+import T3.Core (XO(X,O), Loc, Result(..), Action(..))
+import T3.Game.Types (Win(Win), Lose(Lose))
+
 import T3.Match.Types (Final(..))
-import T3.Match.Communicator (Communicator(..))
+import T3.Match.Parts (Communicator(..))
 
 move :: Communicator m => XO -> m Loc
 move xo = do

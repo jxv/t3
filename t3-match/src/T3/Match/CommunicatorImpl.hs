@@ -7,25 +7,27 @@ module T3.Match.CommunicatorImpl
   , logAction
   ) where
 
-import T3.Core (XO(..), Loc(..), Result(..), Action(..), Board, yinYang)
-import T3.Game.Game (Win(Win), Lose(Lose))
-import T3.Game.HasBoard (HasBoard(..))
+import T3.Core (XO, Loc, Result(Winner), Action(Action), Board, yinYang)
+import T3.Game.Types (Win(Win), Lose(Lose))
+import T3.Game.Parts (HasBoard(getBoard, putBoard))
 
 import T3.Match.Types (Final(..), Step(..))
-import T3.Match.HasActions (HasActions(..))
-import T3.Match.Transmitter (Transmitter(..))
-import T3.Match.Logger (Logger(..))
-import T3.Match.OnTimeout (OnTimeout(..))
-import T3.Match.Stoppable (Stoppable(..))
 import T3.Match.Milliseconds (Milliseconds)
-import T3.Match.HasTimeoutLimit (HasTimeoutLimit(..))
+import T3.Match.Parts
+  ( HasActions(putActions, getActions)
+  , Transmitter(sendStep, recvLoc)
+  , Finalizer(finalize)
+  , OnTimeout(onTimeout)
+  , Stoppable(stop)
+  , HasTimeoutLimit(getTimeoutLimit)
+  )
 
 sendGameState :: (HasBoard m, Transmitter m) => XO -> m ()
 sendGameState xo = do
   board <- getBoard
   sendStep xo (Step board Nothing)
 
-recvAction :: (HasBoard m, HasActions m, Transmitter m, Logger m, OnTimeout m, HasTimeoutLimit m, Stoppable m) => XO -> m Loc
+recvAction :: (HasBoard m, HasActions m, Transmitter m, Finalizer m, OnTimeout m, HasTimeoutLimit m, Stoppable m) => XO -> m Loc
 recvAction xo = do
   maybeTimeoutLimit <- getTimeoutLimit
   case maybeTimeoutLimit of
@@ -43,13 +45,13 @@ sendFinal xo final = do
   board <- getBoard
   sendStep xo (Step board (Just final))
 
-tally :: (HasBoard m, HasActions m, Logger m) => Result -> m ()
+tally :: (HasBoard m, HasActions m, Finalizer m) => Result -> m ()
 tally result = do
   actions <- getActions
   board <- getBoard
-  logIt actions board result
+  finalize actions board result
 
-timeoutForfeit :: (HasBoard m, HasActions m, Transmitter m, Logger m) => Win XO -> Lose XO -> m ()
+timeoutForfeit :: (HasBoard m, HasActions m, Transmitter m, Finalizer m) => Win XO -> Lose XO -> m ()
 timeoutForfeit (Win w) (Lose l) = do
   tally (Winner w)
   sendFinal w WonByDQ

@@ -5,7 +5,7 @@ module T3.Game.BoardManagerImpl
   ) where
 
 import T3.Core (Loc, XO, Result, valid, insertXO, result)
-import T3.Game.HasBoard (HasBoard(getBoard, putBoard))
+import T3.Game.Parts (HasBoard(getBoard, putBoard))
 
 isOpenLoc :: HasBoard m => Loc -> m Bool
 isOpenLoc loc = do

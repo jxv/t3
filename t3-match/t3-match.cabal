@@ -17,19 +17,12 @@ library
   exposed-modules:
     T3.Match.System
     T3.Match.Types
-    T3.Match.HasActions
+    T3.Match.Parts
     T3.Match.Milliseconds
-    T3.Match.GameImpl
+    T3.Match.ControlImpl
     T3.Match.BoardManagerImpl
-    T3.Match.Communicator
     T3.Match.CommunicatorImpl
-    T3.Match.Console
     T3.Match.ConsoleImpl
-    T3.Match.Logger
-    T3.Match.Transmitter
-    T3.Match.OnTimeout
-    T3.Match.HasTimeoutLimit
-    T3.Match.Stoppable
   default-extensions:
     OverloadedStrings
     MultiParamTypeClasses

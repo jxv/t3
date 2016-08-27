@@ -1,4 +1,4 @@
-module T3.GameConsole.Console
+module T3.GameConsole.Parts
   ( Console(..)
   ) where
 
