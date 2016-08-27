@@ -6,6 +6,7 @@ packages:
 - t3-game
 - t3-game-console
 - t3-game-callbacks
+- t3-game-impl
 # - t3-server
 
 extra-deps:
