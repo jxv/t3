@@ -20,7 +20,7 @@ library
     T3.Game.BoardManagerImpl
     T3.Game.CommunicatorImpl
     T3.Game.ControlImpl
-    T3.Game.Run
+    T3.Game.Main
     T3.Game.System
     T3.Game.Types
   build-depends:

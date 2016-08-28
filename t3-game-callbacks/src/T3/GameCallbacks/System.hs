@@ -16,7 +16,6 @@ import Data.Functor (void)
 
 import qualified T3.Game.BoardManagerImpl as BoardManager (isOpenLoc, getResult)
 import T3.Core (Loc, Action, Board, Result, XO(..), emptyBoard)
-import T3.Game.Run (run)
 import T3.Game.Parts (Control(..), HasBoard(..), BoardManager(..))
 
 import qualified T3.GameCallbacks.ConsoleImpl as Console

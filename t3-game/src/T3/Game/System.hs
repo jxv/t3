@@ -2,7 +2,7 @@ module T3.Game.System
   ( Env(..)
   , Callbacks(..)
   , System
-  , io
+  , runIO
   ) where
 
 import Control.Monad.State (StateT(..), MonadState(..), gets, evalStateT)
@@ -10,15 +10,13 @@ import Control.Monad.Reader (ReaderT(..), MonadReader(..), asks)
 import Control.Monad.IO.Class (MonadIO(..))
 import Data.Functor (void)
 
-import qualified T3.Game.BoardManagerImpl as BoardManager (isOpenLoc, getResult, insertAtLoc)
 import T3.Core (Loc, Action, Board, Result, XO(..))
-import T3.Game.Run (run)
-import T3.Game.Parts (Control(..), HasBoard(..), BoardManager(..))
 
+import qualified T3.Game.BoardManagerImpl as BoardManager
 import qualified T3.Game.ControlImpl as Control
 import qualified T3.Game.CommunicatorImpl as Communicator
-import T3.Game.Types (Step)
-import T3.Game.Parts (Communicator(..), Transmitter(..))
+import T3.Game.Parts
+import T3.Game.Types
 
 newtype System a = System { unSystem :: ReaderT Env (StateT Board IO) a }
   deriving (Functor, Applicative, Monad, MonadIO, MonadReader Env, MonadState Board)
@@ -32,8 +30,8 @@ data Callbacks = Callbacks
   , _callbacksSend :: Step -> IO ()
   }
 
-io :: System () -> Env -> Board -> IO ()
-io system env board = void $ runStateT (runReaderT (unSystem system) env) board
+runIO :: System () -> Env -> Board -> IO ()
+runIO system env board = void $ runStateT (runReaderT (unSystem system) env) board
 
 instance Control System where
   move = Control.move

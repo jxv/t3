@@ -1,5 +1,5 @@
-module T3.Game.Run
-  ( run
+module T3.Game.Main
+  ( main 
   ) where
 
 import T3.Core (Result(Unfinished, Winner, Tie), XO(X, O), Board, valid, insertXO, result)
@@ -10,8 +10,8 @@ import T3.Game.Parts
   , Control(move, forfeit, end, tie)
   )
 
-run :: (Control m, BoardManager m) => m ()
-run = play X O
+main :: (Control m, BoardManager m) => m ()
+main = play X O
 
 play :: (Control m, BoardManager m) => XO -> XO -> m ()
 play p0 p1 = do
