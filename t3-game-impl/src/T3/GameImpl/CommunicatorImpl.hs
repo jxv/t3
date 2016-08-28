@@ -2,7 +2,6 @@ module T3.GameImpl.CommunicatorImpl
   ( sendGameState
   , recvAction
   , sendFinal
-  , updateBoard
   ) where
 
 import T3.Core (XO, Loc, Result(Winner), Action(Action), Board, yinYang)
@@ -24,6 +23,3 @@ sendFinal :: (HasBoard m, Transmitter m) => XO -> Final -> m ()
 sendFinal xo final = do
   board <- getBoard
   sendStep xo Step{ _stepBoard = board, _stepFinal = Just final }
-
-updateBoard :: HasBoard m => Board -> m ()
-updateBoard board = putBoard board

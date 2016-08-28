@@ -14,23 +14,17 @@ import Control.Monad.Reader (ReaderT(..), MonadReader(..), asks)
 import Control.Monad.IO.Class (MonadIO(..))
 import Data.Functor (void)
 
-import qualified T3.Game.BoardManagerImpl as BoardManager (isOpenLoc, getResult)
+import qualified T3.Game.BoardManagerImpl as BoardManager (isOpenLoc, getResult, insertAtLoc)
 import T3.Core (Loc, Action, Board, Result, XO(..), emptyBoard)
 import T3.Game.Run (run)
 import T3.Game.Parts (Control(..), HasBoard(..), BoardManager(..))
 
-import qualified T3.GameImpl.ConsoleImpl as Console
 import qualified T3.GameImpl.ControlImpl as Control
 import qualified T3.GameImpl.CommunicatorImpl as Communicator
-import qualified T3.GameImpl.BoardManagerImpl as BoardManager (insertAtLoc)
-import T3.GameImpl.Types (Step(..))
-import T3.GameImpl.Parts
-  ( Communicator(..)
-  , Transmitter(..)
-  , Console(..)
-  )
+import T3.GameImpl.Types (Step)
+import T3.GameImpl.Parts (Communicator(..), Transmitter(..))
 
-newtype System a = System { unSystem :: MaybeT (ReaderT Env (StateT Board IO)) a }
+newtype System a = System { unSystem :: ReaderT Env (StateT Board IO) a }
   deriving (Functor, Applicative, Monad, MonadIO, MonadReader Env, MonadState Board)
 
 data Env = Env
@@ -43,7 +37,7 @@ data Callbacks = Callbacks
   }
 
 io :: System () -> Env -> IO ()
-io system env = void $ runStateT (runReaderT (runMaybeT (unSystem system)) env) emptyBoard
+io system env = void $ runStateT (runReaderT (unSystem system) env) emptyBoard
 
 instance Control System where
   move = Control.move
@@ -60,7 +54,6 @@ instance Communicator System where
   sendGameState = Communicator.sendGameState
   recvAction = Communicator.recvAction
   sendFinal = Communicator.sendFinal
-  updateBoard = Communicator.updateBoard
 
 instance HasBoard System where
   getBoard = get
@@ -73,6 +66,3 @@ instance Transmitter System where
   recvLoc xo = do
     recv <- asks (_callbacksRecv . flip _callbacks xo)
     liftIO recv
-
-instance Console System where
-  printStdout = Console.printStdout

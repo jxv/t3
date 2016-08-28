@@ -1,15 +1,13 @@
-{-# LANGUAGE DeriveGeneric #-}
 module T3.GameImpl.Types
   ( Step(..)
   , Final(..)
   ) where
 
-import GHC.Generics
 import Control.Monad (mzero)
 import Data.Aeson (ToJSON(..), FromJSON(..), Value(..))
 import Data.Text (Text)
 
-import T3.Core (Board, dropPrefixP, dropPrefixJ)
+import T3.Core (Board)
 
 data Step = Step
   { _stepBoard :: Board

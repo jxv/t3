@@ -1,6 +1,5 @@
 module T3.GameImpl.Parts
   ( Communicator(..)
-  , Console(..)
   , Transmitter(..)
   ) where
 
@@ -13,11 +12,6 @@ class Monad m => Communicator m where
   sendGameState :: XO -> m ()
   recvAction :: XO -> m Loc
   sendFinal :: XO -> Final -> m ()
-  updateBoard :: Board -> m ()
-  logAction :: XO -> Loc -> m ()
-
-class Monad m => Console m where
-  printStdout :: Text -> m ()
 
 class Monad m => Transmitter m where
   sendStep :: XO -> Step -> m ()
