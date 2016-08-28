@@ -4,12 +4,16 @@ module T3.Game.Parts
   , Control(..)
   , Communicator(..)
   , Transmitter(..)
+  , Play(..)
   ) where
 
 import Data.Text (Text)
 
 import T3.Core (XO, Loc, Board, Result)
 import T3.Game.Types
+
+class Monad m => Play m where
+  play :: XO -> XO -> m ()
 
 class Monad m => BoardManager m where
   isOpenLoc :: Loc -> m Bool
