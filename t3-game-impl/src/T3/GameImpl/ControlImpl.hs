@@ -18,18 +18,15 @@ move xo = do
 
 forfeit :: Communicator m => Win XO -> Lose XO -> m ()
 forfeit (Win w) (Lose l) = do
-  tally (Winner w)
   sendFinal w WonByDQ
   sendFinal l LossByDQ
 
 end :: Communicator m => Win XO -> Lose XO -> m ()
 end (Win w) (Lose l) = do
-  tally (Winner w)
   sendFinal w Won
   sendFinal l Loss
 
 tie :: Communicator m => m ()
 tie = do
-  tally Tie
   sendFinal X Tied
   sendFinal O Tied

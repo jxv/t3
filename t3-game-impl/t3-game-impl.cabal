@@ -18,7 +18,6 @@ library
     T3.GameImpl.System
     T3.GameImpl.Types
     T3.GameImpl.Parts
-    T3.GameImpl.Milliseconds
     T3.GameImpl.ControlImpl
     T3.GameImpl.BoardManagerImpl
     T3.GameImpl.CommunicatorImpl

@@ -24,21 +24,17 @@ import qualified T3.GameImpl.ControlImpl as Control
 import qualified T3.GameImpl.CommunicatorImpl as Communicator
 import qualified T3.GameImpl.BoardManagerImpl as BoardManager (insertAtLoc)
 import T3.GameImpl.Types (Step(..))
-import T3.GameImpl.Milliseconds (Milliseconds(..), delay)
 import T3.GameImpl.Parts
   ( Communicator(..)
   , Transmitter(..)
-  , Finalizer(..)
-  , HasActions(..)
   , Console(..)
   )
 
-newtype System a = System { unSystem :: MaybeT (ReaderT Env (StateT Data IO)) a }
-  deriving (Functor, Applicative, Monad, MonadIO, MonadReader Env, MonadState Data)
+newtype System a = System { unSystem :: MaybeT (ReaderT Env (StateT Board IO)) a }
+  deriving (Functor, Applicative, Monad, MonadIO, MonadReader Env, MonadState Board)
 
 data Env = Env
   { _callbacks :: XO -> Callbacks
-  , _finalize :: [Action] -> Board -> Result -> IO ()
   }
 
 data Callbacks = Callbacks
@@ -46,16 +42,8 @@ data Callbacks = Callbacks
   , _callbacksSend :: Step -> IO ()
   }
 
-data Data = Data
-  { _board :: Board
-  , _actions :: [Action]
-  } deriving (Show, Eq)
-
-allSystemsGo :: System a -> Env -> Data -> IO (Maybe a, Data)
-allSystemsGo system env dat = runStateT (runReaderT (runMaybeT (unSystem system)) env) dat
-
 io :: System () -> Env -> IO ()
-io system env = void $ allSystemsGo system env Data{ _board = emptyBoard, _actions = [] }
+io system env = void $ runStateT (runReaderT (runMaybeT (unSystem system)) env) emptyBoard
 
 instance Control System where
   move = Control.move
@@ -72,21 +60,11 @@ instance Communicator System where
   sendGameState = Communicator.sendGameState
   recvAction = Communicator.recvAction
   sendFinal = Communicator.sendFinal
-  tally = Communicator.tally
   updateBoard = Communicator.updateBoard
-  logAction = Communicator.logAction
 
 instance HasBoard System where
-  getBoard = gets _board
-  putBoard board = do
-    dat <- get
-    put dat{ _board = board }
-
-instance HasActions System where
-  getActions = gets _actions
-  putActions actions = do
-    matchState <- get
-    put matchState{ _actions = actions }
+  getBoard = get
+  putBoard = put
 
 instance Transmitter System where
   sendStep xo step = do
@@ -95,11 +73,6 @@ instance Transmitter System where
   recvLoc xo = do
     recv <- asks (_callbacksRecv . flip _callbacks xo)
     liftIO recv
-
-instance Finalizer System where
-  finalize actions board result = do
-    f <- asks _finalize
-    liftIO $ f actions board result
 
 instance Console System where
   printStdout = Console.printStdout
