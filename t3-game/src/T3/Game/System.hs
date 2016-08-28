@@ -11,7 +11,7 @@ import Control.Monad.IO.Class (MonadIO(..))
 import Data.Functor (void)
 
 import qualified T3.Game.BoardManagerImpl as BoardManager (isOpenLoc, getResult, insertAtLoc)
-import T3.Core (Loc, Action, Board, Result, XO(..), emptyBoard)
+import T3.Core (Loc, Action, Board, Result, XO(..))
 import T3.Game.Run (run)
 import T3.Game.Parts (Control(..), HasBoard(..), BoardManager(..))
 
@@ -32,8 +32,8 @@ data Callbacks = Callbacks
   , _callbacksSend :: Step -> IO ()
   }
 
-io :: System () -> Env -> IO ()
-io system env = void $ runStateT (runReaderT (unSystem system) env) emptyBoard
+io :: System () -> Env -> Board -> IO ()
+io system env board = void $ runStateT (runReaderT (unSystem system) env) board
 
 instance Control System where
   move = Control.move
