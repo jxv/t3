@@ -2,10 +2,13 @@ module T3.Game.Parts
   ( BoardManager(..)
   , HasBoard(..)
   , Control(..)
+  , Communicator(..)
+  , Transmitter(..)
   ) where
 
-import T3.Core (Loc, XO, Result, Board)
+import Data.Text (Text)
 
+import T3.Core (XO, Loc, Board, Result)
 import T3.Game.Types
 
 class Monad m => BoardManager m where
@@ -22,3 +25,12 @@ class Monad m => Control m where
   forfeit :: Win XO -> Lose XO -> m ()
   end :: Win XO -> Lose XO -> m ()
   tie :: m ()
+
+class Monad m => Communicator m where
+  sendGameState :: XO -> m ()
+  recvAction :: XO -> m Loc
+  sendFinal :: XO -> Final -> m ()
+
+class Monad m => Transmitter m where
+  sendStep :: XO -> Step -> m ()
+  recvLoc :: XO -> m Loc

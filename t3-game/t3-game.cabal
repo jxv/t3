@@ -18,7 +18,10 @@ library
   exposed-modules:
     T3.Game.Parts
     T3.Game.BoardManagerImpl
+    T3.Game.CommunicatorImpl
+    T3.Game.ControlImpl
     T3.Game.Run
+    T3.Game.System
     T3.Game.Types
   build-depends:
       base >= 4.7 && < 5
@@ -33,6 +36,9 @@ library
     , t3-core
   default-language:
     Haskell2010
+  default-extensions:
+    OverloadedStrings
+    GeneralizedNewtypeDeriving
 
 test-suite t3-game-test
   type:

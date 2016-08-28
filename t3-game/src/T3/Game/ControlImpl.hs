@@ -1,4 +1,4 @@
-module T3.GameImpl.ControlImpl
+module T3.Game.ControlImpl
   ( move
   , forfeit
   , end
@@ -8,8 +8,8 @@ module T3.GameImpl.ControlImpl
 import T3.Core (XO(X,O), Loc, Result(..), Action(..))
 import T3.Game.Types (Win(Win), Lose(Lose))
 
-import T3.GameImpl.Types (Final(..))
-import T3.GameImpl.Parts (Communicator(..))
+import T3.Game.Types (Final(..))
+import T3.Game.Parts (Communicator(..))
 
 move :: Communicator m => XO -> m Loc
 move xo = do

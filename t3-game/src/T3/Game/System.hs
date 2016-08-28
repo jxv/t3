@@ -1,14 +1,10 @@
-module T3.GameImpl.System
+module T3.Game.System
   ( Env(..)
   , Callbacks(..)
   , System
   , io
   ) where
 
-import qualified Control.Concurrent as IO
-import qualified Control.Monad.STM as IO
-import Control.Concurrent.Async (race)
-import Control.Monad.Trans.Maybe (MaybeT(..))
 import Control.Monad.State (StateT(..), MonadState(..), gets, evalStateT)
 import Control.Monad.Reader (ReaderT(..), MonadReader(..), asks)
 import Control.Monad.IO.Class (MonadIO(..))
@@ -19,10 +15,10 @@ import T3.Core (Loc, Action, Board, Result, XO(..), emptyBoard)
 import T3.Game.Run (run)
 import T3.Game.Parts (Control(..), HasBoard(..), BoardManager(..))
 
-import qualified T3.GameImpl.ControlImpl as Control
-import qualified T3.GameImpl.CommunicatorImpl as Communicator
-import T3.GameImpl.Types (Step)
-import T3.GameImpl.Parts (Communicator(..), Transmitter(..))
+import qualified T3.Game.ControlImpl as Control
+import qualified T3.Game.CommunicatorImpl as Communicator
+import T3.Game.Types (Step)
+import T3.Game.Parts (Communicator(..), Transmitter(..))
 
 newtype System a = System { unSystem :: ReaderT Env (StateT Board IO) a }
   deriving (Functor, Applicative, Monad, MonadIO, MonadReader Env, MonadState Board)

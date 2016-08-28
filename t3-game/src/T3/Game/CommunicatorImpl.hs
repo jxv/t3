@@ -1,4 +1,4 @@
-module T3.GameImpl.CommunicatorImpl
+module T3.Game.CommunicatorImpl
   ( sendGameState
   , recvAction
   , sendFinal
@@ -8,8 +8,8 @@ import T3.Core (XO, Loc, Result(Winner), Action(Action), Board, yinYang)
 import T3.Game.Types (Win(Win), Lose(Lose))
 import T3.Game.Parts (HasBoard(getBoard, putBoard))
 
-import T3.GameImpl.Types (Final, Step(..))
-import T3.GameImpl.Parts (Transmitter(sendStep, recvLoc))
+import T3.Game.Types (Final, Step(..))
+import T3.Game.Parts (Transmitter(sendStep, recvLoc))
 
 sendGameState :: (HasBoard m, Transmitter m) => XO -> m ()
 sendGameState xo = do
