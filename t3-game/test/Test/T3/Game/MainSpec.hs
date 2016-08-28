@@ -16,7 +16,7 @@ mkFixture "Fixture" [''Play]
 spec :: Spec
 spec = do
   describe "main" $ do
-    it "should call greet with stubbed target's name" $ do
+    it "should pass X as the first player and O as the second player" $ do
       calls <- logTestFixtureT main $ def
         { _play = \p0 p1 -> do
             log "play"
