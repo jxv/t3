@@ -54,7 +54,6 @@ test-suite t3-game-test
     , t3-game
     , hspec
     , transformers
-    , aeson
     , test-fixture
   ghc-options:
     -threaded -rtsopts -with-rtsopts=-N
