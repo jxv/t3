@@ -2,7 +2,7 @@ module T3.GameCallbacks.Monad
   ( Env(..)
   , Callbacks(..)
   , GameCallbacks
-  , io
+  , runIO
   ) where
 
 import qualified Control.Concurrent as IO
@@ -57,8 +57,8 @@ data Data = Data
 go :: GameCallbacks a -> Env -> Data -> IO (Maybe a, Data)
 go (GameCallbacks m) env dat = runStateT (runReaderT (runMaybeT m) env) dat
 
-io :: GameCallbacks () -> Env -> IO ()
-io gameCallbacks env = void $ go gameCallbacks env Data{ _board = emptyBoard, _actions = [] }
+runIO :: GameCallbacks () -> Env -> IO ()
+runIO gameCallbacks env = void $ go gameCallbacks env Data{ _board = emptyBoard, _actions = [] }
 
 instance Control GameCallbacks where
   move = Control.move

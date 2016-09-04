@@ -1,6 +1,6 @@
 module T3.GameConsole.Monad
   ( GameConsole
-  , io
+  , runIO
   ) where
 
 import Prelude hiding (putStrLn, getLine)
@@ -19,8 +19,8 @@ import T3.GameConsole.Classes (Console(..))
 newtype GameConsole a = GameConsole { unGameConsole :: StateT Board IO a }
   deriving (Functor, Applicative, Monad, MonadState Board, MonadIO)
 
-io :: GameConsole a -> IO a
-io (GameConsole m) = evalStateT m emptyBoard
+runIO :: GameConsole a -> IO a
+runIO (GameConsole m) = evalStateT m emptyBoard
 
 instance HasBoard GameConsole where
   putBoard = put
