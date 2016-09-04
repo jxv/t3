@@ -1,7 +1,7 @@
-module T3.Game.System
+module T3.Game.Monad
   ( Env(..)
   , Callbacks(..)
-  , System
+  , Game
   , runIO
   ) where
 
@@ -16,10 +16,10 @@ import qualified T3.Game.PlayImpl as Play
 import qualified T3.Game.BoardManagerImpl as BoardManager
 import qualified T3.Game.ControlImpl as Control
 import qualified T3.Game.CommunicatorImpl as Communicator
-import T3.Game.Parts
+import T3.Game.Classes
 import T3.Game.Types
 
-newtype System a = System { unSystem :: ReaderT Env (StateT Board IO) a }
+newtype Game a = Game { unGame :: ReaderT Env (StateT Board IO) a }
   deriving (Functor, Applicative, Monad, MonadIO, MonadReader Env, MonadState Board)
 
 data Env = Env
@@ -31,33 +31,33 @@ data Callbacks = Callbacks
   , _callbacksSend :: Step -> IO ()
   }
 
-runIO :: System () -> Env -> Board -> IO ()
-runIO system env board = void $ runStateT (runReaderT (unSystem system) env) board
+runIO :: Game () -> Env -> Board -> IO ()
+runIO game env board = void $ runStateT (runReaderT (unGame game) env) board
 
-instance Play System where
+instance Play Game where
   play = Play.play'
 
-instance Control System where
+instance Control Game where
   move = Control.move
   forfeit = Control.forfeit
   end = Control.end
   tie = Control.tie
 
-instance BoardManager System where
+instance BoardManager Game where
   isOpenLoc = BoardManager.isOpenLoc
   insertAtLoc = BoardManager.insertAtLoc
   getResult = BoardManager.getResult
 
-instance Communicator System where
+instance Communicator Game where
   sendGameState = Communicator.sendGameState
   recvAction = Communicator.recvAction
   sendFinal = Communicator.sendFinal
 
-instance HasBoard System where
+instance HasBoard Game where
   getBoard = get
   putBoard = put
 
-instance Transmitter System where
+instance Transmitter Game where
   sendStep xo step = do
     send <- asks (_callbacksSend . flip _callbacks xo)
     liftIO $ send step

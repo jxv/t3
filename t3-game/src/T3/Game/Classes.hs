@@ -1,4 +1,4 @@
-module T3.Game.Parts
+module T3.Game.Classes
   ( BoardManager(..)
   , HasBoard(..)
   , Control(..)

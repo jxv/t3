@@ -9,7 +9,7 @@ import T3.Core (XO(X,O), Loc, Result(..), Action(..))
 import T3.Game.Types (Win(Win), Lose(Lose))
 
 import T3.GameCallbacks.Types (Final(..))
-import T3.GameCallbacks.Parts (Communicator(..))
+import T3.GameCallbacks.Classes (Communicator(..))
 
 move :: Communicator m => XO -> m Loc
 move xo = do

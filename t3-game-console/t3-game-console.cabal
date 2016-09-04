@@ -16,8 +16,8 @@ library
   hs-source-dirs:
     src
   exposed-modules:
-    T3.GameConsole.System
-    T3.GameConsole.Parts
+    T3.GameConsole.Monad
+    T3.GameConsole.Classes
     T3.GameConsole.ConsoleImpl
     T3.GameConsole.BoardManagerImpl
     T3.GameConsole.ControlImpl

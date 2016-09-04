@@ -15,9 +15,9 @@ library
   hs-source-dirs:
     src
   exposed-modules:
-    T3.GameCallbacks.System
+    T3.GameCallbacks.Monad
     T3.GameCallbacks.Types
-    T3.GameCallbacks.Parts
+    T3.GameCallbacks.Classes
     T3.GameCallbacks.Milliseconds
     T3.GameCallbacks.ControlImpl
     T3.GameCallbacks.BoardManagerImpl

@@ -5,7 +5,7 @@ module T3.Game.PlayImpl
 import T3.Core (Result(Unfinished,Winner,Tie), XO(X,O), Board, valid, insertXO, result)
 
 import T3.Game.Types (Win(Win), Lose(Lose))
-import T3.Game.Parts
+import T3.Game.Classes
   ( Play(play)
   , BoardManager(isOpenLoc, insertAtLoc, getResult)
   , Control(move, forfeit, end, tie)

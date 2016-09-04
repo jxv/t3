@@ -8,9 +8,9 @@ import Test.Hspec
 
 import T3.Core (XO(X,O), Loc(..), Result(Unfinished,Tie,Winner))
 
-import T3.Game.Types (Win(Win), Lose(Lose), Final(..))
 import T3.Game.ControlImpl (move, forfeit, end, tie)
-import T3.Game.Parts (Communicator)
+import T3.Game.Types (Win(Win), Lose(Lose), Final(..))
+import T3.Game.Classes (Communicator)
 
 mkFixture "Fixture" [''Communicator]
 

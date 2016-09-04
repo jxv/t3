@@ -6,9 +6,9 @@ import Prelude hiding (putStrLn)
 
 import qualified T3.Game.BoardManagerImpl as BoardManager
 import T3.Core (boardList, Loc, XO)
-import T3.Game.Parts (HasBoard(getBoard))
+import T3.Game.Classes (HasBoard(getBoard))
 
-import T3.GameConsole.Parts (Console(putStrLn))
+import T3.GameConsole.Classes (Console(putStrLn))
 
 moveStatement :: XO -> Loc -> String
 moveStatement xo loc = show xo ++ " moved to " ++ show loc

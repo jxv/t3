@@ -6,10 +6,9 @@ module T3.Game.ControlImpl
   ) where
 
 import T3.Core (XO(X,O), Loc, Result(..), Action(..))
-import T3.Game.Types (Win(Win), Lose(Lose))
 
-import T3.Game.Types (Final(..))
-import T3.Game.Parts (Communicator(..))
+import T3.Game.Types (Win(Win), Lose(Lose), Final(..))
+import T3.Game.Classes (Communicator(..))
 
 move :: Communicator m => XO -> m Loc
 move xo = do

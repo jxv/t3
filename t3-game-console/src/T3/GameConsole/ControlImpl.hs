@@ -11,7 +11,7 @@ import Safe (readMay)
 import T3.Core (Loc(..), XO(..), Board, boardList)
 import T3.Game.Types (Win(Win), Lose(Lose))
 
-import T3.GameConsole.Parts (Console(putStrLn, getLine))
+import T3.GameConsole.Classes (Console(putStrLn, getLine))
 
 move :: Console m => XO -> m Loc
 move xo = do

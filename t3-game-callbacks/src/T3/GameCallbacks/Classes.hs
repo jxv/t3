@@ -1,4 +1,4 @@
-module T3.GameCallbacks.Parts
+module T3.GameCallbacks.Classes
   ( Communicator(..)
   , Console(..)
   , Stoppable(..)

@@ -9,11 +9,11 @@ module T3.GameCallbacks.CommunicatorImpl
 
 import T3.Core (XO, Loc, Result(Winner), Action(Action), Board, yinYang)
 import T3.Game.Types (Win(Win), Lose(Lose))
-import T3.Game.Parts (HasBoard(getBoard, putBoard))
+import T3.Game.Classes (HasBoard(getBoard, putBoard))
 
 import T3.GameCallbacks.Types (Final(..), Step(..))
 import T3.GameCallbacks.Milliseconds (Milliseconds)
-import T3.GameCallbacks.Parts
+import T3.GameCallbacks.Classes
   ( HasActions(putActions, getActions)
   , Transmitter(sendStep, recvLoc)
   , Finalizer(finalize)
