@@ -21,7 +21,7 @@ import T3.Game.Classes (Control(..), HasBoard(..), BoardManager(..))
 import qualified T3.GameCallbacks.ConsoleImpl as Console
 import qualified T3.GameCallbacks.ControlImpl as Control
 import qualified T3.GameCallbacks.CommunicatorImpl as Communicator
-import qualified T3.GameCallbacks.BoardManagerImpl as BoardManager (insertAtLoc)
+import qualified T3.GameCallbacks.BoardManagerImpl as BoardManager
 import T3.GameCallbacks.Types (Step(..))
 import T3.GameCallbacks.Milliseconds (Milliseconds(..), delay)
 import T3.GameCallbacks.Classes
