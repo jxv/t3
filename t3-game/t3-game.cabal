@@ -16,6 +16,7 @@ library
   hs-source-dirs:
     src
   exposed-modules:
+    T3.Game.Monad
     T3.Game.Classes
     T3.Game.Types
     T3.Game.Main
