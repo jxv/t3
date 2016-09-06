@@ -28,9 +28,8 @@ import T3.GameCallbacks.Types
 import T3.GameCallbacks.Milliseconds (Milliseconds(..), delay)
 import T3.GameCallbacks.Classes
 
-newtype GameCallbacks a = GameCallbacks
-  { unGameCallbacks :: MaybeT (ReaderT (Env IO) (StateT Data (GameT IO))) a }
-  deriving (Functor, Applicative, Monad, MonadIO, MonadReader (Env IO), MonadState Data)
+newtype GameCallbacks a = GameCallbacks { unGameCallbacks :: MaybeT (ReaderT (Env IO) (StateT [Action] (GameT IO))) a }
+  deriving (Functor, Applicative, Monad, MonadIO, MonadReader (Env IO), MonadState [Action], HasBoard)
 
 data Env m = Env
   { _callbacks :: XO -> Callbacks m
@@ -43,16 +42,11 @@ data Callbacks m = Callbacks
   , _callbacksSend :: Step -> m ()
   }
 
-data Data = Data
-  { _board :: Board
-  , _actions :: [Action]
-  } deriving (Show, Eq)
-
-go :: GameCallbacks a -> Env IO -> Data -> Board -> IO (Maybe a, Data)
-go (GameCallbacks m) env dat board = runGameT (runStateT (runReaderT (runMaybeT m) env) dat) board
+go :: GameCallbacks a -> Env IO -> [Action] -> Board -> IO (Maybe a, [Action])
+go (GameCallbacks m) env dat board = runGameT (runStateT (runReaderT (runMaybeT m) env) []) board
 
 runIO :: GameCallbacks a -> Env IO -> IO ()
-runIO gameCallbacks env = void $ go gameCallbacks env Data{ _board = emptyBoard, _actions = [] } emptyBoard
+runIO gameCallbacks env = void $ go gameCallbacks env [] emptyBoard
 
 instance Control GameCallbacks where
   move = Control.move
@@ -76,13 +70,9 @@ instance Communicator GameCallbacks where
 instance Stoppable GameCallbacks where
   stop = GameCallbacks . MaybeT $ return Nothing
 
-instance HasBoard GameCallbacks where
-  getBoard = gets _board
-  putBoard board = get >>= \dat -> put dat{ _board = board }
-
 instance HasActions GameCallbacks where
-  getActions = gets _actions
-  putActions actions = get >>= \matchState -> put matchState{ _actions = actions }
+  getActions = get
+  putActions = put
 
 instance Transmitter GameCallbacks where
   sendStep xo step = asks (_callbacksSend . flip _callbacks xo) >>= \send -> liftIO $ send step
@@ -94,13 +84,13 @@ instance Finalizer GameCallbacks where
 instance OnTimeout GameCallbacks where
   onTimeout gameCallbacks ms = do
     env <- ask
-    dat <- get
+    actions <- get
     board <- getBoard
-    eitherOfMaybeAndData <- liftIO $ race (liftIO $ delay ms) (liftIO $ go gameCallbacks env dat board)
+    eitherOfMaybeAndData <- liftIO $ race (liftIO $ delay ms) (liftIO $ go gameCallbacks env actions board)
     case eitherOfMaybeAndData of
       Left _ -> return Nothing
-      Right (maybeA, dat') -> do
-        put dat'
+      Right (maybeA, actions') -> do
+        put actions'
         return maybeA
 
 instance HasTimeoutLimit GameCallbacks where
