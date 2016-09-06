@@ -8,7 +8,8 @@ import Test.Hspec
 
 import T3.Core (XO(X,O), Loc(..), Result(Unfinished,Tie,Winner))
 
-import T3.Game.PlayImpl (play')
+import T3.Game.Play (play')
+
 import T3.Game.Types (Win(Win), Lose(Lose))
 import T3.Game.Classes (Play, BoardManager, Control)
 

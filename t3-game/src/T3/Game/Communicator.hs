@@ -1,4 +1,4 @@
-module T3.Game.CommunicatorImpl
+module T3.Game.Communicator
   ( sendGameState
   , recvAction
   , sendFinal

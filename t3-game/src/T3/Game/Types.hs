@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveFunctor #-}
+
 module T3.Game.Types
   ( Win(..)
   , Lose(..)

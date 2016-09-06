@@ -18,9 +18,9 @@ library
   exposed-modules:
     T3.GameConsole.Monad
     T3.GameConsole.Classes
-    T3.GameConsole.ConsoleImpl
-    T3.GameConsole.BoardManagerImpl
-    T3.GameConsole.ControlImpl
+    T3.GameConsole.Console
+    T3.GameConsole.BoardManager
+    T3.GameConsole.Control
   build-depends:
       base >= 4.7 && < 5
     , mtl

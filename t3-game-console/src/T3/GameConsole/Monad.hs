@@ -12,11 +12,11 @@ import T3.Core (Board)
 import T3.Game.Classes (BoardManager(..), Control(..), HasBoard(..), Play(..))
 import T3.GameConsole.Classes (Console(..))
 
-import qualified T3.Game.PlayImpl as Play
+import qualified T3.Game.Play as Play
 
-import qualified T3.GameConsole.BoardManagerImpl as BoardManager
-import qualified T3.GameConsole.ControlImpl as Control
-import qualified T3.GameConsole.ConsoleImpl as Console
+import qualified T3.GameConsole.BoardManager as BoardManager
+import qualified T3.GameConsole.Control as Control
+import qualified T3.GameConsole.Console as Console
 
 newtype GameConsole a = GameConsole { unGameConsole :: StateT Board IO a }
   deriving (Functor, Applicative, Monad, MonadState Board, MonadIO)

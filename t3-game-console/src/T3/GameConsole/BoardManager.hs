@@ -1,4 +1,4 @@
-module T3.GameConsole.BoardManagerImpl
+module T3.GameConsole.BoardManager
   ( insertAtLoc
   , isOpenLoc
   , getResult
@@ -6,10 +6,11 @@ module T3.GameConsole.BoardManagerImpl
 
 import Prelude hiding (putStrLn)
 
-import qualified T3.Game.BoardManagerImpl as Game
 import T3.Core (boardList, Loc, XO, Result)
-import T3.Game.Classes (HasBoard(getBoard))
 
+import qualified T3.Game.BoardManager as Game
+
+import T3.Game.Classes (HasBoard(getBoard))
 import T3.GameConsole.Classes (Console(putStrLn))
 
 insertAtLoc :: (HasBoard m, Console m) => Loc -> XO -> m ()

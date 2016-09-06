@@ -14,14 +14,14 @@ import Control.Monad.Reader (ReaderT(..), MonadReader(..), asks)
 import Control.Monad.IO.Class (MonadIO(..))
 import Data.Functor (void)
 
-import qualified T3.Game.BoardManagerImpl as BoardManager (isOpenLoc, getResult)
+import qualified T3.Game.BoardManager as BoardManager (isOpenLoc, getResult)
 import T3.Core (Loc, Action, Board, Result, XO(..), emptyBoard)
 import T3.Game.Classes (Control(..), HasBoard(..), BoardManager(..))
 
-import qualified T3.GameCallbacks.ConsoleImpl as Console
-import qualified T3.GameCallbacks.ControlImpl as Control
-import qualified T3.GameCallbacks.CommunicatorImpl as Communicator
-import qualified T3.GameCallbacks.BoardManagerImpl as BoardManager
+import qualified T3.GameCallbacks.Console as Console
+import qualified T3.GameCallbacks.Control as Control
+import qualified T3.GameCallbacks.Communicator as Communicator
+import qualified T3.GameCallbacks.BoardManager as BoardManager
 import T3.GameCallbacks.Types (Step(..))
 import T3.GameCallbacks.Milliseconds (Milliseconds(..), delay)
 import T3.GameCallbacks.Classes
@@ -84,28 +84,18 @@ instance Stoppable GameCallbacks where
 
 instance HasBoard GameCallbacks where
   getBoard = gets _board
-  putBoard board = do
-    dat <- get
-    put dat{ _board = board }
+  putBoard board = get >>= \dat -> put dat{ _board = board }
 
 instance HasActions GameCallbacks where
   getActions = gets _actions
-  putActions actions = do
-    matchState <- get
-    put matchState{ _actions = actions }
+  putActions actions = get >>= \matchState -> put matchState{ _actions = actions }
 
 instance Transmitter GameCallbacks where
-  sendStep xo step = do
-    send <- asks (_callbacksSend . flip _callbacks xo)
-    liftIO $ send step
-  recvLoc xo = do
-    recv <- asks (_callbacksRecv . flip _callbacks xo)
-    liftIO recv
+  sendStep xo step = asks (_callbacksSend . flip _callbacks xo) >>= \send -> liftIO $ send step
+  recvLoc xo = asks (_callbacksRecv . flip _callbacks xo) >>= \recv -> liftIO recv
 
 instance Finalizer GameCallbacks where
-  finalize actions board result = do
-    f <- asks _finalize
-    liftIO $ f actions board result
+  finalize actions board result = asks _finalize >>= \f -> liftIO $ f actions board result
 
 instance OnTimeout GameCallbacks where
   onTimeout gameCallbacks ms = do

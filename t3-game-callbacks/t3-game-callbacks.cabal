@@ -19,10 +19,10 @@ library
     T3.GameCallbacks.Types
     T3.GameCallbacks.Classes
     T3.GameCallbacks.Milliseconds
-    T3.GameCallbacks.ControlImpl
-    T3.GameCallbacks.BoardManagerImpl
-    T3.GameCallbacks.CommunicatorImpl
-    T3.GameCallbacks.ConsoleImpl
+    T3.GameCallbacks.Control
+    T3.GameCallbacks.BoardManager
+    T3.GameCallbacks.Communicator
+    T3.GameCallbacks.Console
   default-extensions:
     OverloadedStrings
     MultiParamTypeClasses

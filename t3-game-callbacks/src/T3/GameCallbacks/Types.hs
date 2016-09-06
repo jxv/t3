@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+
 module T3.GameCallbacks.Types
   ( Step(..)
   , Final(..)

@@ -1,4 +1,4 @@
-module T3.Game.PlayImpl
+module T3.Game.Play
   ( play'
   ) where
 

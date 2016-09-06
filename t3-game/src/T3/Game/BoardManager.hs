@@ -1,4 +1,4 @@
-module T3.Game.BoardManagerImpl
+module T3.Game.BoardManager
   ( isOpenLoc
   , insertAtLoc
   , getResult
