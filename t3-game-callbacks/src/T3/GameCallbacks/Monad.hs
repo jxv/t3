@@ -8,6 +8,7 @@ module T3.GameCallbacks.Monad
 import qualified Control.Concurrent as IO
 import qualified Control.Monad.STM as IO
 import Control.Concurrent.Async (race)
+import Control.Monad.Trans (lift)
 import Control.Monad.Trans.Maybe (MaybeT(..))
 import Control.Monad.State (StateT(..), MonadState(..), gets, evalStateT)
 import Control.Monad.Reader (ReaderT(..), MonadReader(..), asks)
@@ -29,7 +30,14 @@ import T3.GameCallbacks.Milliseconds (Milliseconds(..), delay)
 import T3.GameCallbacks.Classes
 
 newtype GameCallbacks a = GameCallbacks { unGameCallbacks :: MaybeT (ReaderT (Env IO) (StateT [Action] (GameT IO))) a }
-  deriving (Functor, Applicative, Monad, MonadIO, MonadReader (Env IO), MonadState [Action], HasBoard)
+  deriving
+  ( Functor
+  , Applicative
+  , Monad
+  , MonadIO
+  , MonadReader (Env IO)
+  , MonadState [Action]
+  )
 
 data Env m = Env
   { _callbacks :: XO -> Callbacks m
@@ -98,3 +106,10 @@ instance HasTimeoutLimit GameCallbacks where
 
 instance Console GameCallbacks where
   printStdout = Console.printStdout
+
+instance HasBoard GameCallbacks where
+  getBoard = liftGameIO getBoard
+  putBoard = liftGameIO . putBoard
+
+liftGameIO :: GameT IO a -> GameCallbacks a
+liftGameIO = GameCallbacks . lift . lift . lift
