@@ -1,4 +1,4 @@
-module T3.GameConsole.ControlImpl
+module T3.GameConsole.Control
   ( move
   , forfeit
   , end

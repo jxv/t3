@@ -1,8 +1,8 @@
-module T3.GameCallbacks.BoardManagerImpl
+module T3.GameCallbacks.BoardManager
   ( insertAtLoc
   ) where
 
-import qualified T3.Game.BoardManagerImpl as BoardManager (insertAtLoc)
+import qualified T3.Game.BoardManager as BoardManager (insertAtLoc)
 import T3.Core (Loc, XO)
 import T3.Game.Classes (HasBoard(getBoard))
 import T3.GameCallbacks.Classes (Communicator(logAction, updateBoard))

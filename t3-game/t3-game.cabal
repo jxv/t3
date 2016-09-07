@@ -20,14 +20,15 @@ library
     T3.Game.Classes
     T3.Game.Types
     T3.Game.Main
-    T3.Game.PlayImpl
-    T3.Game.BoardManagerImpl
-    T3.Game.CommunicatorImpl
-    T3.Game.ControlImpl
+    T3.Game.Play
+    T3.Game.BoardManager
+    T3.Game.Communicator
+    T3.Game.Control
   build-depends:
       base >= 4.7 && < 5
     , aeson
     , text
+    , transformers
     , bytestring
     , mtl
     , containers

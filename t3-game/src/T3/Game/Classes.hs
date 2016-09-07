@@ -9,6 +9,11 @@ module T3.Game.Classes
 
 import Data.Text (Text)
 
+import Control.Monad.Trans (lift)
+import Control.Monad.Trans.Maybe (MaybeT)
+import Control.Monad.State (StateT)
+import Control.Monad.Reader (ReaderT)
+
 import T3.Core (XO, Loc, Board, Result)
 import T3.Game.Types
 
@@ -38,3 +43,15 @@ class Monad m => Communicator m where
 class Monad m => Transmitter m where
   sendStep :: XO -> Step -> m ()
   recvLoc :: XO -> m Loc
+
+instance HasBoard m => HasBoard (MaybeT m) where
+  getBoard = lift getBoard
+  putBoard = lift . putBoard
+
+instance HasBoard m => HasBoard (StateT s m) where
+  getBoard = lift getBoard
+  putBoard = lift . putBoard
+
+instance HasBoard m => HasBoard (ReaderT r m) where
+  getBoard = lift getBoard
+  putBoard = lift . putBoard

@@ -8,7 +8,8 @@ import Test.Hspec
 
 import T3.Core (XO(X,O), Loc(..), emptyBoard)
 
-import T3.Game.CommunicatorImpl (sendGameState, recvAction, sendFinal)
+import T3.Game.Communicator (sendGameState, recvAction, sendFinal)
+
 import T3.Game.Types (Final(..), Step(..))
 import T3.Game.Classes (HasBoard, Transmitter)
 

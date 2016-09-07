@@ -14,51 +14,39 @@ import Control.Monad.Reader (ReaderT(..), MonadReader(..), asks)
 import Control.Monad.IO.Class (MonadIO(..))
 import Data.Functor (void)
 
-import qualified T3.Game.BoardManagerImpl as BoardManager (isOpenLoc, getResult)
+import T3.Game.Monad (GameT, runGameT)
+
+import qualified T3.Game.BoardManager as BoardManager (isOpenLoc, getResult)
 import T3.Core (Loc, Action, Board, Result, XO(..), emptyBoard)
 import T3.Game.Classes (Control(..), HasBoard(..), BoardManager(..))
 
-import qualified T3.GameCallbacks.ConsoleImpl as Console
-import qualified T3.GameCallbacks.ControlImpl as Control
-import qualified T3.GameCallbacks.CommunicatorImpl as Communicator
-import qualified T3.GameCallbacks.BoardManagerImpl as BoardManager (insertAtLoc)
-import T3.GameCallbacks.Types (Step(..))
+import qualified T3.GameCallbacks.Console as Console
+import qualified T3.GameCallbacks.Control as Control
+import qualified T3.GameCallbacks.Communicator as Communicator
+import qualified T3.GameCallbacks.BoardManager as BoardManager
+import T3.GameCallbacks.Types
 import T3.GameCallbacks.Milliseconds (Milliseconds(..), delay)
 import T3.GameCallbacks.Classes
-  ( Communicator(..)
-  , Transmitter(..)
-  , Finalizer(..)
-  , HasActions(..)
-  , Stoppable(..)
-  , OnTimeout(..)
-  , HasTimeoutLimit(..)
-  , Console(..)
-  )
 
-newtype GameCallbacks a = GameCallbacks { unGameCallbacks :: MaybeT (ReaderT Env (StateT Data IO)) a }
-  deriving (Functor, Applicative, Monad, MonadIO, MonadReader Env, MonadState Data)
+newtype GameCallbacks a = GameCallbacks { unGameCallbacks :: MaybeT (ReaderT (Env IO) (StateT [Action] (GameT IO))) a }
+  deriving (Functor, Applicative, Monad, MonadIO, MonadReader (Env IO), MonadState [Action], HasBoard)
 
-data Env = Env
-  { _callbacks :: XO -> Callbacks
+data Env m = Env
+  { _callbacks :: XO -> Callbacks m
   , _timeoutLimit :: Maybe Milliseconds
-  , _finalize :: [Action] -> Board -> Result -> IO ()
+  , _finalize :: [Action] -> Board -> Result -> m ()
   }
 
-data Callbacks = Callbacks
-  { _callbacksRecv :: IO Loc
-  , _callbacksSend :: Step -> IO ()
+data Callbacks m = Callbacks
+  { _callbacksRecv :: m Loc
+  , _callbacksSend :: Step -> m ()
   }
 
-data Data = Data
-  { _board :: Board
-  , _actions :: [Action]
-  } deriving (Show, Eq)
+go :: GameCallbacks a -> Env IO -> [Action] -> Board -> IO (Maybe a, [Action])
+go (GameCallbacks m) env dat board = runGameT (runStateT (runReaderT (runMaybeT m) env) []) board
 
-go :: GameCallbacks a -> Env -> Data -> IO (Maybe a, Data)
-go (GameCallbacks m) env dat = runStateT (runReaderT (runMaybeT m) env) dat
-
-runIO :: GameCallbacks () -> Env -> IO ()
-runIO gameCallbacks env = void $ go gameCallbacks env Data{ _board = emptyBoard, _actions = [] }
+runIO :: GameCallbacks a -> Env IO -> IO ()
+runIO gameCallbacks env = void $ go gameCallbacks env [] emptyBoard
 
 instance Control GameCallbacks where
   move = Control.move
@@ -82,40 +70,27 @@ instance Communicator GameCallbacks where
 instance Stoppable GameCallbacks where
   stop = GameCallbacks . MaybeT $ return Nothing
 
-instance HasBoard GameCallbacks where
-  getBoard = gets _board
-  putBoard board = do
-    dat <- get
-    put dat{ _board = board }
-
 instance HasActions GameCallbacks where
-  getActions = gets _actions
-  putActions actions = do
-    matchState <- get
-    put matchState{ _actions = actions }
+  getActions = get
+  putActions = put
 
 instance Transmitter GameCallbacks where
-  sendStep xo step = do
-    send <- asks (_callbacksSend . flip _callbacks xo)
-    liftIO $ send step
-  recvLoc xo = do
-    recv <- asks (_callbacksRecv . flip _callbacks xo)
-    liftIO recv
+  sendStep xo step = asks (_callbacksSend . flip _callbacks xo) >>= \send -> liftIO $ send step
+  recvLoc xo = asks (_callbacksRecv . flip _callbacks xo) >>= \recv -> liftIO recv
 
 instance Finalizer GameCallbacks where
-  finalize actions board result = do
-    f <- asks _finalize
-    liftIO $ f actions board result
+  finalize actions board result = asks _finalize >>= \f -> liftIO $ f actions board result
 
 instance OnTimeout GameCallbacks where
   onTimeout gameCallbacks ms = do
     env <- ask
-    dat <- get
-    eitherOfMaybeAndData <- liftIO $ race (liftIO $ delay ms) (liftIO $ go gameCallbacks env dat)
+    actions <- get
+    board <- getBoard
+    eitherOfMaybeAndData <- liftIO $ race (liftIO $ delay ms) (liftIO $ go gameCallbacks env actions board)
     case eitherOfMaybeAndData of
       Left _ -> return Nothing
-      Right (maybeA, dat') -> do
-        put dat'
+      Right (maybeA, actions') -> do
+        put actions'
         return maybeA
 
 instance HasTimeoutLimit GameCallbacks where

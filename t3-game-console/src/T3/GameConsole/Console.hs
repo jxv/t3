@@ -1,4 +1,4 @@
-module T3.GameConsole.ConsoleImpl
+module T3.GameConsole.Console
   ( putStrLn
   , getLine
   ) where
