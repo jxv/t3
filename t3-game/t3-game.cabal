@@ -22,8 +22,6 @@ library
     T3.Game.Main
     T3.Game.Play
     T3.Game.BoardManager
-    T3.Game.Communicator
-    T3.Game.Control
   build-depends:
       base >= 4.7 && < 5
     , aeson

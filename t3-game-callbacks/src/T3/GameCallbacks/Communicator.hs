@@ -25,7 +25,7 @@ import T3.GameCallbacks.Classes
 sendGameState :: (HasBoard m, Transmitter m) => XO -> m ()
 sendGameState xo = do
   board <- getBoard
-  sendStep xo (Step board Nothing)
+  sendStep xo Step{ _stepBoard = board, _stepFinal = Nothing }
 
 recvAction :: (HasBoard m, HasActions m, Transmitter m, Finalizer m, OnTimeout m, HasTimeoutLimit m, Stoppable m) => XO -> m Loc
 recvAction xo = do
@@ -43,7 +43,7 @@ recvAction xo = do
 sendFinal :: (HasBoard m, Transmitter m) => XO -> Final -> m ()
 sendFinal xo final = do
   board <- getBoard
-  sendStep xo (Step board (Just final))
+  sendStep xo Step{ _stepBoard = board, _stepFinal = Just final }
 
 tally :: (HasBoard m, HasActions m, Finalizer m) => Result -> m ()
 tally result = do

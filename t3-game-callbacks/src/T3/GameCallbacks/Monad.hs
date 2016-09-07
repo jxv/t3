@@ -15,10 +15,9 @@ import Control.Monad.Reader (ReaderT(..), MonadReader(..), asks)
 import Control.Monad.IO.Class (MonadIO(..))
 import Data.Functor (void)
 
-import T3.Game.Monad (GameT, runGameT)
-
-import qualified T3.Game.BoardManager as BoardManager (isOpenLoc, getResult)
 import T3.Core (Loc, Action, Board, Result, XO(..), emptyBoard)
+
+import T3.Game.Monad (GameT, runGameT)
 import T3.Game.Classes (Control(..), HasBoard(..), BoardManager(..))
 
 import qualified T3.GameCallbacks.Console as Console
@@ -26,8 +25,9 @@ import qualified T3.GameCallbacks.Control as Control
 import qualified T3.GameCallbacks.Communicator as Communicator
 import qualified T3.GameCallbacks.BoardManager as BoardManager
 import T3.GameCallbacks.Types
-import T3.GameCallbacks.Milliseconds (Milliseconds(..), delay)
 import T3.GameCallbacks.Classes
+
+import T3.GameCallbacks.Milliseconds (Milliseconds(..), delay)
 
 newtype GameCallbacks a = GameCallbacks { unGameCallbacks :: MaybeT (ReaderT (Env IO) (StateT [Action] (GameT IO))) a }
   deriving
