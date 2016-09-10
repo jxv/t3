@@ -17,7 +17,6 @@ library
     src
   exposed-modules:
     T3.GameConsole.Monad
-    T3.GameConsole.Classes
     T3.GameConsole.Console
     T3.GameConsole.BoardManager
     T3.GameConsole.Control

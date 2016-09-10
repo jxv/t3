@@ -11,7 +11,9 @@ import T3.Core (XO(X,O), Loc(..), Result(Unfinished,Tie,Winner))
 import T3.Game.Play (play')
 
 import T3.Game.Types (Win(Win), Lose(Lose))
-import T3.Game.Classes (Play, BoardManager, Control)
+import T3.Game.Play (Play)
+import T3.Game.BoardManager (BoardManager)
+import T3.Game.Control (Control)
 
 mkFixture "Fixture" [''Play, ''BoardManager, ''Control]
 

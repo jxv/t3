@@ -1,35 +1,34 @@
 module T3.GameCallbacks.Control
-  ( move
-  , forfeit
-  , end
-  , tie
+  ( move'
+  , forfeit'
+  , end'
+  , tie'
   ) where
 
 import T3.Core (XO(X,O), Loc, Result(..), Action(..))
 import T3.Game.Types (Win(Win), Lose(Lose))
-
 import T3.GameCallbacks.Types (Final(..))
-import T3.GameCallbacks.Classes (Communicator(..))
+import T3.GameCallbacks.Communicator (Communicator(sendGameState, recvAction, tally, sendFinal))
 
-move :: Communicator m => XO -> m Loc
-move xo = do
+move' :: Communicator m => XO -> m Loc
+move' xo = do
   sendGameState xo
   recvAction xo
 
-forfeit :: Communicator m => Win XO -> Lose XO -> m ()
-forfeit (Win w) (Lose l) = do
+forfeit' :: Communicator m => Win XO -> Lose XO -> m ()
+forfeit' (Win w) (Lose l) = do
   tally (Winner w)
   sendFinal w WonByDQ
   sendFinal l LossByDQ
 
-end :: Communicator m => Win XO -> Lose XO -> m ()
-end (Win w) (Lose l) = do
+end' :: Communicator m => Win XO -> Lose XO -> m ()
+end' (Win w) (Lose l) = do
   tally (Winner w)
   sendFinal w Won
   sendFinal l Loss
 
-tie :: Communicator m => m ()
-tie = do
+tie' :: Communicator m => m ()
+tie' = do
   tally Tie
   sendFinal X Tied
   sendFinal O Tied

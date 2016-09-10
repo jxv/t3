@@ -15,14 +15,19 @@ library
   hs-source-dirs:
     src
   exposed-modules:
-    T3.GameCallbacks.Monad
-    T3.GameCallbacks.Types
-    T3.GameCallbacks.Classes
-    T3.GameCallbacks.Milliseconds
-    T3.GameCallbacks.Control
     T3.GameCallbacks.BoardManager
     T3.GameCallbacks.Communicator
     T3.GameCallbacks.Console
+    T3.GameCallbacks.Control
+    T3.GameCallbacks.Finalizer
+    T3.GameCallbacks.HasActions
+    T3.GameCallbacks.HasTimeoutLimit
+    T3.GameCallbacks.Milliseconds
+    T3.GameCallbacks.Monad
+    T3.GameCallbacks.OnTimeout
+    T3.GameCallbacks.Stoppable
+    T3.GameCallbacks.Transmitter
+    T3.GameCallbacks.Types
   default-extensions:
     OverloadedStrings
     MultiParamTypeClasses
@@ -44,5 +49,6 @@ library
     , transformers
     , t3-core
     , t3-game
+    , transformers-base
   default-language:
     Haskell2010

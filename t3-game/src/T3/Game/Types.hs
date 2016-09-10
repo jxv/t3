@@ -9,7 +9,6 @@ module T3.Game.Types
 
 import Control.Monad (mzero)
 import Data.Text (Text)
-
 import T3.Core (Board)
 
 newtype Win a = Win a

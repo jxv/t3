@@ -1,15 +1,15 @@
 module T3.Game.Play
-  ( play'
+  ( Play(..)
+  , play'
   ) where
 
 import T3.Core (Result(Unfinished,Winner,Tie), XO(X,O), Board, valid, insertXO, result)
-
+import T3.Game.BoardManager (BoardManager(isOpenLoc, insertAtLoc, getResult))
+import T3.Game.Control (Control(move, forfeit, end, tie))
 import T3.Game.Types (Win(Win), Lose(Lose))
-import T3.Game.Classes
-  ( Play(play)
-  , BoardManager(isOpenLoc, insertAtLoc, getResult)
-  , Control(move, forfeit, end, tie)
-  )
+
+class Monad m => Play m where
+  play :: XO -> XO -> m ()
 
 play' :: (Control m, BoardManager m, Play m) => XO -> XO -> m ()
 play' p0 p1 = do

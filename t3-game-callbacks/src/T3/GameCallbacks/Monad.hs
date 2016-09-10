@@ -18,14 +18,22 @@ import Data.Functor (void)
 import T3.Core (Loc, Action, Board, Result, XO(..), emptyBoard)
 
 import T3.Game.Monad (GameT, runGameT)
-import T3.Game.Classes (Control(..), HasBoard(..), BoardManager(..))
+import T3.Game.Control (Control(..))
+import T3.Game.HasBoard (HasBoard(..))
+import T3.Game.BoardManager (BoardManager(..))
 
-import qualified T3.GameCallbacks.Console as Console
-import qualified T3.GameCallbacks.Control as Control
-import qualified T3.GameCallbacks.Communicator as Communicator
-import qualified T3.GameCallbacks.BoardManager as BoardManager
 import T3.GameCallbacks.Types
-import T3.GameCallbacks.Classes
+
+import T3.GameCallbacks.BoardManager
+import T3.GameCallbacks.Communicator
+import T3.GameCallbacks.Console
+import T3.GameCallbacks.Control
+import T3.GameCallbacks.Finalizer
+import T3.GameCallbacks.HasActions
+import T3.GameCallbacks.HasTimeoutLimit
+import T3.GameCallbacks.OnTimeout
+import T3.GameCallbacks.Stoppable
+import T3.GameCallbacks.Transmitter
 
 import T3.GameCallbacks.Milliseconds (Milliseconds(..), delay)
 
@@ -57,23 +65,23 @@ runIO :: GameCallbacks a -> Env IO -> IO ()
 runIO gameCallbacks env = void $ go gameCallbacks env [] emptyBoard
 
 instance Control GameCallbacks where
-  move = Control.move
-  forfeit = Control.forfeit
-  end = Control.end
-  tie = Control.tie
+  move = move'
+  forfeit = forfeit'
+  end = end'
+  tie = tie'
 
 instance BoardManager GameCallbacks where
-  isOpenLoc = BoardManager.isOpenLoc
-  insertAtLoc = BoardManager.insertAtLoc
-  getResult = BoardManager.getResult
+  isOpenLoc = isOpenLoc'
+  insertAtLoc = insertAtLoc'
+  getResult = getResult'
 
 instance Communicator GameCallbacks where
-  sendGameState = Communicator.sendGameState
-  recvAction = Communicator.recvAction
-  sendFinal = Communicator.sendFinal
-  tally = Communicator.tally
-  updateBoard = Communicator.updateBoard
-  logAction = Communicator.logAction
+  sendGameState = sendGameState'
+  recvAction = recvAction'
+  sendFinal = sendFinal'
+  tally = tally'
+  updateBoard = updateBoard'
+  logAction = logAction'
 
 instance Stoppable GameCallbacks where
   stop = GameCallbacks . MaybeT $ return Nothing
@@ -105,7 +113,7 @@ instance HasTimeoutLimit GameCallbacks where
   getTimeoutLimit = asks _timeoutLimit
 
 instance Console GameCallbacks where
-  printStdout = Console.printStdout
+  printStdout = printStdout'
 
 instance HasBoard GameCallbacks where
   getBoard = liftGameIO getBoard

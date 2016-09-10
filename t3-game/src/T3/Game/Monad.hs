@@ -6,11 +6,9 @@ module T3.Game.Monad
 import Control.Monad.State (MonadState(..), StateT, evalStateT)
 import Control.Monad.Trans (MonadTrans(..))
 import Control.Monad.IO.Class (MonadIO)
-
 import T3.Core (Board)
-
 import T3.Game.Types
-import T3.Game.Classes
+import T3.Game.HasBoard
 
 newtype GameT m a = GameT { unGameT :: StateT Board m a }
   deriving (Functor, Applicative, Monad, MonadTrans, MonadState Board, MonadIO)

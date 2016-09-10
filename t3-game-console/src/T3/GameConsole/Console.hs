@@ -1,14 +1,19 @@
 module T3.GameConsole.Console
-  ( putStrLn
-  , getLine
+  ( Console(..)
+  , putStrLn'
+  , getLine'
   ) where
 
 import qualified Prelude as IO (putStrLn, getLine)
 import Prelude hiding (putStrLn, getLine)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 
-putStrLn :: MonadIO m => String -> m ()
-putStrLn = liftIO . IO.putStrLn
+class Monad m => Console m where
+  putStrLn :: String -> m ()
+  getLine :: m String
 
-getLine :: MonadIO m => m String
-getLine = liftIO IO.getLine
+putStrLn' :: MonadIO m => String -> m ()
+putStrLn' = liftIO . IO.putStrLn
+
+getLine' :: MonadIO m => m String
+getLine' = liftIO IO.getLine

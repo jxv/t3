@@ -9,7 +9,7 @@ import Test.Hspec
 import T3.Core (XO(X,O))
 
 import T3.Game.Main (main)
-import T3.Game.Classes (Play)
+import T3.Game.Play (Play)
 
 mkFixture "Fixture" [''Play]
 
