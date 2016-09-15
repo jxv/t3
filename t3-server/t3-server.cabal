@@ -1,25 +1,44 @@
-name:              t3-server
-synopsis:            tic-tac-toe server
-description:         Please see README.md
-version:           0.2.0
-cabal-version:     >= 1.10
-build-type:        Simple
+name: t3-server
+version: 1.0.0
+synopsis: tic-tac-toe
+description: Please see README.md
+homepage: http://github.com/jxv/t3#readme
 license: BSD3
 license-file: LICENSE
 author: Joe Vargas
 maintainer: http://github.com/jxv
 copyright: 2016 Joe Vargas
 category: Game
+build-type: Simple
+cabal-version: >=1.10
 
 library
   hs-source-dirs:
     src
   exposed-modules:
-    T3.Server
-    T3.Server.Lobby
-    T3.Server.Matches
+    T3.Server.Monad
+    T3.Server.Main
+
+    T3.Server.Start
+    T3.Server.Arena
+    T3.Server.Practice
+    T3.Server.Play
+    T3.Server.Register
+    T3.Server.Result
+
+    T3.Server.ArenaDispatcher
+    T3.Server.PracticeDispatcher
+  build-depends:
+      base >= 4.7 && < 5
+    , mtl
+    , safe
+    , containers
+    , t3-core
+    , t3-game
+    , t3-game-callbacks
+  default-language:
+    Haskell2010
   default-extensions:
-    OverloadedStrings
     MultiParamTypeClasses
     TypeFamilies
     GeneralizedNewtypeDeriving
@@ -28,36 +47,23 @@ library
     EmptyDataDecls
     TupleSections
     LambdaCase
+    ScopedTypeVariables
+
+executable t3-server-exe
+  hs-source-dirs:
+    app
+  main-is:
+    Main.hs
+  ghc-options:
+    -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >= 4 && < 5
-    , bytestring
-    , text
-    , aeson
-    , dejafu
-    , async-dejafu
-    , safe
-    , unordered-containers
-    , containers
-    , vector
-    , time
-    , transformers
-    , case-insensitive
-    , mtl
-    , stm
-    , random
-    , hashable
-    , hashmap
-    , either
+      base
     , t3-core
     , t3-game
-    , t3-match
-    , random
-    , MonadRandom
-    , text-conversions
-    , either
-    , exceptions
+    , t3-game-callbacks
+    , t3-server
   default-language:
-    Haskell2010
+      Haskell2010
 
 test-suite t3-server-test
   type:
@@ -68,11 +74,11 @@ test-suite t3-server-test
     Spec.hs
   build-depends:
       base
+    , t3-core
     , t3-game
-    , t3-match
+    , t3-game-callbacks
     , t3-server
     , hspec
-    , aeson
   ghc-options:
     -threaded -rtsopts -with-rtsopts=-N
   default-language:

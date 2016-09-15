@@ -6,7 +6,7 @@ packages:
 - t3-game
 - t3-game-console
 - t3-game-callbacks
-# - t3-server
+- t3-server
 
 extra-deps:
 - text-conversions-0.3.0
