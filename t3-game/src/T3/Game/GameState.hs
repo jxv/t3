@@ -1,6 +1,6 @@
-module T3.Game.Monad
-  ( GameT
-  , runGameT
+module T3.Game.GameState
+  ( GameStateT
+  , runGameStateT
   ) where
 
 import Control.Monad.State (MonadState(..), StateT, evalStateT)
@@ -10,12 +10,12 @@ import T3.Core (Board)
 import T3.Game.Types
 import T3.Game.HasBoard
 
-newtype GameT m a = GameT { unGameT :: StateT Board m a }
+newtype GameStateT m a = GameStateT { unGameStateT :: StateT Board m a }
   deriving (Functor, Applicative, Monad, MonadTrans, MonadState Board, MonadIO)
 
-runGameT :: Monad m => GameT m a -> Board -> m a
-runGameT game board = evalStateT (unGameT game) board
+runGameStateT :: Monad m => GameStateT m a -> Board -> m a
+runGameStateT game board = evalStateT (unGameStateT game) board
 
-instance Monad m => HasBoard (GameT m) where
+instance Monad m => HasBoard (GameStateT m) where
   getBoard = get
   putBoard = put

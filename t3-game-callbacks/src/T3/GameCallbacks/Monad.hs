@@ -17,7 +17,7 @@ import Data.Functor (void)
 
 import T3.Core (Loc, Action, Board, Result, XO(..), emptyBoard)
 
-import T3.Game.Monad (GameT, runGameT)
+import T3.Game.GameState (GameStateT, runGameStateT)
 import T3.Game.Control (Control(..))
 import T3.Game.HasBoard (HasBoard(..))
 import T3.Game.BoardManager (BoardManager(..))
@@ -37,7 +37,7 @@ import T3.GameCallbacks.Transmitter
 
 import T3.GameCallbacks.Milliseconds (Milliseconds(..), delay)
 
-newtype GameCallbacks a = GameCallbacks { unGameCallbacks :: MaybeT (ReaderT (Env IO) (StateT [Action] (GameT IO))) a }
+newtype GameCallbacks a = GameCallbacks { unGameCallbacks :: MaybeT (ReaderT (Env IO) (StateT [Action] (GameStateT IO))) a }
   deriving
   ( Functor
   , Applicative
@@ -59,7 +59,7 @@ data Callbacks m = Callbacks
   }
 
 go :: GameCallbacks a -> Env IO -> [Action] -> Board -> IO (Maybe a, [Action])
-go (GameCallbacks m) env dat board = runGameT (runStateT (runReaderT (runMaybeT m) env) []) board
+go (GameCallbacks m) env dat board = runGameStateT (runStateT (runReaderT (runMaybeT m) env) []) board
 
 runGameCallbacks :: GameCallbacks a -> Env IO -> IO ()
 runGameCallbacks gameCallbacks env = void $ go gameCallbacks env [] emptyBoard
@@ -116,8 +116,8 @@ instance Console GameCallbacks where
   printStdout = printStdout'
 
 instance HasBoard GameCallbacks where
-  getBoard = liftGameIO getBoard
-  putBoard = liftGameIO . putBoard
+  getBoard = liftGameStateIO getBoard
+  putBoard = liftGameStateIO . putBoard
 
-liftGameIO :: GameT IO a -> GameCallbacks a
-liftGameIO = GameCallbacks . lift . lift . lift
+liftGameStateIO :: GameStateT IO a -> GameCallbacks a
+liftGameStateIO = GameCallbacks . lift . lift . lift

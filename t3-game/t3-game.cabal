@@ -20,7 +20,7 @@ library
     T3.Game.Control
     T3.Game.HasBoard
     T3.Game.Main
-    T3.Game.Monad
+    T3.Game.GameState
     T3.Game.Play
     T3.Game.Types
   build-depends:
