@@ -2,19 +2,7 @@ module T3.Server.Play
   ( main
   ) where
 
-newtype GameId = GameId String
-  deriving (Show, Eq)
-
-newtype UserId = UserId String
-  deriving (Show, Eq)
-
-newtype Token = Token String
-  deriving (Show, Eq)
-
-newtype Move = Move (Int, Int)
-  deriving (Show, Eq)
-
-type Step = ()
+import T3.Server.Types (GameId, UserId, Token, Move, Step)
 
 class Monad m => Client m where
   getUserId :: m UserId
@@ -28,7 +16,6 @@ class Monad m => Registry m where
 
 class Monad m => Game m where
   submitMove :: GameId -> UserId -> Move -> m Step
-
 
 main :: (Registry m, Client m, Game m) => m ()
 main = do

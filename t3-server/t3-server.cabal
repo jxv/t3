@@ -19,8 +19,9 @@ library
     T3.Server.Monad
     T3.Server.Main
 
+    T3.Server.Types
+
     T3.Server.Start
-    T3.Server.Arena
     T3.Server.Practice
     T3.Server.Play
     T3.Server.Register
@@ -30,15 +31,18 @@ library
     T3.Server.PracticeDispatcher
   build-depends:
       base >= 4.7 && < 5
+    , lens
     , mtl
     , safe
     , containers
+    , text
     , t3-core
     , t3-game
     , t3-game-callbacks
   default-language:
     Haskell2010
   default-extensions:
+    OverloadedStrings
     MultiParamTypeClasses
     TypeFamilies
     GeneralizedNewtypeDeriving

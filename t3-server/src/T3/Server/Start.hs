@@ -1,18 +1,14 @@
+{-# LANGUAGE TemplateHaskell #-}
 module T3.Server.Start
   ( main
   ) where
 
-newtype UserId = UserId String
-  deriving (Show, Eq)
+import Control.Lens
+import Control.Monad (forever)
+import Control.Monad.Reader (ReaderT, MonadReader, asks)
+import Control.Monad.IO.Class (MonadIO(liftIO))
 
-newtype Token = Token String
-  deriving (Show, Eq)
-
-newtype Ticket = Ticket String
-  deriving (Show, Eq)
-
-newtype GameId = GameId String
-  deriving (Show, Eq)
+import T3.Server.Types (UserId, Ticket, GameId, Token)
 
 class Monad m => Lobby m where
   enterLobby :: UserId -> m Ticket
@@ -21,18 +17,28 @@ class Monad m => Usher m where
   enterGame :: Ticket -> m GameId
 
 class Monad m => Registry m where
-  validateUser :: UserId -> Token -> m ()
+  validateUser :: UserId -> m ()
 
 class Monad m => Client m where
   getUserId :: m UserId
-  getToken :: m Token
   sendGameId :: GameId -> m ()
 
 main :: (Lobby m, Usher m, Registry m, Client m) => m ()
 main = do
   userId <- getUserId
-  token <- getToken
-  validateUser userId token
+  validateUser userId
   ticket <- enterLobby userId
   gameId <- enterGame ticket
   sendGameId gameId
+
+data Env = Env
+  { _envEnterLobby :: UserId -> IO Ticket
+  }
+
+makeClassy ''Env
+
+newtype Start a = Start (ReaderT Env IO a)
+  deriving (Functor, Applicative, Monad, MonadIO, MonadReader Env)
+
+instance Lobby Start where
+  enterLobby u = view envEnterLobby >>= \f -> liftIO $ f u
