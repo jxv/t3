@@ -16,7 +16,6 @@ library
   hs-source-dirs:
     src
   exposed-modules:
-    T3.Server.Monad
     T3.Server.Main
 
     T3.Server.Types
