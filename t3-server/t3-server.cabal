@@ -20,6 +20,7 @@ library
 
     T3.Server.Types
 
+    T3.Server.Control
     T3.Server.Start
     T3.Server.Practice
     T3.Server.Play
@@ -30,11 +31,16 @@ library
     T3.Server.PracticeDispatcher
   build-depends:
       base >= 4.7 && < 5
+    , aeson
     , lens
     , mtl
     , safe
     , containers
     , text
+    , servant
+    , servant-server
+    , wai
+    , warp
     , t3-core
     , t3-game
     , t3-game-callbacks
