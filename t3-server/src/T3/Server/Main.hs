@@ -7,41 +7,38 @@ import Control.Concurrent (forkIO)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Data.Functor (void)
 
-import T3.Server.Types (UserId)
+import T3.Server.Types
+  ( UserId
+  , LobbyCb(..)
+  , UsherCb(..)
+  , GamesCb(..)
+  , ResultsCb(..)
+  , RegistryCb(..)
+  )
 
-type Lobby = ()
-
-type Usher = ()
-
-type Games = ()
-
-type Results = ()
-
-type Registry = ()
-
-class Monad m => SharedState m where
-  newLobby :: m Lobby
-  newUsher :: m Usher
-  newGames :: m Games
-  newResults :: m Results
-  newRegistry :: m Registry
+class Monad m => SharedCb m where
+  newLobbyCb :: m (LobbyCb m)
+  newUsherCb :: m (UsherCb m)
+  newGamesCb :: m (GamesCb m)
+  newResultsCb :: m (ResultsCb m)
+  newRegistryCb :: m (RegistryCb m)
 
 class Monad m => Interthread m where
   fork :: m () -> m ()
 
 class Monad m => Threads m where
-  arenaDispatcher :: Lobby -> Usher -> Games -> m () -> m ()
-  practiceDispatcher :: Lobby -> Usher -> Games -> m () -> m ()
-  game :: Results -> m ()
-  control :: Lobby -> Usher -> Games -> Results -> Registry -> m ()
+  arenaDispatcher :: LobbyCb m -> UsherCb m -> GamesCb m -> m () -> m ()
+  practiceDispatcher :: LobbyCb m -> UsherCb m -> GamesCb m -> m () -> m ()
+  game :: ResultsCb m -> m ()
+  control :: LobbyCb m -> UsherCb m -> GamesCb m -> ResultsCb m -> RegistryCb m -> m ()
 
-main :: (SharedState m, Interthread m, Threads m) => m ()
+main :: (SharedCb m, Interthread m, Threads m) => m ()
 main = do
-  lobby <- newLobby
-  usher <- newUsher
-  games <- newGames
-  results <- newResults
-  registry <- newRegistry
+  lobby <- newLobbyCb
+  usher <- newUsherCb
+  games <- newGamesCb
+  results <- newResultsCb
+  registry <- newRegistryCb
   fork $ practiceDispatcher lobby usher games (fork $ game results)
   fork $ arenaDispatcher lobby usher games (fork $ game results)
   control lobby usher games results registry
@@ -55,12 +52,12 @@ runServer (Server m) = m
 instance Interthread Server where
   fork = void . liftIO . forkIO . runServer
 
-instance SharedState Server where
-  newLobby = return ()
-  newUsher = return ()
-  newGames = return ()
-  newResults = return ()
-  newRegistry = return ()
+instance SharedCb Server where
+  newLobbyCb = return undefined
+  newUsherCb = return undefined
+  newGamesCb = return undefined
+  newResultsCb = return undefined
+  newRegistryCb = return undefined
 
 instance Threads Server where
   arenaDispatcher lobby usher games m = return ()
