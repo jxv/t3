@@ -7,6 +7,8 @@ module T3.Server.Control
 
 import Control.Monad (mzero)
 import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.Reader
+import Control.Monad.Except
 import Data.Aeson (ToJSON(..), FromJSON(..), (.:), Value(..), (.=), object)
 import Data.Map (fromList)
 import Data.Text (Text)
@@ -15,6 +17,18 @@ import Network.Wai.Handler.Warp (run)
 import Servant
 
 import T3.Server.Types
+
+data Env = Env
+  { _envRegistryCb :: RegistryCb IO
+  }
+
+type AppServer api = ServerT api AppHandler
+
+newtype AppHandler a = AppHandler { runHandler :: ReaderT Env (ExceptT ServantErr IO) a }
+  deriving (Functor, Applicative, Monad, MonadReader Env, MonadError ServantErr, MonadIO)
+
+toHandler :: Env -> AppHandler api -> Handler api
+toHandler env appHandler = runReaderT (runHandler appHandler) env
 
 data RegisterReq = RegisterReq
   { _registerReqName :: Text
@@ -43,11 +57,13 @@ type Register = "register" :> ReqBody '[JSON] RegisterReq :> Post '[JSON] Regist
 
 type API = Register
 
-register :: Monad m => RegisterReq -> m RegisterResp
+register :: RegisterReq -> AppHandler RegisterResp
 register = undefined
 
 server :: Server API
-server = register
+server = let
+  run = toHandler undefined
+  in fmap run register
 
 application :: Application
 application = serve (Proxy :: Proxy API) server
