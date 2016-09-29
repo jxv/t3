@@ -60,13 +60,20 @@ type API = Register
 register :: RegisterReq -> AppHandler RegisterResp
 register = undefined
 
-server :: Server API
-server = let
-  run = toHandler undefined
-  in fmap run register
+serverT :: AppServer API
+serverT = register
 
-application :: Application
-application = serve (Proxy :: Proxy API) server
+appToHandler' :: forall a. Env -> AppHandler a -> Handler a
+appToHandler' env (AppHandler m) = runReaderT m env
+
+appToHandler :: Env -> AppHandler :~> Handler
+appToHandler env = Nat (appToHandler' env)
+
+server :: Env -> Server API
+server env = enter (appToHandler env) serverT
+
+application :: Env -> Application
+application env = serve (Proxy :: Proxy API) (server env)
 
 main :: IO ()
-main = run 8080 application
+main = run 8080 (application undefined)
