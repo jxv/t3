@@ -1,5 +1,6 @@
 module T3.Server.Types
   ( UserId(..)
+  , HashCode(..)
   , Name(..)
   , Token(..)
   , Ticket(..)
@@ -11,20 +12,28 @@ module T3.Server.Types
   , UsherCb(..)
   , GamesCb(..)
   , ResultsCb(..)
+  , RegisterReq(..)
+  , RegisterResp(..)
+  , Creds(..)
   ) where
 
-import Control.Lens
+import Control.Monad (mzero)
+import Control.Lens hiding ((.=))
 import Data.Text (Text)
 import Data.String (IsString)
+import Data.Aeson (ToJSON(..), FromJSON(..), (.:), Value(..), (.=), object)
 
 newtype UserId = UserId Text
-  deriving (Show, Eq, IsString)
+  deriving (Show, Eq, IsString, FromJSON, ToJSON, Ord)
+
+newtype HashCode = HashCode Text
+  deriving (Show, Eq, IsString, FromJSON, ToJSON, Ord)
 
 newtype Name = Name Text
-  deriving (Show, Eq, IsString)
+  deriving (Show, Eq, IsString, FromJSON, ToJSON)
 
 newtype Token = Token Text
-  deriving (Show, Eq, IsString)
+  deriving (Show, Eq, IsString, FromJSON, ToJSON)
 
 newtype Ticket = Ticket Text
   deriving (Show, Eq, IsString)
@@ -38,14 +47,38 @@ newtype Move = Move (Int,Int)
 newtype Step = Step ()
   deriving (Show, Eq)
 
-data RegistryCb m = RegistryCb
-  { _registryCbInsertUser :: Name -> Token -> m (Maybe UserId)
+data RegistryCb = RegistryCb
+  { _registryCbHashCode :: HashCode
+  , _registryCbInsertUser :: (Name, Token) -> IO (Maybe UserId)
   }
 
-data LobbyCb m = LobbyCb (m ())
+data LobbyCb = LobbyCb (IO ())
 
-data UsherCb m = UsherCb (m ())
+data UsherCb = UsherCb (IO ())
 
-data GamesCb m = GamesCb (m ())
+data GamesCb = GamesCb (IO ())
 
-data ResultsCb m = ResultsCb (m ())
+data ResultsCb = ResultsCb (IO ())
+
+data RegisterReq = RegisterReq
+  { _registerReqName :: Text
+  } deriving (Show, Eq)
+
+data Creds = Creds
+  { _credsUserId :: UserId
+  , _credsToken :: Token
+  } deriving (Show, Eq)
+
+data RegisterResp = RegisterResp
+  { _registerRespCreds :: Creds
+  } deriving (Show, Eq)
+
+instance FromJSON RegisterReq where
+  parseJSON (Object v) = RegisterReq <$> (v .: "name")
+  parseJSON _ = mzero
+
+instance ToJSON Creds where
+  toJSON (Creds userId token) = object ["userId" .= userId, "token" .= token]
+
+instance ToJSON RegisterResp where
+  toJSON (RegisterResp creds) = object ["creds" .= creds]

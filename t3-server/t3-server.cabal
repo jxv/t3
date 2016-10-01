@@ -26,6 +26,8 @@ library
     T3.Server.Play
     T3.Server.Register
     T3.Server.Result
+    T3.Server.Gen
+    T3.Server.SharedCb
 
     T3.Server.ArenaDispatcher
     T3.Server.PracticeDispatcher
@@ -44,11 +46,14 @@ library
     , t3-core
     , t3-game
     , t3-game-callbacks
+    , random
+    , stm
   default-language:
     Haskell2010
   default-extensions:
     OverloadedStrings
     MultiParamTypeClasses
+    NamedFieldPuns
     TypeFamilies
     GeneralizedNewtypeDeriving
     FlexibleContexts

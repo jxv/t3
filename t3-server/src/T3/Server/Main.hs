@@ -3,34 +3,30 @@ module T3.Server.Main
   , runServer
   ) where
 
+import qualified Data.Map as Map
 import Control.Concurrent (forkIO)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Data.Functor (void)
 
-import T3.Server.Types
-  ( UserId
-  , LobbyCb(..)
-  , UsherCb(..)
-  , GamesCb(..)
-  , ResultsCb(..)
-  , RegistryCb(..)
-  )
+import qualified T3.Server.Control as Control
+import T3.Server.Types (LobbyCb, UsherCb, GamesCb, ResultsCb, RegistryCb)
+import T3.Server.SharedCb (newRegistryCb')
 
 class Monad m => SharedCb m where
-  newLobbyCb :: m (LobbyCb m)
-  newUsherCb :: m (UsherCb m)
-  newGamesCb :: m (GamesCb m)
-  newResultsCb :: m (ResultsCb m)
-  newRegistryCb :: m (RegistryCb m)
+  newLobbyCb :: m LobbyCb
+  newUsherCb :: m UsherCb
+  newGamesCb :: m GamesCb
+  newResultsCb :: m ResultsCb
+  newRegistryCb :: m RegistryCb
 
 class Monad m => Interthread m where
   fork :: m () -> m ()
 
 class Monad m => Threads m where
-  arenaDispatcher :: LobbyCb m -> UsherCb m -> GamesCb m -> m () -> m ()
-  practiceDispatcher :: LobbyCb m -> UsherCb m -> GamesCb m -> m () -> m ()
-  game :: ResultsCb m -> m ()
-  control :: LobbyCb m -> UsherCb m -> GamesCb m -> ResultsCb m -> RegistryCb m -> m ()
+  arenaDispatcher :: LobbyCb -> UsherCb -> GamesCb -> m () -> m ()
+  practiceDispatcher :: LobbyCb -> UsherCb -> GamesCb -> m () -> m ()
+  game :: ResultsCb -> m ()
+  control :: LobbyCb -> UsherCb -> GamesCb -> ResultsCb -> RegistryCb -> m ()
 
 main :: (SharedCb m, Interthread m, Threads m) => m ()
 main = do
@@ -57,10 +53,10 @@ instance SharedCb Server where
   newUsherCb = return undefined
   newGamesCb = return undefined
   newResultsCb = return undefined
-  newRegistryCb = return undefined
+  newRegistryCb = newRegistryCb'
 
 instance Threads Server where
-  arenaDispatcher lobby usher games m = return ()
-  practiceDispatcher lobby usher games m = return ()
-  game results = return ()
-  control lobby usher games results registry = return ()
+  arenaDispatcher _ _ _ _ = return ()
+  practiceDispatcher _ _ _ _ = return ()
+  game _ = return ()
+  control _ _ _ _ registry = Control.main (Control.Env 8080 registry)
