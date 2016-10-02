@@ -1,6 +1,5 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE OverloadedStrings #-}
 module T3.Server.Control
   ( Env(..)
   , main
@@ -21,38 +20,31 @@ import qualified T3.Server.PracticeLobby as PracticeLobby
 import T3.Server.Types
 import T3.Server.Control.Types
 
+main :: MonadIO m => Env -> m ()
+main env = liftIO $ run (_envPort env) (application env)
+
+application :: Env -> Application
+application env = serve (Proxy :: Proxy API) (server env)
+
+server :: Env -> Server API
+server env = enter (appToHandler env) serverT
+  where
+    appToHandler :: Env -> AppHandler :~> Handler
+    appToHandler env = Nat (appToHandler' env)
+      where
+        appToHandler' :: forall a. Env -> AppHandler a -> Handler a
+        appToHandler' env (AppHandler m) = runReaderT m env
+
 type AppServer api = ServerT api AppHandler
 
-toHandler :: Env -> AppHandler api -> Handler api
-toHandler env appHandler = runReaderT (runHandler appHandler) env
+type Register = "register" :> ReqBody '[JSON] RegisterReq :> Post '[JSON] RegisterResp
+type PracticeLobby = "practice-lobby" :> ReqBody '[JSON] LobbyReq :> Post '[JSON] LobbyResp
 
 type API =
   Register :<|>
   PracticeLobby
 
-type Register = "register" :> ReqBody '[JSON] RegisterReq :> Post '[JSON] RegisterResp
-type PracticeLobby = "practice-lobby" :> ReqBody '[JSON] LobbyReq :> Post '[JSON] LobbyResp
-
-register :: RegisterReq -> AppHandler RegisterResp
-register = Register.main
-
-practiceLobby :: LobbyReq -> AppHandler LobbyResp
-practiceLobby = PracticeLobby.main
-
 serverT :: AppServer API
-serverT = register :<|> practiceLobby
-
-appToHandler' :: forall a. Env -> AppHandler a -> Handler a
-appToHandler' env (AppHandler m) = runReaderT m env
-
-appToHandler :: Env -> AppHandler :~> Handler
-appToHandler env = Nat (appToHandler' env)
-
-server :: Env -> Server API
-server env = enter (appToHandler env) serverT
-
-application :: Env -> Application
-application env = serve (Proxy :: Proxy API) (server env)
-
-main :: MonadIO m => Env -> m ()
-main env = liftIO $ run 8080 (application env)
+serverT =
+  Register.main :<|>
+  PracticeLobby.main
