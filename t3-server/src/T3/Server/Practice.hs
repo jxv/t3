@@ -45,25 +45,13 @@ validateUser' userId token = do
   unless (token == token') validateUserFailure
 
 getUser' :: (RegistryState m, Failure m) => UserId -> m (Name, Token)
-getUser' userId = do
-  mUser <- getUserById userId
-  case mUser of
-    Nothing -> getUserFailure
-    Just user -> return user
+getUser' = try getUserFailure . getUserById
 
 standbyForCall' :: (LobbyState m, Failure m) => Ticket -> m GameId
-standbyForCall' ticket = do
-  mGameId <- transferTicket ticket
-  case mGameId of
-    Nothing -> transferTicketFailure
-    Just gameId -> return gameId
+standbyForCall' = try transferTicketFailure . transferTicket
 
 queueUser' :: (LobbyState m, Failure m) => UserId -> m Ticket
-queueUser' userId = do
-  mTicket <- addToLobby userId
-  case mTicket of
-    Nothing -> addToLobbyFailure
-    Just ticket -> return ticket
+queueUser' = try addToLobbyFailure . addToLobby
 
 --
 

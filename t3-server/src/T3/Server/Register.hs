@@ -29,8 +29,7 @@ class Monad m => Failure m where
   insertUserFailure :: m a
 
 main :: Registry m => RegisterReq -> m RegisterResp
-main req = do
-  let name = _registerReqName req
+main (RegisterReq name) = do
   creds <- register name
   return $ RegisterResp creds
 
@@ -41,11 +40,7 @@ register' name = do
   return (Creds userId token)
 
 addUser' :: (RegistryState m, Failure m, Gen m) => Name -> Token -> m UserId
-addUser' name token = do
-  mUserId <- insertUser (name, token)
-  case mUserId of
-    Nothing -> insertUserFailure
-    Just userId -> return userId
+addUser' name token = try insertUserFailure $ insertUser (name, token)
 
 --
 
