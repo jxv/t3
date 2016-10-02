@@ -15,7 +15,6 @@ module T3.Server.Types
   , Creds(..)
   , RegistryCb(..)
   , LobbyCb(..)
-  , UsherCb(..)
   , GamesCb(..)
   , ResultsCb(..)
   , RegisterReq(..)
@@ -39,7 +38,6 @@ import Servant
 data Env = Env
   { _envPort :: Int
   , _envLobbyCb :: LobbyCb
-  , _envUsherCb :: UsherCb
   , _envGamesCb :: GamesCb
   , _envResultsCb :: ResultsCb
   , _envRegistryCb :: RegistryCb
@@ -94,8 +92,6 @@ data LobbyCb = LobbyCb
   { _lobbyCbAddToLobby :: UserId -> IO (Maybe Ticket)
   , _lobbyCbTransferTicket :: Ticket -> IO (Maybe GameId)
   }
-
-data UsherCb = UsherCb (IO ())
 
 data GamesCb = GamesCb (IO ())
 
