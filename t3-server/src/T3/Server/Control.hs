@@ -17,7 +17,7 @@ import Network.Wai.Handler.Warp (run)
 import Servant
 
 import qualified T3.Server.Register as Register
-import qualified T3.Server.Practice as PracticeLobby
+import qualified T3.Server.PracticeLobby as PracticeLobby
 import T3.Server.Types
 
 type AppServer api = ServerT api AppHandler

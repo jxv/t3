@@ -22,7 +22,7 @@ library
 
     T3.Server.Control
     T3.Server.Start
-    T3.Server.Practice
+    T3.Server.PracticeLobby
     T3.Server.Play
     T3.Server.Register
     T3.Server.Result

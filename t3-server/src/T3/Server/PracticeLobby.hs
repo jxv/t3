@@ -1,4 +1,4 @@
-module T3.Server.Practice (main) where
+module T3.Server.PracticeLobby (main) where
 
 import Control.Lens
 import Control.Monad (forever, unless)
