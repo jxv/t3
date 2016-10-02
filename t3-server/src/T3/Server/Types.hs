@@ -1,10 +1,5 @@
-{-# LANGUAGE TemplateHaskell #-}
 module T3.Server.Types
-  ( Env(..)
-  , AppHandler(..)
-  , HasEnv(..)
-
-  , UserId(..)
+  ( UserId(..)
   , HashCode(..)
   , Name(..)
   , Token(..)
@@ -21,7 +16,6 @@ module T3.Server.Types
   , RegisterResp(..)
   , LobbyReq(..)
   , LobbyResp(..)
-  , callback
   , try
   ) where
 
@@ -35,28 +29,12 @@ import Data.String (IsString)
 import Data.Aeson (ToJSON(..), FromJSON(..), (.:), Value(..), (.=), object)
 import Servant
 
-data Env = Env
-  { _envPort :: Int
-  , _envLobbyCb :: LobbyCb
-  , _envGamesCb :: GamesCb
-  , _envResultsCb :: ResultsCb
-  , _envRegistryCb :: RegistryCb
-  }
-
-callback :: (Env -> b -> IO a) -> b -> AppHandler a
-callback x i = do
-  f <- asks x
-  liftIO (f i)
-
 try :: Monad m => m a -> m (Maybe a) -> m a
 try err f = do
   mx <- f
   case mx of
     Nothing -> err
     Just x -> return x
-
-newtype AppHandler a = AppHandler { runHandler :: ReaderT Env (ExceptT ServantErr IO) a }
-  deriving (Functor, Applicative, Monad, MonadReader Env, MonadError ServantErr, MonadIO)
 
 newtype UserId = UserId Text
   deriving (Show, Eq, IsString, FromJSON, ToJSON, Ord)
@@ -138,5 +116,3 @@ instance FromJSON LobbyReq where
 
 instance ToJSON LobbyResp where
   toJSON (LobbyResp gameId) = object ["gameId" .= gameId]
-
-makeClassy ''Env

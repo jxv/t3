@@ -19,6 +19,7 @@ import Servant
 import qualified T3.Server.Register as Register
 import qualified T3.Server.PracticeLobby as PracticeLobby
 import T3.Server.Types
+import T3.Server.Control.Types
 
 type AppServer api = ServerT api AppHandler
 

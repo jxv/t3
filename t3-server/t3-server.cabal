@@ -21,6 +21,7 @@ library
     T3.Server.Types
 
     T3.Server.Control
+    T3.Server.Control.Types
     T3.Server.Start
     T3.Server.PracticeLobby
     T3.Server.Play

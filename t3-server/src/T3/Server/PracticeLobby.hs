@@ -8,6 +8,7 @@ import Control.Monad.IO.Class (MonadIO(liftIO))
 import Servant
 
 import T3.Server.Types
+import T3.Server.Control.Types
 
 class Monad m => Lobby m where
   queueUser :: UserId -> m Ticket

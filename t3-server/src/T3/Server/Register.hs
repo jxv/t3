@@ -11,6 +11,7 @@ import Servant
 
 import T3.Server.Gen (genToken', genUserId')
 import T3.Server.Types
+import T3.Server.Control.Types
 
 class Monad m => Registry m where
   register :: Name -> m Creds
