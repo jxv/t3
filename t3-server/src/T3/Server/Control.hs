@@ -17,34 +17,29 @@ import Network.Wai.Handler.Warp (run)
 import Servant
 
 import qualified T3.Server.Register as Register
+import qualified T3.Server.Practice as PracticeLobby
 import T3.Server.Types
 
-data Env = Env
-  { _envPort :: Int
-  , _envRegistryCb :: RegistryCb
-  }
-
 type AppServer api = ServerT api AppHandler
-
-newtype AppHandler a = AppHandler { runHandler :: ReaderT Env (ExceptT ServantErr IO) a }
-  deriving (Functor, Applicative, Monad, MonadReader Env, MonadError ServantErr, MonadIO)
 
 toHandler :: Env -> AppHandler api -> Handler api
 toHandler env appHandler = runReaderT (runHandler appHandler) env
 
-type Register = "register" :> ReqBody '[JSON] RegisterReq :> Post '[JSON] RegisterResp
+type API =
+  Register :<|>
+  PracticeLobby
 
-type API = Register
+type Register = "register" :> ReqBody '[JSON] RegisterReq :> Post '[JSON] RegisterResp
+type PracticeLobby = "practice-lobby" :> ReqBody '[JSON] LobbyReq :> Post '[JSON] LobbyResp
 
 register :: RegisterReq -> AppHandler RegisterResp
-register req = do
-  registryCb <- asks _envRegistryCb
-  let env = Register.Env (Name (_registerReqName req)) registryCb
-  creds <- AppHandler . lift $ Register.run Register.main env
-  return $ RegisterResp creds
+register = Register.main
+
+practiceLobby :: LobbyReq -> AppHandler LobbyResp
+practiceLobby = PracticeLobby.main
 
 serverT :: AppServer API
-serverT = register
+serverT = register :<|> practiceLobby
 
 appToHandler' :: forall a. Env -> AppHandler a -> Handler a
 appToHandler' env (AppHandler m) = runReaderT m env

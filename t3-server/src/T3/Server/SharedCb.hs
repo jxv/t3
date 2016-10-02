@@ -25,6 +25,7 @@ newRegistryCb' = do
   return RegistryCb
     { _registryCbHashCode = hc
     , _registryCbInsertUser = insertUser w
+    , _registryCbGetUserById = getUserById w
     }
 
 insertUser :: TVar UserMap -> UserRec -> IO (Maybe UserId)
@@ -37,3 +38,8 @@ insertUser w rec = do
         writeTVar w (Map.insert userId rec m)
         return (Just userId)
       else return Nothing
+
+getUserById :: TVar UserMap -> UserId -> IO (Maybe UserRec)
+getUserById w i = atomically $ do
+  m <- readTVar w
+  return $ Map.lookup i m

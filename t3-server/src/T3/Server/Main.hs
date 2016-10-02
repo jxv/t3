@@ -59,4 +59,4 @@ instance Threads Server where
   arenaDispatcher _ _ _ _ = return ()
   practiceDispatcher _ _ _ _ = return ()
   game _ = return ()
-  control _ _ _ _ registry = Control.main (Control.Env 8080 registry)
+  control lobby usher games results registry = Control.main $ Control.Env 8080 lobby usher games results registry
