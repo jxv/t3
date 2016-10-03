@@ -3,7 +3,6 @@ module T3.Server.Control.Types
   ( Env(..)
   , HasEnv(..)
   , AppHandler(..)
-  , callback
   ) where
 
 import Control.Monad (mzero)
@@ -28,10 +27,5 @@ data Env = Env
 
 newtype AppHandler a = AppHandler { runHandler :: ReaderT Env (ExceptT ServantErr IO) a }
   deriving (Functor, Applicative, Monad, MonadReader Env, MonadError ServantErr, MonadIO)
-
-callback :: (Env -> b -> IO a) -> b -> AppHandler a
-callback x i = do
-  f <- asks x
-  liftIO (f i)
 
 makeClassy ''Env

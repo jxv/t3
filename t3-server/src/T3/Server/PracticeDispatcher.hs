@@ -1,61 +1,81 @@
 {-# LANGUAGE TemplateHaskell #-}
 module T3.Server.PracticeDispatcher
-  ( main
+  ( Env(..)
+  , run
+  , main
   , step
   ) where
 
 import Control.Lens
 import Control.Monad (forever)
-import Control.Monad.Reader (ReaderT, MonadReader, asks)
+import Control.Monad.Reader (ReaderT(runReaderT), MonadReader(ask), asks)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 
-import T3.Server.Types (GameId, UserId)
+import T3.Server.Types
+import T3.Server.Gen
 
 class Monad m => Lobby m where
-  popUser :: m UserId
+  dequeueUser :: m UserId
+  announceGame :: UserId -> GameId -> m ()
 
-class Monad m => Dispatch m where
-  dispatchGame :: GameId -> UserId -> m ()
-
-class Monad m => Usher m where
-  tellGameId :: UserId -> GameId -> m ()
-
-class Monad m => GenId m where
+class Monad m => Gen m where
   genGameId :: m GameId
 
-botId :: UserId
-botId = "random"
+class Monad m => GameDispatch m where
+  dispatchGame :: GameStart -> m ()
 
-main :: (Lobby m, Dispatch m, GenId m, Usher m) => m ()
+class Monad m => Dispatch m where
+  dispatch :: GameStart -> m ThreadCb
+
+class Monad m => GamesState m where
+  insertGame :: GameId -> ThreadCb -> m ()
+
+botId :: UserId
+botId = "bot"
+
+main :: (Lobby m, GameDispatch m, Gen m) => m ()
 main = forever step
 
-step :: (Lobby m, Dispatch m, GenId m, Usher m) => m ()
+step :: (Lobby m, GameDispatch m, Gen m) => m ()
 step = do
-  userId <- popUser
+  userId <- dequeueUser
   gameId <- genGameId
-  dispatchGame gameId userId
-  tellGameId userId gameId
+  dispatchGame (GameStart gameId userId botId)
+  announceGame userId gameId
+
+dispatchGame' :: (Dispatch m, GamesState m) => GameStart -> m ()
+dispatchGame' gs@(GameStart gameId userA userB) = do
+  threadCb <- dispatch gs
+  insertGame gameId threadCb
+
+--
 
 data Env = Env
-  { _envUserId :: IO UserId
-  , _envDispatch :: GameId -> UserId -> IO ()
-  , _envTellGameId :: UserId -> GameId -> IO ()
-  , _envGenGameId :: IO GameId
+  { _envLobbyCb :: LobbyCb
+  , _envGamesCb :: GamesCb
+  , _envDispatch :: GameStart -> IO ThreadCb
   }
-
-makeClassy ''Env
 
 newtype PracticeDispatcher a = PracticeDispatcher (ReaderT Env IO a)
   deriving (Functor, Applicative, Monad, MonadIO, MonadReader Env)
 
+makeClassy ''Env
+
+run :: MonadIO m => PracticeDispatcher a -> Env -> m a
+run (PracticeDispatcher m) env = liftIO $ runReaderT m env
+
 instance Lobby PracticeDispatcher where
-  popUser = view envUserId >>= liftIO
+  dequeueUser = undefined
+  announceGame = undefined
+
+instance GameDispatch PracticeDispatcher where
+  dispatchGame = dispatchGame'
+
+instance Gen PracticeDispatcher where
+  genGameId = genGameId'
 
 instance Dispatch PracticeDispatcher where
-  dispatchGame g u = view envDispatch >>= \f -> liftIO $ f g u
+  dispatch = callback _envDispatch
 
-instance Usher PracticeDispatcher where
-  tellGameId u g = view envTellGameId >>= \f -> liftIO $ f u g
-
-instance GenId PracticeDispatcher where
-  genGameId = view envGenGameId >>= liftIO
+instance GamesState PracticeDispatcher where
+  insertGame = undefined

@@ -17,6 +17,9 @@ module T3.Server.Types
   , LobbyReq(..)
   , LobbyResp(..)
   , try
+  , callback
+  , GameStart(..)
+  , ThreadCb(..)
   ) where
 
 import Control.Monad (mzero)
@@ -35,6 +38,11 @@ try err f = do
   case mx of
     Nothing -> err
     Just x -> return x
+
+callback :: (MonadReader r m, MonadIO m) => (r -> b -> IO a) -> b -> m a
+callback x i = do
+  f <- asks x
+  liftIO (f i)
 
 newtype UserId = UserId Text
   deriving (Show, Eq, IsString, FromJSON, ToJSON, Ord)
@@ -60,6 +68,12 @@ newtype Move = Move (Int,Int)
 newtype Step = Step ()
   deriving (Show, Eq)
 
+data GameStart = GameStart
+  { _gameStartGameId :: GameId
+  , _gameStartX :: UserId
+  , _gameStartO :: UserId
+  } deriving (Show, Eq)
+
 data RegistryCb = RegistryCb
   { _registryCbHashCode :: HashCode
   , _registryCbInsertUser :: (Name, Token) -> IO (Maybe UserId)
@@ -67,13 +81,19 @@ data RegistryCb = RegistryCb
   }
 
 data LobbyCb = LobbyCb 
-  { _lobbyCbAddToLobby :: UserId -> IO (Maybe Ticket)
+  { _lobbyCbHashCode :: HashCode
+  , _lobbyCbAddToLobby :: UserId -> IO (Maybe Ticket)
   , _lobbyCbTransferTicket :: Ticket -> IO (Maybe GameId)
   }
 
 data GamesCb = GamesCb (IO ())
 
 data ResultsCb = ResultsCb (IO ())
+
+data ThreadCb = ThreadCb
+  { _threadCbHashCode :: HashCode
+  , _threadCbKill :: IO ()
+  }
 
 data Creds = Creds
   { _credsUserId :: UserId

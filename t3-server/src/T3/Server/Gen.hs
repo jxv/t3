@@ -2,6 +2,7 @@ module T3.Server.Gen
   ( genText
   , genUserId'
   , genToken'
+  , genGameId'
   , genHashCode'
   ) where
 
@@ -19,6 +20,9 @@ genText n = liftIO $ do
 
 genUserId' :: MonadIO m => m UserId
 genUserId' = UserId <$> genText 12
+
+genGameId' :: MonadIO m => m GameId
+genGameId' = GameId <$> genText 12
 
 genToken' :: MonadIO m => m Token
 genToken' = Token <$> genText 12
