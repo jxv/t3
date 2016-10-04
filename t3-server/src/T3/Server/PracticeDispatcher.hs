@@ -48,8 +48,6 @@ dispatchGame' gs@(GameStart gameId userA userB) = do
   threadCb <- dispatch gs
   insertGame gameId threadCb
 
---
-
 data Env = Env
   { _envLobbyCb :: LobbyCb
   , _envGamesCb :: GamesCb

@@ -66,8 +66,6 @@ standbyForCall' = try transferTicketFailure . transferTicket
 queueUser' :: (LobbyState m, Failure m) => UserId -> m Ticket
 queueUser' = try addToLobbyFailure . addToLobby
 
---
-
 instance Lobby AppHandler where
   queueUser = queueUser'
   standbyForCall = standbyForCall'
