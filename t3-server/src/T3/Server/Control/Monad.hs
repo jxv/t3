@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
-module T3.Server.Control
+module T3.Server.Control.Monad
   ( Env(..)
   , main
   ) where
@@ -15,10 +15,10 @@ import Network.Wai (Application)
 import Network.Wai.Handler.Warp (run)
 import Servant
 
-import qualified T3.Server.Register as Register
-import qualified T3.Server.PracticeLobby as PracticeLobby
 import T3.Server.Types
 import T3.Server.Control.Types
+import T3.Server.Control.Register (register)
+import T3.Server.Control.PracticeLobby (practiceLobby)
 
 main :: MonadIO m => Env -> m ()
 main env = liftIO $ run (_envPort env) (application env)
@@ -46,5 +46,5 @@ type API =
 
 serverT :: AppServer API
 serverT =
-  Register.main :<|>
-  PracticeLobby.main
+  register :<|>
+  practiceLobby

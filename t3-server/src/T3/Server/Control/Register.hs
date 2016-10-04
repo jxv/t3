@@ -1,4 +1,11 @@
-module T3.Server.Register (main) where
+module T3.Server.Control.Register
+  ( UserStore(..)
+  , Gen(..)
+  , RegistryState(..)
+  , Failure(..)
+  , register
+  , addUser'
+  ) where
 
 import Control.Lens
 import Data.Text (Text, pack)
@@ -13,9 +20,6 @@ import T3.Server.Gen (genToken', genUserId')
 import T3.Server.Types
 import T3.Server.Control.Types
 
-class Monad m => Registry m where
-  register :: Name -> m Creds
-
 class Monad m => UserStore m where
   addUser :: Name -> Token -> m UserId
 
@@ -29,24 +33,14 @@ class Monad m => RegistryState m where
 class Monad m => Failure m where
   insertUserFailure :: m a
 
-main :: Registry m => RegisterReq -> m RegisterResp
-main (RegisterReq name) = do
-  creds <- register name
-  return $ RegisterResp creds
-
-register' :: (Gen m, UserStore m) => Name -> m Creds
-register' name = do
+register :: (Gen m, UserStore m) => RegisterReq -> m RegisterResp
+register (RegisterReq name) = do
   token <- genToken
   userId <- addUser name token
-  return (Creds userId token)
+  return $ RegisterResp (Creds userId token)
 
 addUser' :: (RegistryState m, Failure m, Gen m) => Name -> Token -> m UserId
 addUser' name token = try insertUserFailure $ insertUser (name, token)
-
---
-
-instance Registry AppHandler where
-  register = register'
 
 instance UserStore AppHandler where
   addUser = addUser'
@@ -65,4 +59,3 @@ instance Failure AppHandler where
     , errBody = ""
     , errHeaders = []
     }
-

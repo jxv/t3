@@ -9,7 +9,7 @@ import Control.Monad.IO.Class (MonadIO(liftIO))
 import Data.Functor (void)
 import Data.Text (pack)
 
-import qualified T3.Server.Control as Control
+import qualified T3.Server.Control.Monad as Control
 import qualified T3.Server.PracticeDispatcher as PD
 import T3.Server.Types
 import T3.Server.SharedCb (newRegistryCb')

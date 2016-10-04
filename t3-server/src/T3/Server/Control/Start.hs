@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-module T3.Server.Start
+module T3.Server.Control.Start
   ( main
   ) where
 

@@ -1,4 +1,4 @@
-module T3.Server.Result
+module T3.Server.Control.Result
   ( main
   ) where
 

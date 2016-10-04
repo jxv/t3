@@ -1,4 +1,4 @@
-module T3.Server.Play
+module T3.Server.Control.Play
   ( main
   ) where
 

@@ -1,4 +1,16 @@
-module T3.Server.PracticeLobby (main) where
+module T3.Server.Control.PracticeLobby
+  ( Lobby(..)
+  , Registry(..)
+  , UserStore(..)
+  , RegistryState(..)
+  , LobbyState(..)
+  , Failure(..)
+  , practiceLobby
+  , validateUser'
+  , getUser'
+  , standbyForCall'
+  , queueUser'
+  ) where
 
 import Control.Lens
 import Control.Monad (forever, unless)
@@ -33,8 +45,8 @@ class Monad m => Failure m where
   addToLobbyFailure :: m a
   transferTicketFailure :: m a
 
-main :: (Lobby m, Registry m) => LobbyReq -> m LobbyResp
-main (LobbyReq (Creds userId token)) = do
+practiceLobby :: (Lobby m, Registry m) => LobbyReq -> m LobbyResp
+practiceLobby (LobbyReq (Creds userId token)) = do
   validateUser userId token
   ticket <- queueUser userId
   gameId <- standbyForCall ticket
