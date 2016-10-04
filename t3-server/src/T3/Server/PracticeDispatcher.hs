@@ -15,8 +15,8 @@ import T3.Server.Types
 import T3.Server.Gen
 
 class Monad m => Lobby m where
-  dequeueUser :: m UserId
-  announceGame :: UserId -> GameId -> m ()
+  dequeueUser :: GameId -> m UserId
+  announceGame :: GameId -> m ()
 
 class Monad m => Gen m where
   genGameId :: m GameId
@@ -38,10 +38,10 @@ main = forever step
 
 step :: (Lobby m, GameDispatch m, Gen m) => m ()
 step = do
-  userId <- dequeueUser
   gameId <- genGameId
+  userId <- dequeueUser gameId
   dispatchGame (GameStart gameId userId botId)
-  announceGame userId gameId
+  announceGame gameId
 
 dispatchGame' :: (Dispatch m, GamesState m) => GameStart -> m ()
 dispatchGame' gs@(GameStart gameId userA userB) = do
