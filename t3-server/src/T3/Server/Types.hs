@@ -82,12 +82,12 @@ data RegistryCb = RegistryCb
 
 data LobbyCb = LobbyCb 
   { _lobbyCbHashCode :: HashCode
-  , _lobbyCbAddToLobby :: UserId -> IO (Maybe Ticket)
-  , _lobbyCbTransferTicket :: Ticket -> IO (Maybe GameId)
+  , _lobbyCbTransferUser :: UserId -> IO (Maybe GameId)
   }
 
 data GamesCb = GamesCb
-  { _gamesCbInsertGame :: (GameId, ThreadCb) -> IO ()
+  { _gamesCbHashCode :: HashCode
+  , _gamesCbInsertGame :: (GameId, ThreadCb) -> IO ()
   }
 
 data ResultsCb = ResultsCb (IO ())

@@ -1,11 +1,13 @@
 module T3.Server.SharedCb
   ( newRegistryCb'
+  , newLobbyCb'
   , newGamesCb'
   ) where
 
 import qualified Data.Map as Map
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Concurrent.STM
+import Control.Concurrent.MVar
 
 import T3.Server.Gen (genUserId', genHashCode')
 import T3.Server.Types
@@ -39,13 +41,32 @@ getUserById w i = atomically $ do
   m <- readTVar w
   return $ Map.lookup i m
 
+newLobbyCb' :: MonadIO m => m LobbyCb
+newLobbyCb' = do
+  hc <- genHashCode'
+  p <- liftIO $ newTVarIO []
+  return LobbyCb
+    { _lobbyCbTransferUser = transferUser p
+    }
+
+type UserQueue = [(UserId, MVar GameId)]
+
+transferUser :: TVar UserQueue -> UserId -> IO (Maybe GameId)
+transferUser p i = do
+  ref <- newEmptyMVar
+  atomically $ modifyTVar p $ \q -> q ++ [(i, ref)]
+  gameId <- takeMVar ref
+  return $ Just gameId
+
 type GameMap = Map.Map GameId ThreadCb
 
 newGamesCb' :: MonadIO m => m GamesCb
 newGamesCb' = do
+  hc <- genHashCode'
   w <- liftIO $ newTVarIO Map.empty
   return GamesCb
-    { _gamesCbInsertGame = insertGame w
+    { _gamesCbHashCode = hc
+    , _gamesCbInsertGame = insertGame w
     }
 
 insertGame :: TVar GameMap -> (GameId, ThreadCb) -> IO ()
