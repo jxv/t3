@@ -2,6 +2,7 @@ module T3.Server.SharedCb
   ( newRegistryCb'
   , newLobbyCb'
   , newGamesCb'
+  , newResultsCb'
   ) where
 
 import qualified Data.Map as Map
@@ -111,3 +112,6 @@ newGamesCb' = do
 
 insertGame :: TVar GameMap -> (GameId, ThreadCb) -> IO ()
 insertGame w (gameId, threadCb) = atomically $ modifyTVar w (Map.insert gameId threadCb)
+
+newResultsCb' :: MonadIO m => m ResultsCb
+newResultsCb' = return (ResultsCb $ return ())

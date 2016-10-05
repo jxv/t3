@@ -12,7 +12,7 @@ import Data.Text (pack)
 import qualified T3.Server.Control.Monad as Control
 import qualified T3.Server.PracticeDispatcher as PD
 import T3.Server.Types
-import T3.Server.SharedCb (newRegistryCb')
+import T3.Server.SharedCb (newRegistryCb', newGamesCb', newLobbyCb', newResultsCb')
 
 class Monad m => SharedCb m where
   newLobbyCb :: m LobbyCb
@@ -55,13 +55,13 @@ mkThreadCb thid = ThreadCb
   }
 
 instance SharedCb Server where
-  newLobbyCb = return undefined
-  newGamesCb = return undefined
-  newResultsCb = return undefined
+  newLobbyCb = newLobbyCb'
+  newGamesCb = newGamesCb'
+  newResultsCb = newResultsCb'
   newRegistryCb = newRegistryCb'
 
 instance Threads Server where
   arenaDispatcher _ _ _ = return ()
   practiceDispatcher lobby games dispatch = PD.run PD.main (PD.Env lobby games (runServer . dispatch))
-  game _ _ = return ()
+  game results gameStart = return ()
   control lobby games results registry = Control.main (Control.Env 8080 lobby games results registry)
