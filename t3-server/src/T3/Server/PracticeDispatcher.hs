@@ -28,7 +28,7 @@ class Monad m => Dispatch m where
   dispatch :: GameStart -> m ThreadCb
 
 class Monad m => GamesState m where
-  insertGame :: GameId -> ThreadCb -> m ()
+  insertGame :: (GameId, ThreadCb) -> m ()
 
 botId :: UserId
 botId = "bot"
@@ -46,7 +46,7 @@ step = do
 dispatchGame' :: (Dispatch m, GamesState m) => GameStart -> m ()
 dispatchGame' gs@(GameStart gameId userA userB) = do
   threadCb <- dispatch gs
-  insertGame gameId threadCb
+  insertGame (gameId, threadCb)
 
 data Env = Env
   { _envLobbyCb :: LobbyCb
@@ -76,4 +76,4 @@ instance Dispatch PracticeDispatcher where
   dispatch = callback _envDispatch
 
 instance GamesState PracticeDispatcher where
-  insertGame = undefined
+  insertGame = callback (_gamesCbInsertGame . _envGamesCb)

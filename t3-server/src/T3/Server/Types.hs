@@ -60,7 +60,7 @@ newtype Ticket = Ticket Text
   deriving (Show, Eq, IsString, FromJSON, ToJSON)
 
 newtype GameId = GameId Text
-  deriving (Show, Eq, IsString, FromJSON, ToJSON)
+  deriving (Show, Eq, IsString, FromJSON, ToJSON, Ord)
  
 newtype Move = Move (Int,Int)
   deriving (Show, Eq)
@@ -86,7 +86,9 @@ data LobbyCb = LobbyCb
   , _lobbyCbTransferTicket :: Ticket -> IO (Maybe GameId)
   }
 
-data GamesCb = GamesCb (IO ())
+data GamesCb = GamesCb
+  { _gamesCbInsertGame :: (GameId, ThreadCb) -> IO ()
+  }
 
 data ResultsCb = ResultsCb (IO ())
 
