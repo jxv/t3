@@ -20,6 +20,8 @@ module T3.Server.Types
   , callback
   , GameStart(..)
   , ThreadCb(..)
+  , GameCb
+  , GameRec
   ) where
 
 import Control.Concurrent.Chan (Chan)
@@ -65,7 +67,7 @@ newtype Ticket = Ticket Text
 
 newtype GameId = GameId Text
   deriving (Show, Eq, IsString, FromJSON, ToJSON, Ord)
- 
+
 newtype Move = Move (Int,Int)
   deriving (Show, Eq)
 
@@ -81,7 +83,7 @@ data RegistryCb = RegistryCb
   , _registryCbGetUserById :: UserId -> IO (Maybe (Name, Token))
   }
 
-data LobbyCb = LobbyCb 
+data LobbyCb = LobbyCb
   { _lobbyCbHashCode :: HashCode
   , _lobbyCbTransferUser :: UserId -> IO (Maybe GameId)
   , _lobbyCbDequeueUser :: GameId -> IO (Maybe UserId)
@@ -93,7 +95,7 @@ type GameRec = (ThreadCb, (UserId, GameCb), (UserId, GameCb))
 
 data GamesCb = GamesCb
   { _gamesCbHashCode :: HashCode
-  , _gamesCbInsertGame :: (GameId, ThreadCb) -> IO ()
+  , _gamesCbInsertGame :: (GameId, GameRec) -> IO ()
   }
 
 data ResultsCb = ResultsCb (IO ())

@@ -3,12 +3,14 @@ module T3.Server.SharedCb
   , newLobbyCb'
   , newGamesCb'
   , newResultsCb'
+  , newGameCb'
   ) where
 
 import qualified Data.Map as Map
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Concurrent.STM
 import Control.Concurrent.MVar
+import Control.Concurrent.Chan
 
 import T3.Server.Gen (genUserId', genHashCode')
 import T3.Server.Types
@@ -48,7 +50,8 @@ newLobbyCb' = do
   p <- liftIO $ newTVarIO []
   w <- liftIO $ newTVarIO Map.empty
   return LobbyCb
-    { _lobbyCbTransferUser = transferUser p
+    { _lobbyCbHashCode = hc
+    , _lobbyCbTransferUser = transferUser p
     , _lobbyCbDequeueUser = dequeueUser p w
     , _lobbyCbAnnounceGame = announceGame w
     }
@@ -99,7 +102,7 @@ announceGame w i = do
         return refs
   mapM_ (\ref -> putMVar ref i) refs
 
-type GameMap = Map.Map GameId ThreadCb
+type GameMap = Map.Map GameId GameRec
 
 newGamesCb' :: MonadIO m => m GamesCb
 newGamesCb' = do
@@ -110,8 +113,11 @@ newGamesCb' = do
     , _gamesCbInsertGame = insertGame w
     }
 
-insertGame :: TVar GameMap -> (GameId, ThreadCb) -> IO ()
-insertGame w (gameId, threadCb) = atomically $ modifyTVar w (Map.insert gameId threadCb)
+insertGame :: TVar GameMap -> (GameId, GameRec) -> IO ()
+insertGame w (gameId, rec) = atomically $ modifyTVar w (Map.insert gameId rec)
 
 newResultsCb' :: MonadIO m => m ResultsCb
 newResultsCb' = return (ResultsCb $ return ())
+
+newGameCb' :: MonadIO m => m GameCb
+newGameCb' = liftIO $ (,) <$> newChan <*> newChan
