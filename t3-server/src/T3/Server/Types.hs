@@ -22,6 +22,7 @@ module T3.Server.Types
   , ThreadCb(..)
   ) where
 
+import Control.Concurrent.Chan (Chan)
 import Control.Monad (mzero)
 import Control.Lens hiding ((.=))
 import Control.Monad.IO.Class (MonadIO)
@@ -31,6 +32,9 @@ import Data.Text (Text)
 import Data.String (IsString)
 import Data.Aeson (ToJSON(..), FromJSON(..), (.:), Value(..), (.=), object)
 import Servant
+
+import T3.Core (Loc)
+import T3.Game.Types (Step)
 
 try :: Monad m => m a -> m (Maybe a) -> m a
 try err f = do
@@ -65,9 +69,6 @@ newtype GameId = GameId Text
 newtype Move = Move (Int,Int)
   deriving (Show, Eq)
 
-newtype Step = Step ()
-  deriving (Show, Eq)
-
 data GameStart = GameStart
   { _gameStartGameId :: GameId
   , _gameStartX :: UserId
@@ -86,6 +87,9 @@ data LobbyCb = LobbyCb
   , _lobbyCbDequeueUser :: GameId -> IO (Maybe UserId)
   , _lobbyCbAnnounceGame :: GameId -> IO ()
   }
+
+type GameCb = (Chan Loc, Chan Step)
+type GameRec = (ThreadCb, (UserId, GameCb), (UserId, GameCb))
 
 data GamesCb = GamesCb
   { _gamesCbHashCode :: HashCode
