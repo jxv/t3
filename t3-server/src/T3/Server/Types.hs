@@ -83,6 +83,7 @@ data RegistryCb = RegistryCb
 data LobbyCb = LobbyCb 
   { _lobbyCbHashCode :: HashCode
   , _lobbyCbTransferUser :: UserId -> IO (Maybe GameId)
+  , _lobbyCbDequeueUser :: GameId -> IO (Maybe UserId)
   , _lobbyCbAnnounceGame :: GameId -> IO ()
   }
 

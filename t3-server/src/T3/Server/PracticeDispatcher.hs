@@ -7,6 +7,7 @@ module T3.Server.PracticeDispatcher
   ) where
 
 import Control.Lens
+import Control.Concurrent (threadDelay)
 import Control.Monad (forever)
 import Control.Monad.Reader (ReaderT(runReaderT), MonadReader(ask), asks)
 import Control.Monad.IO.Class (MonadIO(liftIO))
@@ -15,7 +16,7 @@ import T3.Server.Types
 import T3.Server.Gen
 
 class Monad m => Lobby m where
-  dequeueUser :: GameId -> m UserId
+  popUser :: GameId -> m UserId
   announceGame :: GameId -> m ()
 
 class Monad m => Gen m where
@@ -27,8 +28,14 @@ class Monad m => GameDispatch m where
 class Monad m => Dispatch m where
   dispatch :: GameStart -> m ThreadCb
 
-class Monad m => GamesState m where
+class Monad m => GamesCb' m where
   insertGame :: (GameId, ThreadCb) -> m ()
+
+class Monad m => LobbyCb' m where
+  dequeueUser :: GameId -> m (Maybe UserId)
+
+class Monad m => Delay m where
+  delay :: Int -> m ()
 
 botId :: UserId
 botId = "bot"
@@ -39,14 +46,21 @@ main = forever step
 step :: (Lobby m, GameDispatch m, Gen m) => m ()
 step = do
   gameId <- genGameId
-  userId <- dequeueUser gameId
+  userId <- popUser gameId
   dispatchGame (GameStart gameId userId botId)
   announceGame gameId
 
-dispatchGame' :: (Dispatch m, GamesState m) => GameStart -> m ()
+dispatchGame' :: (Dispatch m, GamesCb' m) => GameStart -> m ()
 dispatchGame' gs@(GameStart gameId userA userB) = do
   threadCb <- dispatch gs
   insertGame (gameId, threadCb)
+
+popUser' :: (Lobby m, LobbyCb' m, Delay m) => GameId -> m UserId
+popUser' gameId = do
+  mUserId <- dequeueUser gameId
+  case mUserId of
+    Nothing -> delay 1 >> popUser gameId
+    Just userId -> return userId
 
 data Env = Env
   { _envLobbyCb :: LobbyCb
@@ -63,7 +77,7 @@ run :: MonadIO m => PracticeDispatcher a -> Env -> m a
 run (PracticeDispatcher m) env = liftIO $ runReaderT m env
 
 instance Lobby PracticeDispatcher where
-  dequeueUser = undefined
+  popUser = popUser'
   announceGame = callback (_lobbyCbAnnounceGame . _envLobbyCb)
 
 instance GameDispatch PracticeDispatcher where
@@ -75,5 +89,11 @@ instance Gen PracticeDispatcher where
 instance Dispatch PracticeDispatcher where
   dispatch = callback _envDispatch
 
-instance GamesState PracticeDispatcher where
+instance GamesCb' PracticeDispatcher where
   insertGame = callback (_gamesCbInsertGame . _envGamesCb)
+
+instance LobbyCb' PracticeDispatcher where
+  dequeueUser = callback (_lobbyCbDequeueUser . _envLobbyCb)
+
+instance Delay PracticeDispatcher where
+  delay secs = liftIO $ threadDelay (1000000 * secs)
