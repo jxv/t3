@@ -64,7 +64,7 @@ run (PracticeDispatcher m) env = liftIO $ runReaderT m env
 
 instance Lobby PracticeDispatcher where
   dequeueUser = undefined
-  announceGame = undefined
+  announceGame = callback (_lobbyCbAnnounceGame . _envLobbyCb)
 
 instance GameDispatch PracticeDispatcher where
   dispatchGame = dispatchGame'

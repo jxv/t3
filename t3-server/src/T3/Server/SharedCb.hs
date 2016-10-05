@@ -45,11 +45,14 @@ newLobbyCb' :: MonadIO m => m LobbyCb
 newLobbyCb' = do
   hc <- genHashCode'
   p <- liftIO $ newTVarIO []
+  w <- liftIO $ newTVarIO Map.empty
   return LobbyCb
     { _lobbyCbTransferUser = transferUser p
+    , _lobbyCbAnnounceGame = announceGame w
     }
 
 type UserQueue = [(UserId, MVar GameId)]
+type AnnounceDeck = Map.Map GameId [MVar GameId]
 
 transferUser :: TVar UserQueue -> UserId -> IO (Maybe GameId)
 transferUser p i = do
@@ -57,6 +60,19 @@ transferUser p i = do
   atomically $ modifyTVar p $ \q -> q ++ [(i, ref)]
   gameId <- takeMVar ref
   return $ Just gameId
+
+announceGame :: TVar AnnounceDeck -> GameId -> IO ()
+announceGame w i = do
+  refs <- atomically $ do
+    m <- readTVar w
+    case Map.lookup i m of
+      Nothing -> do
+        return []
+      Just refs -> do
+        let m' = Map.delete i m
+        writeTVar w m'
+        return refs
+  mapM_ (\ref -> putMVar ref i) refs
 
 type GameMap = Map.Map GameId ThreadCb
 
