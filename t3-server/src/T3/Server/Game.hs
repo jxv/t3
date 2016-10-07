@@ -14,6 +14,7 @@ main = return ()
 
 data Env = Env
   { _envResultsCb :: ResultsCb
+  , _envGamesCb :: GamesCb
   , _envGameStart :: GameStart
   , _envGameCbX :: GameCb
   , _envGameCbO :: GameCb

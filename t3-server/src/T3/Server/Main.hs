@@ -28,7 +28,7 @@ class Monad m => Interthread m where
 class Monad m => Threads m where
   arenaDispatcher :: LobbyCb -> GamesCb -> (GameStart -> m (ThreadCb, GameCb, GameCb)) -> m ()
   practiceDispatcher :: LobbyCb -> GamesCb -> (GameStart -> m (ThreadCb, GameCb, GameCb)) -> m ()
-  game :: ResultsCb -> GameStart -> GameCb -> GameCb -> m ()
+  game :: ResultsCb -> GamesCb -> GameStart -> GameCb -> GameCb -> m ()
   control :: LobbyCb -> GamesCb -> ResultsCb -> RegistryCb -> m ()
 
 main :: (SharedCb m, Interthread m, Threads m) => m ()
@@ -37,15 +37,15 @@ main = do
   games <- newGamesCb
   results <- newResultsCb
   registry <- newRegistryCb
-  void . fork $ practiceDispatcher lobby games (gameDispatch results)
-  void . fork $ arenaDispatcher lobby games (gameDispatch results)
+  void . fork $ practiceDispatcher lobby games (gameDispatch results games)
+  void . fork $ arenaDispatcher lobby games (gameDispatch results games)
   control lobby games results registry
 
-gameDispatch :: (SharedCb m, Interthread m, Threads m) => ResultsCb -> GameStart -> m (ThreadCb, GameCb, GameCb)
-gameDispatch results gameStart = do
+gameDispatch :: (SharedCb m, Interthread m, Threads m) => ResultsCb -> GamesCb -> GameStart -> m (ThreadCb, GameCb, GameCb)
+gameDispatch results games gameStart = do
   cbA <- newGameCb
   cbB <- newGameCb
-  threadCb <- fork $ game results gameStart cbA cbB
+  threadCb <- fork $ game results games gameStart cbA cbB
   return (threadCb, cbA, cbB)
 
 newtype Server a = Server (IO a)
@@ -73,5 +73,5 @@ instance SharedCb Server where
 instance Threads Server where
   arenaDispatcher _ _ _ = return ()
   practiceDispatcher lobby games dispatch = PD.run PD.main (PD.Env lobby games (runServer . dispatch))
-  game results gameStart gameCbA gameCbB = Game.run Game.main (Game.Env results gameStart gameCbA gameCbB)
+  game results games gameStart gameCbA gameCbB = Game.run Game.main (Game.Env results games gameStart gameCbA gameCbB)
   control lobby games results registry = Control.main (Control.Env 8080 lobby games results registry)
