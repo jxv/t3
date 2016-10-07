@@ -37,31 +37,31 @@ import T3.GameCallbacks.Transmitter
 
 import T3.GameCallbacks.Milliseconds (Milliseconds(..), delay)
 
-newtype GameCallbacks a = GameCallbacks { unGameCallbacks :: MaybeT (ReaderT (Env IO) (StateT [Action] (GameStateT IO))) a }
+newtype GameCallbacks a = GameCallbacks { unGameCallbacks :: MaybeT (ReaderT Env (StateT [Action] (GameStateT IO))) a }
   deriving
   ( Functor
   , Applicative
   , Monad
   , MonadIO
-  , MonadReader (Env IO)
+  , MonadReader Env
   , MonadState [Action]
   )
 
-data Env m = Env
-  { _callbacks :: XO -> Callbacks m
+data Env = Env
+  { _callbacks :: XO -> Callbacks
   , _timeoutLimit :: Maybe Milliseconds
-  , _finalize :: [Action] -> Board -> Result -> m ()
+  , _finalize :: [Action] -> Board -> Result -> IO ()
   }
 
-data Callbacks m = Callbacks
-  { _callbacksRecv :: m Loc
-  , _callbacksSend :: Step -> m ()
+data Callbacks = Callbacks
+  { _callbacksRecv :: IO Loc
+  , _callbacksSend :: Step -> IO ()
   }
 
-go :: GameCallbacks a -> Env IO -> [Action] -> Board -> IO (Maybe a, [Action])
+go :: GameCallbacks a -> Env -> [Action] -> Board -> IO (Maybe a, [Action])
 go (GameCallbacks m) env dat board = runGameStateT (runStateT (runReaderT (runMaybeT m) env) []) board
 
-runGameCallbacks :: GameCallbacks a -> Env IO -> IO ()
+runGameCallbacks :: GameCallbacks a -> Env -> IO ()
 runGameCallbacks gameCallbacks env = void $ go gameCallbacks env [] emptyBoard
 
 instance Control GameCallbacks where
