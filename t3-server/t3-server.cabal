@@ -30,6 +30,7 @@ library
     T3.Server.Control.Register
     T3.Server.Control.Result
 
+    T3.Server.Game
     T3.Server.ArenaDispatcher
     T3.Server.PracticeDispatcher
   build-depends:

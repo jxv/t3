@@ -11,6 +11,7 @@ import Data.Text (pack)
 
 import qualified T3.Server.Control.Monad as Control
 import qualified T3.Server.PracticeDispatcher as PD
+import qualified T3.Server.Game as Game
 import T3.Server.Types
 import T3.Server.SharedCb (newRegistryCb', newGamesCb', newLobbyCb', newResultsCb', newGameCb')
 
@@ -72,5 +73,5 @@ instance SharedCb Server where
 instance Threads Server where
   arenaDispatcher _ _ _ = return ()
   practiceDispatcher lobby games dispatch = PD.run PD.main (PD.Env lobby games (runServer . dispatch))
-  game results gameStart _ _ = return ()
+  game results gameStart gameCbA gameCbB = Game.run Game.main (Game.Env results gameStart gameCbA gameCbB)
   control lobby games results registry = Control.main (Control.Env 8080 lobby games results registry)
