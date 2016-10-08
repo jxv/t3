@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
 module T3.Server.PracticeDispatcher
   ( Env(..)
   , run
@@ -6,7 +5,6 @@ module T3.Server.PracticeDispatcher
   , step
   ) where
 
-import Control.Lens
 import Control.Concurrent (threadDelay)
 import Control.Monad (forever)
 import Control.Monad.Reader (ReaderT(runReaderT), MonadReader(ask), asks)
@@ -70,8 +68,6 @@ data Env = Env
 
 newtype PracticeDispatcher a = PracticeDispatcher (ReaderT Env IO a)
   deriving (Functor, Applicative, Monad, MonadIO, MonadReader Env)
-
-makeClassy ''Env
 
 run :: MonadIO m => PracticeDispatcher a -> Env -> m a
 run (PracticeDispatcher m) env = liftIO $ runReaderT m env
