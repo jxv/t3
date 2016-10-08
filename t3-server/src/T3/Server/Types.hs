@@ -96,6 +96,8 @@ type GameRec = (ThreadCb, (UserId, GameCb), (UserId, GameCb))
 data GamesCb = GamesCb
   { _gamesCbHashCode :: HashCode
   , _gamesCbInsertGame :: (GameId, GameRec) -> IO ()
+  , _gamesCbFindGame :: GameId -> IO (Maybe GameRec)
+  , _gamesCbRemoveGame :: GameId -> IO ()
   }
 
 data ResultsCb = ResultsCb (IO ())

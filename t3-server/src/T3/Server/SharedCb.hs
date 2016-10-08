@@ -111,10 +111,20 @@ newGamesCb' = do
   return GamesCb
     { _gamesCbHashCode = hc
     , _gamesCbInsertGame = insertGame w
+    , _gamesCbFindGame = findGame w
+    , _gamesCbRemoveGame = removeGame w
     }
 
 insertGame :: TVar GameMap -> (GameId, GameRec) -> IO ()
 insertGame w (gameId, rec) = atomically $ modifyTVar w (Map.insert gameId rec)
+
+findGame :: TVar GameMap -> GameId -> IO (Maybe GameRec)
+findGame w i = atomically $ do
+  m <- readTVar w
+  return $ Map.lookup i m
+
+removeGame :: TVar GameMap -> GameId -> IO ()
+removeGame w i = atomically $ modifyTVar w (Map.delete i)
 
 newResultsCb' :: MonadIO m => m ResultsCb
 newResultsCb' = return (ResultsCb $ return ())
