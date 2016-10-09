@@ -18,6 +18,8 @@ module T3.Server.Types
   , LobbyResp(..)
   , PlayReq(..)
   , PlayResp(..)
+  , StartReq(..)
+  , StartResp(..)
   , try
   , callback
   , GameStart(..)
@@ -142,6 +144,16 @@ data PlayResp = PlayResp
   { _playRespStep :: StepJSON
   } deriving (Show, Eq)
 
+data StartReq = StartReq
+  { _startReqCreds :: Creds
+  , _startReqGameId :: GameId
+  } deriving (Show, Eq)
+
+data StartResp = StartResp
+  { _startRespStep :: StepJSON
+  , _startRespGameStart :: GameStart
+  } deriving (Show, Eq)
+
 newtype StepJSON = StepJSON Step
   deriving (Show, Eq)
 
@@ -186,3 +198,13 @@ instance ToJSON FinalJSON where
     Loss -> String "Loss"
     LossByDQ -> String "LossByDQ"
     Tied -> String "Tied"
+
+instance FromJSON StartReq where
+  parseJSON (Object v) = StartReq <$> v .: "creds" <*> v .: "gameId"
+  parseJSON _ = mzero
+
+instance ToJSON GameStart where
+  toJSON gs = object ["gameId" .= (_gameStartGameId gs), "x" .= (_gameStartX gs), "o" .= (_gameStartO gs)]
+
+instance ToJSON StartResp where
+  toJSON (StartResp step gameStart) = object ["step" .= step, "start" .= gameStart]

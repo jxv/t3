@@ -49,9 +49,9 @@ step = do
   announceGame gameId
 
 dispatchGame' :: (Dispatch m, GamesCb' m) => GameStart -> m ()
-dispatchGame' gs@(GameStart gameId userA userB) = do
-  (threadCb, gameCbA, gameCbB) <- dispatch gs
-  insertGame (gameId, (threadCb, (userA, gameCbA), (userB, gameCbB)))
+dispatchGame' gs@(GameStart gameId userX userO) = do
+  (threadCb, gameCbX, gameCbO) <- dispatch gs
+  insertGame (gameId, (threadCb, (userX, gameCbX), (userO, gameCbO)))
 
 popUser' :: (Lobby m, LobbyCb' m, Delay m) => GameId -> m UserId
 popUser' gameId = do
