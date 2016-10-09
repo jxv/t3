@@ -39,18 +39,18 @@ data XO
   deriving (Show, Eq, Ord, Generic, ToJSON)
 
 data Loc = Loc
-  { _locX :: Int
-  , _locY :: Int
+  { _locX :: !Int
+  , _locY :: !Int
   } deriving (Show, Read, Eq, Ord, Generic)
 
 data Action = Action
-  { _actXO :: XO
-  , _actLoc :: Loc
+  { _actXO :: !XO
+  , _actLoc :: !Loc
   } deriving (Show, Eq, Generic)
 
 data Board = Board
-  { _bCells :: M.Map Loc XO
-  , _bSize :: Int
+  { _bCells :: !(M.Map Loc XO)
+  , _bSize :: !Int
   } deriving (Show, Eq)
 
 data Result
@@ -144,7 +144,7 @@ instance FromJSON Board where
         cells :: [[Cell]] <- parseJSON o
         let correctRowSize = length cells == size
         let correctColSize = and $ map ((== size) . length) cells
-        let pairs = 
+        let pairs =
               [ (Loc x y, cell)
               | y <- [0..pred size]
               , x <- [0..pred size]

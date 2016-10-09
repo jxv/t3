@@ -83,80 +83,80 @@ newtype Move = Move (Int,Int)
   deriving (Show, Eq)
 
 data GameStart = GameStart
-  { _gameStartGameId :: GameId
-  , _gameStartX :: UserId
-  , _gameStartO :: UserId
+  { _gameStartGameId :: !GameId
+  , _gameStartX :: !UserId
+  , _gameStartO :: !UserId
   } deriving (Show, Eq)
 
 data RegistryCb = RegistryCb
-  { _registryCbHashCode :: HashCode
-  , _registryCbInsertUser :: (Name, Token) -> IO (Maybe UserId)
-  , _registryCbGetUserById :: UserId -> IO (Maybe (Name, Token))
+  { _registryCbHashCode :: !HashCode
+  , _registryCbInsertUser :: !((Name, Token) -> IO (Maybe UserId))
+  , _registryCbGetUserById :: !(UserId -> IO (Maybe (Name, Token)))
   }
 
 data LobbyCb = LobbyCb
-  { _lobbyCbHashCode :: HashCode
-  , _lobbyCbTransferUser :: UserId -> IO (Maybe GameId)
-  , _lobbyCbDequeueUser :: GameId -> IO (Maybe UserId)
-  , _lobbyCbAnnounceGame :: GameId -> IO ()
+  { _lobbyCbHashCode :: !HashCode
+  , _lobbyCbTransferUser :: !(UserId -> IO (Maybe GameId))
+  , _lobbyCbDequeueUser :: !(GameId -> IO (Maybe UserId))
+  , _lobbyCbAnnounceGame :: !(GameId -> IO ())
   }
 
 type GameCb = (Chan Loc, Chan Step)
 type GameRec = (ThreadCb, (UserId, GameCb), (UserId, GameCb))
 
 data GamesCb = GamesCb
-  { _gamesCbHashCode :: HashCode
-  , _gamesCbInsertGame :: (GameId, GameRec) -> IO ()
-  , _gamesCbFindGame :: GameId -> IO (Maybe GameRec)
-  , _gamesCbRemoveGame :: GameId -> IO ()
+  { _gamesCbHashCode :: !HashCode
+  , _gamesCbInsertGame :: !((GameId, GameRec) -> IO ())
+  , _gamesCbFindGame :: !(GameId -> IO (Maybe GameRec))
+  , _gamesCbRemoveGame :: !(GameId -> IO ())
   }
 
 data ResultsCb = ResultsCb (IO ())
 
 data ThreadCb = ThreadCb
-  { _threadCbHashCode :: HashCode
-  , _threadCbKill :: IO ()
+  { _threadCbHashCode :: !HashCode
+  , _threadCbKill :: !(IO ())
   }
 
 data Creds = Creds
-  { _credsUserId :: UserId
-  , _credsToken :: Token
+  { _credsUserId :: !UserId
+  , _credsToken :: !Token
   } deriving (Show, Eq)
 
 data RegisterReq = RegisterReq
-  { _registerReqName :: Name
+  { _registerReqName :: !Name
   } deriving (Show, Eq)
 
 data RegisterResp = RegisterResp
-  { _registerRespCreds :: Creds
+  { _registerRespCreds :: !Creds
   } deriving (Show, Eq)
 
 data LobbyReq = LobbyReq
-  { _lobbyReqCreds :: Creds
+  { _lobbyReqCreds :: !Creds
   } deriving (Show, Eq)
 
 data LobbyResp = LobbyResp
-  { _lobbyRespGameId :: GameId
+  { _lobbyRespGameId :: !GameId
   } deriving (Show, Eq)
 
 data PlayReq = PlayReq
-  { _playReqCreds :: Creds
-  , _playReqGameId :: GameId
-  , _playReqLoc :: Loc
+  { _playReqCreds :: !Creds
+  , _playReqGameId :: !GameId
+  , _playReqLoc :: !Loc
   } deriving (Show, Eq)
 
 data PlayResp = PlayResp
-  { _playRespStep :: StepJSON
+  { _playRespStep :: !StepJSON
   } deriving (Show, Eq)
 
 data StartReq = StartReq
-  { _startReqCreds :: Creds
-  , _startReqGameId :: GameId
+  { _startReqCreds :: !Creds
+  , _startReqGameId :: !GameId
   } deriving (Show, Eq)
 
 data StartResp = StartResp
-  { _startRespStep :: StepJSON
-  , _startRespGameStart :: GameStart
+  { _startRespStep :: !StepJSON
+  , _startRespGameStart :: !GameStart
   } deriving (Show, Eq)
 
 newtype StepJSON = StepJSON Step

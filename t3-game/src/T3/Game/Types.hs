@@ -18,8 +18,8 @@ newtype Lose a = Lose a
   deriving (Eq, Show, Functor)
 
 data Step = Step
-  { _stepBoard :: Board
-  , _stepFinal :: Maybe Final
+  { _stepBoard :: !Board
+  , _stepFinal :: !(Maybe Final)
   } deriving (Show, Eq)
 
 data Final
