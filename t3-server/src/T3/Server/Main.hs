@@ -13,7 +13,11 @@ import qualified T3.Server.Control.Monad as Control
 import qualified T3.Server.PracticeDispatcher as PD
 import qualified T3.Server.Game as Game
 import T3.Server.Types
-import T3.Server.SharedCb (newRegistryCb', newGamesCb', newLobbyCb', newResultsCb', newGameCb')
+import T3.Server.Shared.GameObject (newGameCb')
+import T3.Server.Shared.GamesObject (newGamesCb')
+import T3.Server.Shared.LobbyObject (newLobbyCb')
+import T3.Server.Shared.RegistryObject (newRegistryCb')
+import T3.Server.Shared.ResultsObject (newResultsCb')
 
 class Monad m => SharedCb m where
   newLobbyCb :: m LobbyCb

@@ -20,7 +20,11 @@ library
 
     T3.Server.Main
     T3.Server.Gen
-    T3.Server.SharedCb
+    T3.Server.Shared.RegistryObject
+    T3.Server.Shared.GameObject
+    T3.Server.Shared.GamesObject
+    T3.Server.Shared.LobbyObject
+    T3.Server.Shared.ResultsObject
 
     T3.Server.Control.Monad
     T3.Server.Control.Types
