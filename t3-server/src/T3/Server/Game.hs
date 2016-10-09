@@ -10,8 +10,8 @@ import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Monad.Reader (ReaderT(runReaderT), MonadReader(..), asks)
 import Control.Monad.State (StateT(..), evalStateT, MonadState(..))
 
+import qualified T3.Game.Main as Game (main)
 import T3.Core (emptyBoard, Board, XO(..), Loc, Result, yinYang)
-import T3.Game.Main (main)
 import T3.Game.Play (Play(..), play')
 import T3.Game.Control (Control(..))
 import T3.Game.BoardManager (BoardManager(..), isOpenLoc_, insertAtLoc_, getResult_)
@@ -28,9 +28,24 @@ class Monad m => HasBoard m where
   getBoard :: m Board
   putBoard :: Board -> m ()
 
+class Monad m => Initial m where
+  initialStep :: Step -> m ()
+
 class Monad m => Self m where
   killSelf :: m ()
   removeSelf :: m ()
+
+main :: (Initial m, HasBoard m, Play m) => m ()
+main = do
+  board <- getBoard
+  let step = Step board Nothing
+  initialStep step
+  Game.main
+
+initialStep' :: (MonadIO m, MonadReader Env m) => Step -> m ()
+initialStep' step = do
+  (_, stepChan) <- asks _envGameCbX
+  liftIO $ writeChan stepChan step
 
 move' :: (MonadReader Env m, MonadIO m) => XO -> m Loc
 move' xo = do
@@ -138,3 +153,6 @@ instance HasBoard Game where
 instance Self Game where
   killSelf = killSelf'
   removeSelf = removeSelf'
+
+instance Initial Game where
+  initialStep = initialStep'
