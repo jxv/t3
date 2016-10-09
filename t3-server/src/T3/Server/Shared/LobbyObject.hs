@@ -1,5 +1,5 @@
 module T3.Server.Shared.LobbyObject
-  ( newLobbyCb'
+  ( newLobbyObject'
   ) where
 
 import qualified Data.Map as Map
@@ -11,16 +11,16 @@ import Control.Concurrent.Chan
 import T3.Server.Gen (genUserId', genHashCode')
 import T3.Server.Types
 
-newLobbyCb' :: MonadIO m => m LobbyCb
-newLobbyCb' = do
+newLobbyObject' :: MonadIO m => m LobbyObject
+newLobbyObject' = do
   hc <- genHashCode'
   p <- liftIO $ newTVarIO []
   w <- liftIO $ newTVarIO Map.empty
-  return LobbyCb
-    { _lobbyCbHashCode = hc
-    , _lobbyCbTransferUser = transferUser p
-    , _lobbyCbDequeueUser = dequeueUser p w
-    , _lobbyCbAnnounceGame = announceGame w
+  return LobbyObject
+    { _lobbyObjectHashCode = hc
+    , _lobbyObjectTransferUser = transferUser p
+    , _lobbyObjectDequeueUser = dequeueUser p w
+    , _lobbyObjectAnnounceGame = announceGame w
     }
 
 type UserQueue = [(UserId, MVar GameId)]

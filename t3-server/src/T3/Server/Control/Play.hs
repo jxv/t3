@@ -27,19 +27,19 @@ play (PlayReq (Creds userId token) gameId loc) = do
 
 submitMove' :: (MonadIO m, MonadReader Env m) => GameId -> UserId -> Loc -> m Step
 submitMove' gameId userId loc = do
-  findGameCb <- asks (_gamesCbFindGame . _envGamesCb)
-  maybeGameRec <- liftIO $ findGameCb gameId
+  findGameObject <- asks (_gamesObjectFindGame . _envGamesObject)
+  maybeGameRec <- liftIO $ findGameObject gameId
   case maybeGameRec of
     Nothing -> error "Can't find Game by GameId"
-    Just (_, gameCbX, gameCbO) -> do
-      case gameCbByUserId userId gameCbX <|> gameCbByUserId userId gameCbO of
+    Just (_, gameObjectX, gameObjectO) -> do
+      case gameObjectByUserId userId gameObjectX <|> gameObjectByUserId userId gameObjectO of
         Nothing -> error "Can't find User in Game by UserId"
         Just (sendLoc, recvStep) -> do
           liftIO $ sendLoc loc
           liftIO recvStep
 
-gameCbByUserId :: UserId -> (UserId, GameCb) -> Maybe (Loc -> IO (), IO Step)
-gameCbByUserId userId (userId', (f, g)) =
+gameObjectByUserId :: UserId -> (UserId, GameObject) -> Maybe (Loc -> IO (), IO Step)
+gameObjectByUserId userId (userId', (f, g)) =
   if userId == userId'
     then Just (writeChan f, readChan g)
     else Nothing

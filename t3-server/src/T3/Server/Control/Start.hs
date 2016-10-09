@@ -29,25 +29,25 @@ start (StartReq (Creds userId token) gameId) = do
 
 getStart' :: (MonadIO m, MonadReader Env m) => GameId -> m GameStart
 getStart' gameId = do
-  findGameCb <- asks (_gamesCbFindGame . _envGamesCb)
-  maybeGameRec <- liftIO $ findGameCb gameId
+  findGameObject <- asks (_gamesObjectFindGame . _envGamesObject)
+  maybeGameRec <- liftIO $ findGameObject gameId
   case maybeGameRec of
     Nothing -> error "Can't find Game by GameId"
     Just (_, (userX, _), (userO, _)) -> return $ GameStart gameId userX userO
 
 getStep' :: (MonadIO m, MonadReader Env m) => GameId -> UserId -> m Step
 getStep' gameId userId = do
-  findGameCb <- asks (_gamesCbFindGame . _envGamesCb)
-  maybeGameRec <- liftIO $ findGameCb gameId
+  findGameObject <- asks (_gamesObjectFindGame . _envGamesObject)
+  maybeGameRec <- liftIO $ findGameObject gameId
   case maybeGameRec of
     Nothing -> error "Can't find Game by GameId"
-    Just (_, gameCbX, gameCbO) -> do
-      case locByUserId userId gameCbX <|> locByUserId userId gameCbO of
+    Just (_, gameObjectX, gameObjectO) -> do
+      case stepByUserId userId gameObjectX <|> stepByUserId userId gameObjectO of
         Nothing -> error "Can't find User in Game by UserId"
         Just recvStep -> liftIO recvStep
 
-locByUserId :: UserId -> (UserId, GameCb) -> Maybe (IO Step)
-locByUserId userId (userId', (_, g)) =
+stepByUserId :: UserId -> (UserId, GameObject) -> Maybe (IO Step)
+stepByUserId userId (userId', (_, g)) =
   if userId == userId'
     then Just $ readChan g
     else Nothing

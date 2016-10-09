@@ -14,7 +14,7 @@ import Control.Monad.IO.Class (MonadIO(liftIO))
 import T3.Server.Types
 import T3.Server.Gen
 
-class Monad m => Lobby m where
+class Monad m => LobbyControl m where
   popUser :: GameId -> m UserId
   announceGame :: GameId -> m ()
 
@@ -25,12 +25,12 @@ class Monad m => GameDispatch m where
   dispatchGame :: GameStart -> m ()
 
 class Monad m => Dispatch m where
-  dispatch :: GameStart -> m (ThreadCb, GameCb, GameCb)
+  dispatch :: GameStart -> m (ThreadObject, GameObject, GameObject)
 
-class Monad m => GamesCb' m where
+class Monad m => Games m where
   insertGame :: (GameId, GameRec) -> m ()
 
-class Monad m => LobbyCb' m where
+class Monad m => Lobby m where
   dequeueUser :: GameId -> m (Maybe UserId)
 
 class Monad m => Delay m where
@@ -39,22 +39,22 @@ class Monad m => Delay m where
 botId :: UserId
 botId = "bot"
 
-main :: (Lobby m, GameDispatch m, Gen m) => m ()
+main :: (LobbyControl m, GameDispatch m, Gen m) => m ()
 main = forever step
 
-step :: (Lobby m, GameDispatch m, Gen m) => m ()
+step :: (LobbyControl m, GameDispatch m, Gen m) => m ()
 step = do
   gameId <- genGameId
   userId <- popUser gameId
   dispatchGame (GameStart gameId userId botId)
   announceGame gameId
 
-dispatchGame' :: (Dispatch m, GamesCb' m) => GameStart -> m ()
+dispatchGame' :: (Dispatch m, Games m) => GameStart -> m ()
 dispatchGame' gs@(GameStart gameId userX userO) = do
-  (threadCb, gameCbX, gameCbO) <- dispatch gs
-  insertGame (gameId, (threadCb, (userX, gameCbX), (userO, gameCbO)))
+  (threadObject, gameObjectX, gameObjectO) <- dispatch gs
+  insertGame (gameId, (threadObject, (userX, gameObjectX), (userO, gameObjectO)))
 
-popUser' :: (Lobby m, LobbyCb' m, Delay m) => GameId -> m UserId
+popUser' :: (LobbyControl m, Lobby m, Delay m) => GameId -> m UserId
 popUser' gameId = do
   mUserId <- dequeueUser gameId
   case mUserId of
@@ -62,9 +62,9 @@ popUser' gameId = do
     Just userId -> return userId
 
 data Env = Env
-  { _envLobbyCb :: LobbyCb
-  , _envGamesCb :: GamesCb
-  , _envDispatch :: GameStart -> IO (ThreadCb, GameCb, GameCb)
+  { _envLobbyObject :: LobbyObject
+  , _envGamesObject :: GamesObject
+  , _envDispatch :: GameStart -> IO (ThreadObject, GameObject, GameObject)
   }
 
 newtype PracticeDispatcher a = PracticeDispatcher (ReaderT Env IO a)
@@ -73,9 +73,9 @@ newtype PracticeDispatcher a = PracticeDispatcher (ReaderT Env IO a)
 run :: MonadIO m => PracticeDispatcher a -> Env -> m a
 run (PracticeDispatcher m) env = liftIO $ runReaderT m env
 
-instance Lobby PracticeDispatcher where
+instance LobbyControl PracticeDispatcher where
   popUser = popUser'
-  announceGame = callback (_lobbyCbAnnounceGame . _envLobbyCb)
+  announceGame = callback (_lobbyObjectAnnounceGame . _envLobbyObject)
 
 instance GameDispatch PracticeDispatcher where
   dispatchGame = dispatchGame'
@@ -86,11 +86,11 @@ instance Gen PracticeDispatcher where
 instance Dispatch PracticeDispatcher where
   dispatch = callback _envDispatch
 
-instance GamesCb' PracticeDispatcher where
-  insertGame = callback (_gamesCbInsertGame . _envGamesCb)
+instance Games PracticeDispatcher where
+  insertGame = callback (_gamesObjectInsertGame . _envGamesObject)
 
-instance LobbyCb' PracticeDispatcher where
-  dequeueUser = callback (_lobbyCbDequeueUser . _envLobbyCb)
+instance Lobby PracticeDispatcher where
+  dequeueUser = callback (_lobbyObjectDequeueUser . _envLobbyObject)
 
 instance Delay PracticeDispatcher where
   delay secs = liftIO $ threadDelay (1000000 * secs)

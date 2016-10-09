@@ -50,7 +50,7 @@ instance Gen AppHandler where
   genUserId = genUserId'
 
 instance RegistryState AppHandler where
-  insertUser = callback (_registryCbInsertUser . _envRegistryCb)
+  insertUser = callback (_registryObjectInsertUser . _envRegistryObject)
 
 instance Failure AppHandler where
   insertUserFailure = throwError ServantErr

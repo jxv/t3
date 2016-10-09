@@ -19,10 +19,10 @@ import T3.Server.Types
 
 data Env = Env
   { _envPort :: !Int
-  , _envLobbyCb :: !LobbyCb
-  , _envGamesCb :: !GamesCb
-  , _envResultsCb :: !ResultsCb
-  , _envRegistryCb :: !RegistryCb
+  , _envLobbyObject :: !LobbyObject
+  , _envGamesObject :: !GamesObject
+  , _envResultsObject :: !ResultsObject
+  , _envRegistryObject :: !RegistryObject
   }
 
 newtype AppHandler a = AppHandler { runHandler :: ReaderT Env (ExceptT ServantErr IO) a }

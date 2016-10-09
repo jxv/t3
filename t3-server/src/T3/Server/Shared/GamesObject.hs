@@ -1,5 +1,5 @@
 module T3.Server.Shared.GamesObject
-  ( newGamesCb'
+  ( newGamesObject'
   ) where
 
 import qualified Data.Map as Map
@@ -13,15 +13,15 @@ import T3.Server.Types
 
 type GameMap = Map.Map GameId GameRec
 
-newGamesCb' :: MonadIO m => m GamesCb
-newGamesCb' = do
+newGamesObject' :: MonadIO m => m GamesObject
+newGamesObject' = do
   hc <- genHashCode'
   w <- liftIO $ newTVarIO Map.empty
-  return GamesCb
-    { _gamesCbHashCode = hc
-    , _gamesCbInsertGame = insertGame w
-    , _gamesCbFindGame = findGame w
-    , _gamesCbRemoveGame = removeGame w
+  return GamesObject
+    { _gamesObjectHashCode = hc
+    , _gamesObjectInsertGame = insertGame w
+    , _gamesObjectFindGame = findGame w
+    , _gamesObjectRemoveGame = removeGame w
     }
 
 insertGame :: TVar GameMap -> (GameId, GameRec) -> IO ()

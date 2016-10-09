@@ -8,10 +8,10 @@ module T3.Server.Types
   , Move(..)
   , Step(..)
   , Creds(..)
-  , RegistryCb(..)
-  , LobbyCb(..)
-  , GamesCb(..)
-  , ResultsCb(..)
+  , RegistryObject(..)
+  , LobbyObject(..)
+  , GamesObject(..)
+  , ResultsObject(..)
   , RegisterReq(..)
   , RegisterResp(..)
   , LobbyReq(..)
@@ -23,8 +23,8 @@ module T3.Server.Types
   , try
   , callback
   , GameStart(..)
-  , ThreadCb(..)
-  , GameCb
+  , ThreadObject(..)
+  , GameObject
   , GameRec
   , FinalJSON(..)
   , StepJSON(..)
@@ -88,34 +88,34 @@ data GameStart = GameStart
   , _gameStartO :: !UserId
   } deriving (Show, Eq)
 
-data RegistryCb = RegistryCb
-  { _registryCbHashCode :: !HashCode
-  , _registryCbInsertUser :: !((Name, Token) -> IO (Maybe UserId))
-  , _registryCbGetUserById :: !(UserId -> IO (Maybe (Name, Token)))
+data RegistryObject = RegistryObject
+  { _registryObjectHashCode :: !HashCode
+  , _registryObjectInsertUser :: !((Name, Token) -> IO (Maybe UserId))
+  , _registryObjectGetUserById :: !(UserId -> IO (Maybe (Name, Token)))
   }
 
-data LobbyCb = LobbyCb
-  { _lobbyCbHashCode :: !HashCode
-  , _lobbyCbTransferUser :: !(UserId -> IO (Maybe GameId))
-  , _lobbyCbDequeueUser :: !(GameId -> IO (Maybe UserId))
-  , _lobbyCbAnnounceGame :: !(GameId -> IO ())
+data LobbyObject = LobbyObject
+  { _lobbyObjectHashCode :: !HashCode
+  , _lobbyObjectTransferUser :: !(UserId -> IO (Maybe GameId))
+  , _lobbyObjectDequeueUser :: !(GameId -> IO (Maybe UserId))
+  , _lobbyObjectAnnounceGame :: !(GameId -> IO ())
   }
 
-type GameCb = (Chan Loc, Chan Step)
-type GameRec = (ThreadCb, (UserId, GameCb), (UserId, GameCb))
+type GameObject = (Chan Loc, Chan Step)
+type GameRec = (ThreadObject, (UserId, GameObject), (UserId, GameObject))
 
-data GamesCb = GamesCb
-  { _gamesCbHashCode :: !HashCode
-  , _gamesCbInsertGame :: !((GameId, GameRec) -> IO ())
-  , _gamesCbFindGame :: !(GameId -> IO (Maybe GameRec))
-  , _gamesCbRemoveGame :: !(GameId -> IO ())
+data GamesObject = GamesObject
+  { _gamesObjectHashCode :: !HashCode
+  , _gamesObjectInsertGame :: !((GameId, GameRec) -> IO ())
+  , _gamesObjectFindGame :: !(GameId -> IO (Maybe GameRec))
+  , _gamesObjectRemoveGame :: !(GameId -> IO ())
   }
 
-data ResultsCb = ResultsCb (IO ())
+data ResultsObject = ResultsObject (IO ())
 
-data ThreadCb = ThreadCb
-  { _threadCbHashCode :: !HashCode
-  , _threadCbKill :: !(IO ())
+data ThreadObject = ThreadObject
+  { _threadObjectHashCode :: !HashCode
+  , _threadObjectKill :: !(IO ())
   }
 
 data Creds = Creds

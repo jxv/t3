@@ -1,5 +1,5 @@
 module T3.Server.Shared.RegistryObject
-  ( newRegistryCb'
+  ( newRegistryObject'
   ) where
 
 import qualified Data.Map as Map
@@ -14,14 +14,14 @@ import T3.Server.Types
 type UserRec = (Name, Token)
 type UserMap = Map.Map UserId UserRec
 
-newRegistryCb' :: MonadIO m => m RegistryCb
-newRegistryCb' = do
+newRegistryObject' :: MonadIO m => m RegistryObject
+newRegistryObject' = do
   hc <- genHashCode'
   w <- liftIO $ newTVarIO Map.empty
-  return RegistryCb
-    { _registryCbHashCode = hc
-    , _registryCbInsertUser = insertUser w
-    , _registryCbGetUserById = getUserById w
+  return RegistryObject
+    { _registryObjectHashCode = hc
+    , _registryObjectInsertUser = insertUser w
+    , _registryObjectGetUserById = getUserById w
     }
 
 insertUser :: TVar UserMap -> UserRec -> IO (Maybe UserId)

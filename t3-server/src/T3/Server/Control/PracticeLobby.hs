@@ -67,10 +67,10 @@ instance UserStore AppHandler where
   getUser = getUser'
 
 instance LobbyState AppHandler where
-  transferUser = callback (_lobbyCbTransferUser . _envLobbyCb)
+  transferUser = callback (_lobbyObjectTransferUser . _envLobbyObject)
 
 instance RegistryState AppHandler where
-  getUserById = callback (_registryCbGetUserById . _envRegistryCb)
+  getUserById = callback (_registryObjectGetUserById . _envRegistryObject)
 
 instance Failure AppHandler where
   validateUserFailure = throwError $ errMsg "Can't validate user"

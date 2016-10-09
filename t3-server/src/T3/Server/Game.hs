@@ -50,7 +50,7 @@ main = do
 
 initialStep' :: (MonadIO m, MonadReader Env m) => Step -> m ()
 initialStep' step = do
-  (_, stepChan) <- asks _envGameCbX
+  (_, stepChan) <- asks _envGameObjectX
   liftIO $ writeChan stepChan step
 
 move' :: (Bot m, HasBoard m, Exit m, Communicator m, HasGameStart m) => XO -> m Loc
@@ -89,8 +89,8 @@ tie' = do
   sendStep O step
   exit
 
-gameObj :: XO -> Env -> GameCb
-gameObj = byUser _envGameCbX _envGameCbO
+gameObj :: XO -> Env -> GameObject
+gameObj = byUser _envGameObjectX _envGameObjectO
 
 recvLoc' :: (MonadReader Env m, MonadIO m) => XO -> m Loc
 recvLoc' xo = do
@@ -105,13 +105,13 @@ sendStep' xo step = do
 exit' :: (MonadIO m, MonadReader Env m) => m ()
 exit'= do
   env <- ask
-  let games = _envGamesCb env
+  let games = _envGamesObject env
   let gameId = _gameStartGameId $ _envGameStart env
-  maybeGameRec <- liftIO $ _gamesCbFindGame games gameId
+  maybeGameRec <- liftIO $ _gamesObjectFindGame games gameId
   case maybeGameRec of
-    Just (threadCb, _, _) -> do
-      liftIO $ _gamesCbRemoveGame games gameId
-      liftIO $ _threadCbKill threadCb
+    Just (threadObject, _, _) -> do
+      liftIO $ _gamesObjectRemoveGame games gameId
+      liftIO $ _threadObjectKill threadObject
     Nothing -> return ()
 
 isOpenLoc' :: HasBoard m => Loc -> m Bool
@@ -125,8 +125,8 @@ insertAtLoc' loc xo = do
   let board' = insertAtLoc_ loc xo board
   putBoard board'
   let step = Step board' Nothing
-  cb <- asks (writeChan . snd . gameObj (yinYang xo))
-  liftIO $ cb step
+  f <- asks (writeChan . snd . gameObj (yinYang xo))
+  liftIO $ f step
 
 getResult' :: HasBoard m => m Result
 getResult' = do
@@ -134,11 +134,11 @@ getResult' = do
   return $ getResult_ board
 
 data Env = Env
-  { _envResultsCb :: ResultsCb
-  , _envGamesCb :: GamesCb
+  { _envResultsObject :: ResultsObject
+  , _envGamesObject :: GamesObject
   , _envGameStart :: GameStart
-  , _envGameCbX :: GameCb
-  , _envGameCbO :: GameCb
+  , _envGameObjectX :: GameObject
+  , _envGameObjectO :: GameObject
   }
 
 newtype Game a = Game (StateT Board (ReaderT Env IO) a)
