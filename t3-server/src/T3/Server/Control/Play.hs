@@ -1,28 +1,48 @@
 module T3.Server.Control.Play
-  ( main
+  ( play
   ) where
 
-import T3.Server.Types (GameId, UserId, Token, Move, Step)
+import Control.Concurrent.Chan (readChan, writeChan)
+import Control.Applicative ((<|>))
+import Control.Monad (forever, unless)
+import Control.Monad.Reader (ReaderT(runReaderT), MonadReader, asks)
+import Control.Monad.Except (ExceptT, MonadError(throwError))
+import Control.Monad.IO.Class (MonadIO(liftIO))
+import Servant
 
-class Monad m => Client m where
-  getUserId :: m UserId
-  getToken :: m Token
-  getMove :: m Move
-  getGameId :: m GameId
-  putStep :: Step -> m ()
+import T3.Core (Loc)
+import T3.Server.Types
+import T3.Server.Control.Types
 
-class Monad m => Registry m where
-  validateUser :: UserId -> Token -> m ()
+import T3.Server.Control.PracticeLobby (Registry(..))
 
 class Monad m => Game m where
-  submitMove :: GameId -> UserId -> Move -> m Step
+  submitMove :: GameId -> UserId -> Loc -> m Step
 
-main :: (Registry m, Client m, Game m) => m ()
-main = do
-  userId <- getUserId
-  token <- getToken
+play :: (Registry m, Game m) => PlayReq -> m PlayResp
+play (PlayReq (Creds userId token) gameId loc) = do
   validateUser userId token
-  move <- getMove
-  gameId <- getGameId
-  step <- submitMove gameId userId move
-  putStep step
+  step <- submitMove gameId userId loc
+  return $ PlayResp (StepJSON step)
+
+submitMove' :: (MonadIO m, MonadReader Env m) => GameId -> UserId -> Loc -> m Step
+submitMove' gameId userId loc = do
+  findGameCb <- asks (_gamesCbFindGame . _envGamesCb)
+  maybeGameRec <- liftIO $ findGameCb gameId
+  case maybeGameRec of
+    Nothing -> error "Can't find Game by GameId"
+    Just (_, gameCbX, gameCbO) -> do
+      case gameCbByUserId userId gameCbX <|> gameCbByUserId userId gameCbO of
+        Nothing -> error "Can't find User in Game by UserId"
+        Just (sendLoc, recvStep) -> do
+          liftIO $ sendLoc loc
+          liftIO recvStep
+
+gameCbByUserId :: UserId -> (UserId, GameCb) -> Maybe (Loc -> IO (), IO Step)
+gameCbByUserId userId (userId', (f, g)) =
+  if userId == userId'
+    then Just (writeChan f, readChan g)
+    else Nothing
+
+instance Game AppHandler where
+  submitMove = submitMove'

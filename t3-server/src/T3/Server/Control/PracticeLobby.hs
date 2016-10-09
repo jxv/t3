@@ -11,7 +11,6 @@ module T3.Server.Control.PracticeLobby
   , queueUser'
   ) where
 
-import Control.Lens
 import Control.Monad (forever, unless)
 import Control.Monad.Reader (ReaderT(runReaderT), MonadReader, asks)
 import Control.Monad.Except (ExceptT, MonadError(throwError))

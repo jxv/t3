@@ -16,12 +16,16 @@ module T3.Server.Types
   , RegisterResp(..)
   , LobbyReq(..)
   , LobbyResp(..)
+  , PlayReq(..)
+  , PlayResp(..)
   , try
   , callback
   , GameStart(..)
   , ThreadCb(..)
   , GameCb
   , GameRec
+  , FinalJSON(..)
+  , StepJSON(..)
   ) where
 
 import Control.Concurrent.Chan (Chan)
@@ -36,7 +40,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..), (.:), Value(..), (.=), object)
 import Servant
 
 import T3.Core (Loc)
-import T3.Game.Types (Step)
+import T3.Game.Types (Step(..), Final(..))
 
 try :: Monad m => m a -> m (Maybe a) -> m a
 try err f = do
@@ -128,6 +132,22 @@ data LobbyResp = LobbyResp
   { _lobbyRespGameId :: GameId
   } deriving (Show, Eq)
 
+data PlayReq = PlayReq
+  { _playReqCreds :: Creds
+  , _playReqGameId :: GameId
+  , _playReqLoc :: Loc
+  } deriving (Show, Eq)
+
+data PlayResp = PlayResp
+  { _playRespStep :: StepJSON
+  } deriving (Show, Eq)
+
+newtype StepJSON = StepJSON Step
+  deriving (Show, Eq)
+
+newtype FinalJSON = FinalJSON Final
+  deriving (Show, Eq)
+
 instance FromJSON RegisterReq where
   parseJSON (Object v) = RegisterReq <$> v .: "name"
   parseJSON _ = mzero
@@ -148,3 +168,21 @@ instance FromJSON LobbyReq where
 
 instance ToJSON LobbyResp where
   toJSON (LobbyResp gameId) = object ["gameId" .= gameId]
+
+instance FromJSON PlayReq where
+  parseJSON (Object v) = PlayReq <$> v .: "creds" <*> v .: "gameId" <*> v .: "loc"
+  parseJSON _ = mzero
+
+instance ToJSON PlayResp where
+  toJSON (PlayResp step) = object ["step" .= step]
+
+instance ToJSON StepJSON where
+  toJSON (StepJSON step) = object ["board" .= (_stepBoard step), "final" .= (FinalJSON <$> _stepFinal step)]
+
+instance ToJSON FinalJSON where
+  toJSON (FinalJSON final) = case final of
+    Won -> String "Won"
+    WonByDQ -> String "WonByDQ"
+    Loss -> String "Loss"
+    LossByDQ -> String "LossByDQ"
+    Tied -> String "Tied"
