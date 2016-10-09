@@ -11,18 +11,24 @@ import Control.Monad.Reader (ReaderT(runReaderT), MonadReader(..), asks)
 import Control.Monad.State (StateT(..), evalStateT, MonadState(..))
 
 import qualified T3.Game.Main as Game (main)
-import T3.Core (emptyBoard, Board, XO(..), Loc, Result, yinYang)
+import T3.Core (emptyBoard, Board, XO(..), Loc(..), Result, yinYang)
 import T3.Game.Play (Play(..), play')
 import T3.Game.Control (Control(..))
 import T3.Game.BoardManager (BoardManager(..), isOpenLoc_, insertAtLoc_, getResult_)
-import T3.Game.Types (Win(..), Lose(..), Step(..))
+import T3.Game.Types (Win(..), Lose(..), Step(..), Final(..))
+import T3.Bot.Random (randomLoc)
 import T3.Server.Types
 
-class Monad m => Console m where
-  display :: String -> m ()
+import T3.Server.PracticeDispatcher (botId)
 
 class Monad m => Exit m where
   exit :: m ()
+
+class Monad m => HasGameStart m where
+  getGameStart :: m GameStart
+
+class Monad m => Bot m where
+  botMove :: Board -> m Loc
 
 class Monad m => HasBoard m where
   getBoard :: m Board
@@ -34,6 +40,10 @@ class Monad m => Initial m where
 class Monad m => Self m where
   killSelf :: m ()
   removeSelf :: m ()
+
+class Monad m => Communicator m where
+  recvLoc :: XO -> m Loc
+  sendStep :: XO -> Step -> m ()
 
 main :: (Initial m, HasBoard m, Play m) => m ()
 main = do
@@ -47,31 +57,54 @@ initialStep' step = do
   (_, stepChan) <- asks _envGameCbX
   liftIO $ writeChan stepChan step
 
-move' :: (MonadReader Env m, MonadIO m) => XO -> m Loc
+move' :: (Bot m, HasBoard m, Exit m, Communicator m, HasGameStart m) => XO -> m Loc
 move' xo = do
-  cb <- asks (readChan . fst . (case xo of X -> _envGameCbX; O -> _envGameCbO))
-  liftIO cb
+  userId <- byUser _gameStartX _gameStartO xo <$> getGameStart
+  if userId == botId
+    then botMove =<< getBoard
+    else recvLoc xo
 
-forfeit' :: (MonadReader Env m, Console m, Exit m) => Win XO -> Lose XO -> m ()
+botMove' :: (Exit m, MonadIO m) => Board -> m Loc
+botMove' board = do
+  maybeLoc <- liftIO $ randomLoc board
+  case maybeLoc of
+    Nothing -> exit >> error "Bot can't move"
+    Just loc -> return loc
+
+forfeit' :: (Communicator m, Exit m, HasBoard m) => Win XO -> Lose XO -> m ()
 forfeit' (Win w) (Lose l) = do
-  gs <- asks _envGameStart
-  display $ "[forfeit] W " ++ show w ++ " - L " ++ show l
-  display $ show gs
+  board <- getBoard
+  sendStep w $ Step board (Just WonByDQ)
+  sendStep l $ Step board (Just LossByDQ)
   exit
 
-end' :: (MonadReader Env m, Console m, Exit m) => Win XO -> Lose XO -> m ()
+end' :: (Communicator m, Exit m, HasBoard m) => Win XO -> Lose XO -> m ()
 end' (Win w) (Lose l) = do
-  gs <- asks _envGameStart
-  display $ "[end] W " ++ show w ++ " - L " ++ show l
-  display $ show gs
+  board <- getBoard
+  sendStep w $ Step board (Just Won)
+  sendStep l $ Step board (Just Loss)
   exit
 
-tie' :: (MonadReader Env m, Console m, Exit m) => m ()
+tie' :: (Communicator m, Exit m, HasBoard m) => m ()
 tie' = do
-  gs <- asks _envGameStart
-  display "[tie]"
-  display $ show gs
+  board <- getBoard
+  let step = Step board (Just Tied)
+  sendStep X step
+  sendStep O step
   exit
+
+gameObj :: XO -> Env -> GameCb
+gameObj = byUser _envGameCbX _envGameCbO
+
+recvLoc' :: (MonadReader Env m, MonadIO m) => XO -> m Loc
+recvLoc' xo = do
+  f <- asks (readChan . fst . gameObj xo)
+  liftIO f
+
+sendStep' :: (MonadReader Env m, MonadIO m) => XO -> Step -> m ()
+sendStep' xo step = do
+  f <- asks (writeChan . snd . gameObj xo)
+  liftIO $ f step
 
 exit' :: Self m => m ()
 exit' = killSelf >> removeSelf
@@ -104,7 +137,7 @@ insertAtLoc' loc xo = do
   let board' = insertAtLoc_ loc xo board
   putBoard board'
   let step = Step board' Nothing
-  cb <- asks (writeChan . snd . (case (yinYang xo) of X -> _envGameCbX; O -> _envGameCbO))
+  cb <- asks (writeChan . snd . gameObj (yinYang xo))
   liftIO $ cb step
 
 getResult' :: HasBoard m => m Result
@@ -140,9 +173,6 @@ instance BoardManager Game where
   insertAtLoc = insertAtLoc'
   getResult = getResult'
 
-instance Console Game where
-  display = liftIO . putStrLn
-
 instance Exit Game where
   exit = exit'
 
@@ -156,3 +186,13 @@ instance Self Game where
 
 instance Initial Game where
   initialStep = initialStep'
+
+instance Communicator Game where
+  recvLoc = recvLoc'
+  sendStep = sendStep'
+
+instance Bot Game where
+  botMove = botMove'
+
+instance HasGameStart Game where
+  getGameStart = asks _envGameStart

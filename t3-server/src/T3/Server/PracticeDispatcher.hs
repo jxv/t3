@@ -3,6 +3,7 @@ module T3.Server.PracticeDispatcher
   , run
   , main
   , step
+  , botId
   ) where
 
 import Control.Concurrent (threadDelay)

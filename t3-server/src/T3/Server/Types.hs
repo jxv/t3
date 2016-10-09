@@ -28,6 +28,7 @@ module T3.Server.Types
   , GameRec
   , FinalJSON(..)
   , StepJSON(..)
+  , byUser
   ) where
 
 import Control.Concurrent.Chan (Chan)
@@ -41,8 +42,12 @@ import Data.String (IsString)
 import Data.Aeson (ToJSON(..), FromJSON(..), (.:), Value(..), (.=), object)
 import Servant
 
-import T3.Core (Loc)
+import T3.Core (Loc, XO(..))
 import T3.Game.Types (Step(..), Final(..))
+
+byUser :: a -> a -> XO -> a
+byUser x _ X = x
+byUser _ o O = o
 
 try :: Monad m => m a -> m (Maybe a) -> m a
 try err f = do

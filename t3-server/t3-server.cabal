@@ -48,6 +48,7 @@ library
     , t3-core
     , t3-game
     , t3-game-callbacks
+    , t3-bot
     , random
     , stm
   default-language:
