@@ -30,8 +30,8 @@ class Monad m => Interthread m where
   fork :: m () -> m ThreadObject
 
 class Monad m => Threads m where
-  arenaDispatcher :: LobbyObject -> GamesObject -> (GameStart -> m (ThreadObject, GameObject, GameObject)) -> m ()
-  practiceDispatcher :: LobbyObject -> GamesObject -> (GameStart -> m (ThreadObject, GameObject, GameObject)) -> m ()
+  arenaDispatcher :: LobbyObject -> GamesObject -> (GameStart -> m GameEntry) -> m ()
+  practiceDispatcher :: LobbyObject -> GamesObject -> (GameStart -> m GameEntry) -> m ()
   game :: ResultsObject -> GamesObject -> GameStart -> GameObject -> GameObject -> m ()
   control :: LobbyObject -> GamesObject -> ResultsObject -> RegistryObject -> m ()
 
@@ -45,18 +45,15 @@ main = do
   void . fork $ arenaDispatcher lobby games (gameDispatch results games)
   control lobby games results registry
 
-gameDispatch :: (SharedObject m, Interthread m, Threads m) => ResultsObject -> GamesObject -> GameStart -> m (ThreadObject, GameObject, GameObject)
+gameDispatch :: (SharedObject m, Interthread m, Threads m) => ResultsObject -> GamesObject -> GameStart -> m GameEntry
 gameDispatch results games gameStart = do
   objectX <- newGameObject
   objectO <- newGameObject
   threadObject <- fork $ game results games gameStart objectX objectO
   return (threadObject, objectX, objectO)
 
-newtype Server a = Server (IO a)
+newtype Server a = Server { runServer :: IO a }
   deriving (Functor, Applicative, Monad, MonadIO)
-
-runServer :: Server a -> IO a
-runServer (Server m) = m
 
 instance Interthread Server where
   fork = fmap mkThreadObject . liftIO . forkIO . runServer

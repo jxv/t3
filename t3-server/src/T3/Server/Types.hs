@@ -26,6 +26,7 @@ module T3.Server.Types
   , ThreadObject(..)
   , GameObject
   , GameRec
+  , GameEntry
   , FinalJSON(..)
   , StepJSON(..)
   , byUser
@@ -101,7 +102,10 @@ data LobbyObject = LobbyObject
   , _lobbyObjectAnnounceGame :: !(GameId -> IO ())
   }
 
+type GameEntry = (ThreadObject, GameObject, GameObject)
+
 type GameObject = (Chan Loc, Chan Step)
+
 type GameRec = (ThreadObject, (UserId, GameObject), (UserId, GameObject))
 
 data GamesObject = GamesObject
