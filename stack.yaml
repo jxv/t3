@@ -5,13 +5,12 @@ packages:
 - t3-bot
 - t3-game
 - t3-game-console
-- t3-game-callbacks
 - t3-server
 
 extra-deps:
 - text-conversions-0.3.0
 - hashmap-1.3.1.1
-- test-fixture-0.4.0.0 
+- test-fixture-0.4.0.0
 
 #flags:
 #  t3-server:
