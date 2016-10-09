@@ -37,10 +37,6 @@ class Monad m => HasBoard m where
 class Monad m => Initial m where
   initialStep :: Step -> m ()
 
-class Monad m => Self m where
-  killSelf :: m ()
-  removeSelf :: m ()
-
 class Monad m => Communicator m where
   recvLoc :: XO -> m Loc
   sendStep :: XO -> Step -> m ()
@@ -106,24 +102,16 @@ sendStep' xo step = do
   f <- asks (writeChan . snd . gameObj xo)
   liftIO $ f step
 
-exit' :: Self m => m ()
-exit' = killSelf >> removeSelf
-
-removeSelf' :: (MonadIO m, MonadReader Env m) => m ()
-removeSelf' = do
-  env <- ask
-  let games = _envGamesCb env
-  let gameId = _gameStartGameId $ _envGameStart env
-  liftIO $ _gamesCbRemoveGame games gameId
-
-killSelf' :: (MonadIO m, MonadReader Env m) => m ()
-killSelf' = do
+exit' :: (MonadIO m, MonadReader Env m) => m ()
+exit'= do
   env <- ask
   let games = _envGamesCb env
   let gameId = _gameStartGameId $ _envGameStart env
   maybeGameRec <- liftIO $ _gamesCbFindGame games gameId
   case maybeGameRec of
-    Just (threadCb, _, _) -> liftIO $ _threadCbKill threadCb
+    Just (threadCb, _, _) -> do
+      liftIO $ _gamesCbRemoveGame games gameId
+      liftIO $ _threadCbKill threadCb
     Nothing -> return ()
 
 isOpenLoc' :: HasBoard m => Loc -> m Bool
@@ -179,10 +167,6 @@ instance Exit Game where
 instance HasBoard Game where
   getBoard = get
   putBoard = put
-
-instance Self Game where
-  killSelf = killSelf'
-  removeSelf = removeSelf'
 
 instance Initial Game where
   initialStep = initialStep'

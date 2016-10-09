@@ -124,7 +124,14 @@ findGame w i = atomically $ do
   return $ Map.lookup i m
 
 removeGame :: TVar GameMap -> GameId -> IO ()
-removeGame w i = atomically $ modifyTVar w (Map.delete i)
+removeGame w i = do
+  m <- atomically $ readTVar w
+  print $ Map.keys m
+  let m' = Map.delete i m
+  print $ Map.keys m'
+  atomically $ writeTVar w m'
+
+  -- atomically $ modifyTVar w (Map.delete i)
 
 newResultsCb' :: MonadIO m => m ResultsCb
 newResultsCb' = return (ResultsCb $ return ())
