@@ -15,11 +15,12 @@ import Network.Wai (Application)
 import Network.Wai.Handler.Warp (run)
 import Servant
 
-import T3.Server.Types
+import T3.Server.Types hiding (Result)
 import T3.Server.Control.Types
 import T3.Server.Control.Register (register)
 import T3.Server.Control.Lobby (lobby, LobbyType(LobbyPractice, LobbyArena))
 import T3.Server.Control.Play (play)
+import T3.Server.Control.Result (result)
 
 main :: MonadIO m => Env -> m ()
 main env = liftIO $ run (_envPort env) (application env)
@@ -42,16 +43,19 @@ type Register = "register" :> ReqBody '[JSON] RegisterReq :> Post '[JSON] Regist
 type PracticeLobby = "practice-lobby" :> ReqBody '[JSON] LobbyReq :> Post '[JSON] LobbyResp
 type ArenaLobby = "lobby" :> ReqBody '[JSON] LobbyReq :> Post '[JSON] LobbyResp
 type Play = "play" :> ReqBody '[JSON] PlayReq :> Post '[JSON] PlayResp
+type Result = "result" :> ReqBody '[JSON] ResultReq :> Post '[JSON] ResultResp
 
 type API =
   Register :<|>
   PracticeLobby :<|>
   ArenaLobby :<|>
-  Play
+  Play :<|>
+  Result
 
 serverT :: AppServer API
 serverT =
   register :<|>
   lobby LobbyPractice :<|>
   lobby LobbyArena :<|>
-  play
+  play :<|>
+  result

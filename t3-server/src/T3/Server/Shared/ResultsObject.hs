@@ -16,6 +16,7 @@ newResultsObject' = liftIO $ do
   w <- newTVarIO Map.empty
   return ResultsObject
     { _resultsObjectSaveResult = saveResult w
+    , _resultsObjectFindResult = findResult w
     }
 
 type ResultMap = Map.Map GameId Result
@@ -23,3 +24,8 @@ type ResultMap = Map.Map GameId Result
 saveResult :: TVar ResultMap -> Result -> IO ()
 saveResult w r = atomically . modifyTVar w $
   Map.insert (_gameStartGameId . _resultGameStart $ r) r
+
+findResult :: TVar ResultMap -> GameId -> IO (Maybe Result)
+findResult w gid = atomically $ do
+  m <- readTVar w
+  return $ Map.lookup gid m

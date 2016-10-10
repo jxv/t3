@@ -1,22 +1,19 @@
 module T3.Server.Control.Result
-  ( main
+  ( result
   ) where
 
-newtype GameId = GameId String
-  deriving (Show, Eq)
+import Control.Monad.Reader (ReaderT(runReaderT), MonadReader, asks)
+import Control.Monad.Except (ExceptT, MonadError(throwError))
+import Control.Monad.IO.Class (MonadIO(liftIO))
+import Servant
 
-newtype Playback = Playback ()
-  deriving (Show, Eq)
+import T3.Server.Types
+import T3.Server.Control.Types
 
-class Monad m => Client m where
-  getGameId :: m GameId
-  putPlayback :: Playback -> m ()
-
-class Monad m => Playbacks m where
-  getPlayback :: GameId -> m Playback
-
-main :: (Playbacks m, Client m) => m ()
-main = do
-  gameId <- getGameId
-  playback <- getPlayback gameId
-  putPlayback playback
+result :: (MonadReader Env m, MonadIO m) => ResultReq -> m ResultResp
+result (ResultReq gid) = do
+  f <- asks (_resultsObjectFindResult . _envResultsObject)
+  mr <- liftIO $ f gid
+  case mr of
+    Nothing -> error "Can't find result"
+    Just r -> return $ ResultResp r

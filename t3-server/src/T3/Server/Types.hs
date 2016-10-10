@@ -18,6 +18,8 @@ module T3.Server.Types
   , LobbyResp(..)
   , PlayReq(..)
   , PlayResp(..)
+  , ResultReq(..)
+  , ResultResp(..)
   , GameStart(..)
   , ThreadObject(..)
   , GameObject(..)
@@ -28,7 +30,6 @@ module T3.Server.Types
   , StepJSON(..)
   , Pair(..)
   , Result(..)
-  , Decision(..)
   , byUser
   , try
   , callback
@@ -65,17 +66,6 @@ callback x i = do
   f <- asks x
   liftIO (f i)
 
-data Decision
-  = Victor XO
-  | NoContest
-  deriving (Show, Eq)
-
-data Result = Result
-  { _resultGameStart :: GameStart
-  , _resultBoard :: Board
-  , _resultDecision :: Decision
-  } deriving (Show, Eq)
-
 newtype UserId = UserId Text
   deriving (Show, Eq, IsString, FromJSON, ToJSON, Ord)
 
@@ -100,6 +90,13 @@ newtype Move = Move (Int,Int)
 data Pair a = Pair
   { _pX :: !a
   , _pO :: !a
+  } deriving (Show, Eq)
+
+data Result = Result
+  { _resultGameStart :: GameStart
+  , _resultBoard :: Board
+  , _resultWinner :: Maybe XO
+  , _resultLoser :: Maybe XO
   } deriving (Show, Eq)
 
 data GameStart = GameStart
@@ -150,6 +147,7 @@ data GamesObject = GamesObject
 
 data ResultsObject = ResultsObject
   { _resultsObjectSaveResult :: Result -> IO ()
+  , _resultsObjectFindResult :: GameId -> IO (Maybe Result)
   }
 
 data ThreadObject = ThreadObject
@@ -189,6 +187,13 @@ data PlayResp = PlayResp
   { _playRespStep :: !StepJSON
   } deriving (Show, Eq)
 
+data ResultReq = ResultReq
+  { _resultReqGameId :: GameId
+  } deriving (Show, Eq)
+
+data ResultResp = ResultResp
+  { _resultRespResult :: Result
+  } deriving (Show, Eq)
 
 newtype StepJSON = StepJSON Step
   deriving (Show, Eq)
@@ -237,3 +242,12 @@ instance ToJSON FinalJSON where
 
 instance ToJSON GameStart where
   toJSON gs = object ["gameId" .= (_gameStartGameId gs), "x" .= (_gameStartX gs), "o" .= (_gameStartO gs)]
+
+instance FromJSON ResultReq where
+  parseJSON (Object v) = ResultReq <$> v .: "gameId"
+
+instance ToJSON Result where
+  toJSON (Result gs board w l) = object [ "start" .= gs, "board" .= board, "winner" .= w, "loser" .= l]
+
+instance ToJSON ResultResp where
+  toJSON (ResultResp res) = object ["result" .= res]

@@ -78,7 +78,7 @@ forfeit' (Win w) (Lose l) = do
   gs <- getGameStart
   sendStep w $ Step board (Just WonByDQ)
   sendStep l $ Step board (Just LossByDQ)
-  saveResult $ Result gs board  (Victor w)
+  saveResult $ Result gs board (Just w) (Just l)
   exit
 
 end' :: (Communicator m, Exit m, HasBoard m, HasGameStart m, ResultStore m) => Win XO -> Lose XO -> m ()
@@ -87,7 +87,7 @@ end' (Win w) (Lose l) = do
   gs <- getGameStart
   sendStep w $ Step board (Just Won)
   sendStep l $ Step board (Just Loss)
-  saveResult $ Result gs board (Victor w)
+  saveResult $ Result gs board (Just w) (Just l)
   exit
 
 tie' :: (Communicator m, Exit m, HasBoard m, HasGameStart m, ResultStore m) => m ()
@@ -97,7 +97,7 @@ tie' = do
   let step = Step board (Just Tied)
   sendStep X step
   sendStep O step
-  saveResult $ Result gs board NoContest
+  saveResult $ Result gs board Nothing Nothing
   exit
 
 gameObj :: XO -> Env -> GameObject
