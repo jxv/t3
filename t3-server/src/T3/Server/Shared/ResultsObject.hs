@@ -12,4 +12,14 @@ import T3.Server.Gen (genUserId', genHashCode')
 import T3.Server.Types
 
 newResultsObject' :: MonadIO m => m ResultsObject
-newResultsObject' = return (ResultsObject $ return ())
+newResultsObject' = liftIO $ do
+  w <- newTVarIO Map.empty
+  return ResultsObject
+    { _resultsObjectSaveResult = saveResult w
+    }
+
+type ResultMap = Map.Map GameId Result
+
+saveResult :: TVar ResultMap -> Result -> IO ()
+saveResult w r = atomically . modifyTVar w $
+  Map.insert (_gameStartGameId . _resultGameStart $ r) r

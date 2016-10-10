@@ -27,6 +27,8 @@ module T3.Server.Types
   , FinalJSON(..)
   , StepJSON(..)
   , Pair(..)
+  , Result(..)
+  , Decision(..)
   , byUser
   , try
   , callback
@@ -43,7 +45,7 @@ import Data.String (IsString)
 import Data.Aeson (ToJSON(..), FromJSON(..), (.:), Value(..), (.=), object)
 import Servant
 
-import T3.Core (Loc, XO(..))
+import T3.Core (Loc, XO(..), Board)
 import T3.Game.Types (Step(..), Final(..))
 
 
@@ -62,6 +64,17 @@ callback :: (MonadReader r m, MonadIO m) => (r -> b -> IO a) -> b -> m a
 callback x i = do
   f <- asks x
   liftIO (f i)
+
+data Decision
+  = Victor XO
+  | NoContest
+  deriving (Show, Eq)
+
+data Result = Result
+  { _resultGameStart :: GameStart
+  , _resultBoard :: Board
+  , _resultDecision :: Decision
+  } deriving (Show, Eq)
 
 newtype UserId = UserId Text
   deriving (Show, Eq, IsString, FromJSON, ToJSON, Ord)
@@ -97,15 +110,15 @@ data GameStart = GameStart
 
 data RegistryObject = RegistryObject
   { _registryObjectHashCode :: !HashCode
-  , _registryObjectInsertUser :: !((Name, Token) -> IO (Maybe UserId))
-  , _registryObjectGetUserById :: !(UserId -> IO (Maybe (Name, Token)))
+  , _registryObjectInsertUser :: (Name, Token) -> IO (Maybe UserId)
+  , _registryObjectGetUserById :: UserId -> IO (Maybe (Name, Token))
   }
 
 data LobbyObject = LobbyObject
   { _lobbyObjectHashCode :: !HashCode
-  , _lobbyObjectTransferUser :: !(UserId -> IO (Maybe GameStart))
-  , _lobbyObjectDequeueUser :: !(GameId -> IO (Maybe UserId))
-  , _lobbyObjectAnnounceGame :: !(GameStart -> IO ())
+  , _lobbyObjectTransferUser :: UserId -> IO (Maybe GameStart)
+  , _lobbyObjectDequeueUser :: GameId -> IO (Maybe UserId)
+  , _lobbyObjectAnnounceGame :: GameStart -> IO ()
   }
 
 data GameEntry = GameEntry
@@ -130,16 +143,18 @@ data LabeledGameObject = LabeledGameObject
 
 data GamesObject = GamesObject
   { _gamesObjectHashCode :: !HashCode
-  , _gamesObjectInsertGame :: !((GameId, GameRecord) -> IO ())
-  , _gamesObjectFindGame :: !(GameId -> IO (Maybe GameRecord))
-  , _gamesObjectRemoveGame :: !(GameId -> IO ())
+  , _gamesObjectInsertGame :: (GameId, GameRecord) -> IO ()
+  , _gamesObjectFindGame :: GameId -> IO (Maybe GameRecord)
+  , _gamesObjectRemoveGame :: GameId -> IO ()
   }
 
-data ResultsObject = ResultsObject { wahhh :: IO () }
+data ResultsObject = ResultsObject
+  { _resultsObjectSaveResult :: Result -> IO ()
+  }
 
 data ThreadObject = ThreadObject
   { _threadObjectHashCode :: !HashCode
-  , _threadObjectKill :: !(IO ())
+  , _threadObjectKill :: IO ()
   }
 
 data Creds = Creds

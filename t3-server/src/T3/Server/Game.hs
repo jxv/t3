@@ -12,7 +12,8 @@ import Control.Monad.Reader (ReaderT(runReaderT), MonadReader(..), asks)
 import Control.Monad.State (StateT(..), evalStateT, MonadState(..))
 
 import qualified T3.Game.Main as Game (main)
-import T3.Core (emptyBoard, Board, XO(..), Loc(..), Result, yinYang)
+import qualified T3.Core as Core (Result)
+import T3.Core (emptyBoard, Board, XO(..), Loc(..), yinYang)
 import T3.Game.Play (Play(..), play')
 import T3.Game.Control (Control(..))
 import T3.Game.BoardManager (BoardManager(..), isOpenLoc_, insertAtLoc_, getResult_)
@@ -42,6 +43,9 @@ class Monad m => Communicator m where
   recvLoc :: XO -> m Loc
   sendStep :: XO -> Step -> m ()
 
+class Monad m => ResultStore m where
+  saveResult :: Result -> m ()
+
 main :: (Initial m, HasBoard m, Play m) => m ()
 main = do
   board <- getBoard
@@ -68,26 +72,32 @@ botMove' board = do
     Nothing -> exit >> error "Bot can't move"
     Just loc -> return loc
 
-forfeit' :: (Communicator m, Exit m, HasBoard m) => Win XO -> Lose XO -> m ()
+forfeit' :: (Communicator m, Exit m, HasBoard m, HasGameStart m, ResultStore m) => Win XO -> Lose XO -> m ()
 forfeit' (Win w) (Lose l) = do
   board <- getBoard
+  gs <- getGameStart
   sendStep w $ Step board (Just WonByDQ)
   sendStep l $ Step board (Just LossByDQ)
+  saveResult $ Result gs board  (Victor w)
   exit
 
-end' :: (Communicator m, Exit m, HasBoard m) => Win XO -> Lose XO -> m ()
+end' :: (Communicator m, Exit m, HasBoard m, HasGameStart m, ResultStore m) => Win XO -> Lose XO -> m ()
 end' (Win w) (Lose l) = do
   board <- getBoard
+  gs <- getGameStart
   sendStep w $ Step board (Just Won)
   sendStep l $ Step board (Just Loss)
+  saveResult $ Result gs board (Victor w)
   exit
 
-tie' :: (Communicator m, Exit m, HasBoard m) => m ()
+tie' :: (Communicator m, Exit m, HasBoard m, HasGameStart m, ResultStore m) => m ()
 tie' = do
   board <- getBoard
+  gs <- getGameStart
   let step = Step board (Just Tied)
   sendStep X step
   sendStep O step
+  saveResult $ Result gs board NoContest
   exit
 
 gameObj :: XO -> Env -> GameObject
@@ -130,7 +140,7 @@ insertAtLoc' loc xo = do
   f <- asks (writeChan . _gameObjectStep . gameObj (yinYang xo))
   liftIO $ f step
 
-getResult' :: HasBoard m => m Result
+getResult' :: HasBoard m => m Core.Result
 getResult' = do
   board <- getBoard
   return $ getResult_ board
@@ -181,3 +191,6 @@ instance Bot Game where
 
 instance HasGameStart Game where
   getGameStart = asks _envGameStart
+
+instance ResultStore Game where
+  saveResult = callback (_resultsObjectSaveResult . _envResultsObject)
