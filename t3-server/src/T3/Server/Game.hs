@@ -6,6 +6,7 @@ module T3.Server.Game
   ) where
 
 import Control.Concurrent.Chan (readChan, writeChan)
+import Control.Monad (when)
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Control.Monad.Reader (ReaderT(runReaderT), MonadReader(..), asks)
 import Control.Monad.State (StateT(..), evalStateT, MonadState(..))
@@ -98,7 +99,10 @@ recvLoc' xo = do
   liftIO f
 
 sendStep' :: (MonadReader Env m, MonadIO m) => XO -> Step -> m ()
-sendStep' xo = callback (writeChan . _gameObjectStep . gameObj xo)
+sendStep' xo step = do
+  userId <- asks (byUser _gameStartX _gameStartO xo . _envGameStart)
+  when (botId /= userId) $
+    callback (writeChan . _gameObjectStep . gameObj xo) step
 
 exit' :: (MonadIO m, MonadReader Env m) => m ()
 exit'= do
