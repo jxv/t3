@@ -28,7 +28,6 @@ library
 
     T3.Server.Control.Monad
     T3.Server.Control.Types
-    T3.Server.Control.Start
     T3.Server.Control.PracticeLobby
     T3.Server.Control.Play
     T3.Server.Control.Register

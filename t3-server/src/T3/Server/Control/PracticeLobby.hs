@@ -11,6 +11,8 @@ module T3.Server.Control.PracticeLobby
   , queueUser'
   ) where
 
+import Control.Concurrent.Chan (readChan)
+import Control.Applicative ((<|>))
 import Control.Monad (forever, unless)
 import Control.Monad.Reader (ReaderT(runReaderT), MonadReader, asks)
 import Control.Monad.Except (ExceptT, MonadError(throwError))
@@ -21,7 +23,10 @@ import T3.Server.Types
 import T3.Server.Control.Types
 
 class Monad m => Lobby m where
-  queueUser :: UserId -> m GameId
+  queueUser :: UserId -> m GameStart
+
+class Monad m => Game m where
+  getStep :: GameId -> UserId -> m Step
 
 class Monad m => Registry m where
   validateUser :: UserId -> Token -> m ()
@@ -33,18 +38,19 @@ class Monad m => RegistryState m where
   getUserById :: UserId -> m (Maybe (Name, Token))
 
 class Monad m => LobbyState m where
-  transferUser :: UserId -> m (Maybe GameId)
+  transferUser :: UserId -> m (Maybe GameStart)
 
 class Monad m => Failure m where
   validateUserFailure :: m a
   getUserFailure :: m a
   transferUserFailure :: m a
 
-practiceLobby :: (Lobby m, Registry m) => LobbyReq -> m LobbyResp
+practiceLobby :: (Lobby m, Registry m, Game m) => LobbyReq -> m LobbyResp
 practiceLobby (LobbyReq (Creds userId token)) = do
   validateUser userId token
-  gameId <- queueUser userId
-  return $ LobbyResp gameId
+  gameStart <- queueUser userId
+  step <- getStep (_gameStartGameId gameStart) userId
+  return $ LobbyResp (StepJSON step) gameStart
 
 validateUser' :: (UserStore m, Failure m) => UserId -> Token -> m ()
 validateUser' userId token = do
@@ -54,8 +60,25 @@ validateUser' userId token = do
 getUser' :: (RegistryState m, Failure m) => UserId -> m (Name, Token)
 getUser' = try getUserFailure . getUserById
 
-queueUser' :: (LobbyState m, Failure m) => UserId -> m GameId
+queueUser' :: (LobbyState m, Failure m) => UserId -> m GameStart
 queueUser' = try transferUserFailure . transferUser
+
+getStep' :: (MonadIO m, MonadReader Env m) => GameId -> UserId -> m Step
+getStep' gameId userId = do
+  findGameObject <- asks (_gamesObjectFindGame . _envGamesObject)
+  maybeGameRec <- liftIO $ findGameObject gameId
+  case maybeGameRec of
+    Nothing -> error "Can't find Game by GameId"
+    Just (_, gameObjectX, gameObjectO) -> do
+      case stepByUserId userId gameObjectX <|> stepByUserId userId gameObjectO of
+        Nothing -> error "Can't find User in Game by UserId"
+        Just recvStep -> liftIO recvStep
+
+stepByUserId :: UserId -> (UserId, GameObject) -> Maybe (IO Step)
+stepByUserId userId (userId', (_, g)) =
+  if userId == userId'
+    then Just $ readChan g
+    else Nothing
 
 instance Lobby AppHandler where
   queueUser = queueUser'
@@ -71,6 +94,9 @@ instance LobbyState AppHandler where
 
 instance RegistryState AppHandler where
   getUserById = callback (_registryObjectGetUserById . _envRegistryObject)
+
+instance Game AppHandler where
+  getStep = getStep'
 
 instance Failure AppHandler where
   validateUserFailure = throwError $ errMsg "Can't validate user"

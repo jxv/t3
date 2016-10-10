@@ -23,15 +23,15 @@ newLobbyObject' = do
     , _lobbyObjectAnnounceGame = announceGame w
     }
 
-type UserQueue = [(UserId, MVar GameId)]
-type AnnounceDeck = Map.Map GameId [MVar GameId]
+type UserQueue = [(UserId, MVar GameStart)]
+type AnnounceDeck = Map.Map GameId [MVar GameStart]
 
-transferUser :: TVar UserQueue -> UserId -> IO (Maybe GameId)
+transferUser :: TVar UserQueue -> UserId -> IO (Maybe GameStart)
 transferUser p i = do
   ref <- newEmptyMVar
   atomically $ modifyTVar p $ \q -> q ++ [(i, ref)]
-  gameId <- takeMVar ref
-  return $ Just gameId
+  gameStart <- takeMVar ref
+  return $ Just gameStart
 
 dequeueUser :: TVar UserQueue -> TVar AnnounceDeck -> GameId -> IO (Maybe UserId)
 dequeueUser p w i = do
@@ -56,10 +56,11 @@ dequeueUser p w i = do
 appendAt :: Ord k => Map.Map k [a] -> k -> a -> Map.Map k [a]
 appendAt m k a = Map.alter (\case Nothing -> Just [a]; Just as -> Just (a:as)) k m
 
-announceGame :: TVar AnnounceDeck -> GameId -> IO ()
-announceGame w i = do
+announceGame :: TVar AnnounceDeck -> GameStart -> IO ()
+announceGame w gs = do
   refs <- atomically $ do
     m <- readTVar w
+    let i = _gameStartGameId gs
     case Map.lookup i m of
       Nothing -> do
         return []
@@ -67,4 +68,4 @@ announceGame w i = do
         let m' = Map.delete i m
         writeTVar w m'
         return refs
-  mapM_ (\ref -> putMVar ref i) refs
+  mapM_ (\ref -> putMVar ref gs) refs

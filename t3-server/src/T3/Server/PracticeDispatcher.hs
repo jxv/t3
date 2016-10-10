@@ -16,7 +16,7 @@ import T3.Server.Gen
 
 class Monad m => LobbyControl m where
   popUser :: GameId -> m UserId
-  announceGame :: GameId -> m ()
+  announceGame :: GameStart -> m ()
 
 class Monad m => Gen m where
   genGameId :: m GameId
@@ -46,8 +46,9 @@ step :: (LobbyControl m, GameDispatch m, Gen m) => m ()
 step = do
   gameId <- genGameId
   userId <- popUser gameId
-  dispatchGame (GameStart gameId userId botId)
-  announceGame gameId
+  let gs =(GameStart gameId userId botId)
+  dispatchGame gs
+  announceGame gs
 
 dispatchGame' :: (Dispatch m, Games m) => GameStart -> m ()
 dispatchGame' gs@(GameStart gameId userX userO) = do

@@ -18,10 +18,6 @@ module T3.Server.Types
   , LobbyResp(..)
   , PlayReq(..)
   , PlayResp(..)
-  , StartReq(..)
-  , StartResp(..)
-  , try
-  , callback
   , GameStart(..)
   , ThreadObject(..)
   , GameObject
@@ -30,6 +26,8 @@ module T3.Server.Types
   , FinalJSON(..)
   , StepJSON(..)
   , byUser
+  , try
+  , callback
   ) where
 
 import Control.Concurrent.Chan (Chan)
@@ -97,9 +95,9 @@ data RegistryObject = RegistryObject
 
 data LobbyObject = LobbyObject
   { _lobbyObjectHashCode :: !HashCode
-  , _lobbyObjectTransferUser :: !(UserId -> IO (Maybe GameId))
+  , _lobbyObjectTransferUser :: !(UserId -> IO (Maybe GameStart))
   , _lobbyObjectDequeueUser :: !(GameId -> IO (Maybe UserId))
-  , _lobbyObjectAnnounceGame :: !(GameId -> IO ())
+  , _lobbyObjectAnnounceGame :: !(GameStart -> IO ())
   }
 
 type GameEntry = (ThreadObject, GameObject, GameObject)
@@ -140,7 +138,8 @@ data LobbyReq = LobbyReq
   } deriving (Show, Eq)
 
 data LobbyResp = LobbyResp
-  { _lobbyRespGameId :: !GameId
+  { _lobbyRespStep :: !StepJSON
+  , _lobbyRespGameStart :: !GameStart
   } deriving (Show, Eq)
 
 data PlayReq = PlayReq
@@ -153,15 +152,6 @@ data PlayResp = PlayResp
   { _playRespStep :: !StepJSON
   } deriving (Show, Eq)
 
-data StartReq = StartReq
-  { _startReqCreds :: !Creds
-  , _startReqGameId :: !GameId
-  } deriving (Show, Eq)
-
-data StartResp = StartResp
-  { _startRespStep :: !StepJSON
-  , _startRespGameStart :: !GameStart
-  } deriving (Show, Eq)
 
 newtype StepJSON = StepJSON Step
   deriving (Show, Eq)
@@ -188,7 +178,7 @@ instance FromJSON LobbyReq where
   parseJSON _ = mzero
 
 instance ToJSON LobbyResp where
-  toJSON (LobbyResp gameId) = object ["gameId" .= gameId]
+  toJSON (LobbyResp step gameStart) = object ["step" .= step, "start" .= gameStart]
 
 instance FromJSON PlayReq where
   parseJSON (Object v) = PlayReq <$> v .: "creds" <*> v .: "gameId" <*> v .: "loc"
@@ -208,12 +198,5 @@ instance ToJSON FinalJSON where
     LossByDQ -> String "LossByDQ"
     Tied -> String "Tied"
 
-instance FromJSON StartReq where
-  parseJSON (Object v) = StartReq <$> v .: "creds" <*> v .: "gameId"
-  parseJSON _ = mzero
-
 instance ToJSON GameStart where
   toJSON gs = object ["gameId" .= (_gameStartGameId gs), "x" .= (_gameStartX gs), "o" .= (_gameStartO gs)]
-
-instance ToJSON StartResp where
-  toJSON (StartResp step gameStart) = object ["step" .= step, "start" .= gameStart]
