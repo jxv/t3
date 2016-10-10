@@ -10,7 +10,7 @@ import Data.Functor (void)
 import Data.Text (pack)
 
 import qualified T3.Server.Control.Monad as Control
-import qualified T3.Server.PracticeDispatcher as PD
+import qualified T3.Server.Dispatcher as D
 import qualified T3.Server.Game as Game
 import T3.Server.Types
 import T3.Server.Shared.GameObject (newGameObject')
@@ -33,17 +33,18 @@ class Monad m => Threads m where
   arenaDispatcher :: LobbyObject -> GamesObject -> (GameStart -> m GameEntry) -> m ()
   practiceDispatcher :: LobbyObject -> GamesObject -> (GameStart -> m GameEntry) -> m ()
   game :: ResultsObject -> GamesObject -> GameStart -> Pair GameObject -> m ()
-  control :: LobbyObject -> GamesObject -> ResultsObject -> RegistryObject -> m ()
+  control :: LobbyObject -> LobbyObject -> GamesObject -> ResultsObject -> RegistryObject -> m ()
 
 main :: (SharedObject m, Interthread m, Threads m) => m ()
 main = do
-  lobby <- newLobbyObject
+  practiceLobby <- newLobbyObject
+  arenaLobby <- newLobbyObject
   games <- newGamesObject
   results <- newResultsObject
   registry <- newRegistryObject
-  void . fork $ practiceDispatcher lobby games (gameDispatch results games)
-  void . fork $ arenaDispatcher lobby games (gameDispatch results games)
-  control lobby games results registry
+  void . fork $ practiceDispatcher practiceLobby games (gameDispatch results games)
+  void . fork $ arenaDispatcher arenaLobby games (gameDispatch results games)
+  control practiceLobby arenaLobby games results registry
 
 gameDispatch :: (SharedObject m, Interthread m, Threads m) => ResultsObject -> GamesObject -> GameStart -> m GameEntry
 gameDispatch results games gs = do
@@ -71,7 +72,7 @@ instance SharedObject Server where
   newGameObject = newGameObject'
 
 instance Threads Server where
-  arenaDispatcher _ _ _ = return ()
-  practiceDispatcher lobby games dispatch = PD.run PD.main (PD.Env lobby games (runServer . dispatch))
+  arenaDispatcher lobby games dispatch = D.run D.arenaMain (D.Env lobby games (runServer . dispatch))
+  practiceDispatcher lobby games dispatch = D.run D.practiceMain (D.Env lobby games (runServer . dispatch))
   game results games gameStart gameObjs = Game.run Game.main (Game.Env results games gameStart gameObjs)
-  control lobby games results registry = Control.main (Control.Env 8080 lobby games results registry)
+  control practiceLobby arenaLobby games results registry = Control.main (Control.Env 8080 practiceLobby arenaLobby games results registry)

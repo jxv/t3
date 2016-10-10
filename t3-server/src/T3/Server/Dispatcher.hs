@@ -1,8 +1,10 @@
-module T3.Server.PracticeDispatcher
+module T3.Server.Dispatcher
   ( Env(..)
   , run
-  , main
-  , step
+  , practiceMain
+  , practiceStep
+  , arenaMain
+  , arenaStep
   , botId
   ) where
 
@@ -39,14 +41,26 @@ class Monad m => Delay m where
 botId :: UserId
 botId = "bot"
 
-main :: (LobbyControl m, GameDispatch m, Gen m) => m ()
-main = forever step
+practiceMain :: (LobbyControl m, GameDispatch m, Gen m) => m ()
+practiceMain = forever practiceStep
 
-step :: (LobbyControl m, GameDispatch m, Gen m) => m ()
-step = do
+practiceStep :: (LobbyControl m, GameDispatch m, Gen m) => m ()
+practiceStep = do
   gameId <- genGameId
   userId <- popUser gameId
-  let gs =(GameStart gameId userId botId)
+  let gs = (GameStart gameId userId botId)
+  dispatchGame gs
+  announceGame gs
+
+arenaMain :: (LobbyControl m, GameDispatch m, Gen m) => m ()
+arenaMain = forever arenaStep
+
+arenaStep :: (LobbyControl m, GameDispatch m, Gen m) => m ()
+arenaStep = do
+  gameId <- genGameId
+  uidX <- popUser gameId
+  uidO <- popUser gameId
+  let gs = (GameStart gameId uidX uidO)
   dispatchGame gs
   announceGame gs
 

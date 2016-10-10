@@ -19,7 +19,8 @@ import T3.Server.Types
 
 data Env = Env
   { _envPort :: !Int
-  , _envLobbyObject :: !LobbyObject
+  , _envPracticeLobbyObject :: !LobbyObject
+  , _envArenaLobbyObject :: !LobbyObject
   , _envGamesObject :: !GamesObject
   , _envResultsObject :: !ResultsObject
   , _envRegistryObject :: !RegistryObject

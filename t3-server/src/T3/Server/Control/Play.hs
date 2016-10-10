@@ -14,7 +14,7 @@ import T3.Core (Loc)
 import T3.Server.Types
 import T3.Server.Control.Types
 
-import T3.Server.Control.PracticeLobby (Registry(..))
+import T3.Server.Control.Lobby (Registry(..))
 
 class Monad m => Game m where
   submitMove :: GameId -> UserId -> Loc -> m Step

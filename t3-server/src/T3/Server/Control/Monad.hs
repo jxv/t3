@@ -18,7 +18,7 @@ import Servant
 import T3.Server.Types
 import T3.Server.Control.Types
 import T3.Server.Control.Register (register)
-import T3.Server.Control.PracticeLobby (practiceLobby)
+import T3.Server.Control.Lobby (lobby, LobbyType(LobbyPractice, LobbyArena))
 import T3.Server.Control.Play (play)
 
 main :: MonadIO m => Env -> m ()
@@ -40,15 +40,18 @@ type AppServer api = ServerT api AppHandler
 
 type Register = "register" :> ReqBody '[JSON] RegisterReq :> Post '[JSON] RegisterResp
 type PracticeLobby = "practice-lobby" :> ReqBody '[JSON] LobbyReq :> Post '[JSON] LobbyResp
+type ArenaLobby = "lobby" :> ReqBody '[JSON] LobbyReq :> Post '[JSON] LobbyResp
 type Play = "play" :> ReqBody '[JSON] PlayReq :> Post '[JSON] PlayResp
 
 type API =
   Register :<|>
   PracticeLobby :<|>
+  ArenaLobby :<|>
   Play
 
 serverT :: AppServer API
 serverT =
   register :<|>
-  practiceLobby :<|>
+  lobby LobbyPractice :<|>
+  lobby LobbyArena :<|>
   play

@@ -1,11 +1,12 @@
-module T3.Server.Control.PracticeLobby
+module T3.Server.Control.Lobby
   ( Lobby(..)
   , Registry(..)
   , UserStore(..)
   , RegistryState(..)
   , LobbyState(..)
   , Failure(..)
-  , practiceLobby
+  , LobbyType(..)
+  , lobby
   , validateUser'
   , getUser'
   , queueUser'
@@ -22,8 +23,13 @@ import Servant
 import T3.Server.Types
 import T3.Server.Control.Types
 
+data LobbyType
+  = LobbyPractice
+  | LobbyArena
+  deriving (Show, Eq)
+
 class Monad m => Lobby m where
-  queueUser :: UserId -> m GameStart
+  queueUser :: LobbyType -> UserId -> m GameStart
 
 class Monad m => Game m where
   getStep :: GameId -> UserId -> m Step
@@ -38,17 +44,17 @@ class Monad m => RegistryState m where
   getUserById :: UserId -> m (Maybe (Name, Token))
 
 class Monad m => LobbyState m where
-  transferUser :: UserId -> m (Maybe GameStart)
+  transferUser :: LobbyType -> UserId ->  m (Maybe GameStart)
 
 class Monad m => Failure m where
   validateUserFailure :: m a
   getUserFailure :: m a
   transferUserFailure :: m a
 
-practiceLobby :: (Lobby m, Registry m, Game m) => LobbyReq -> m LobbyResp
-practiceLobby (LobbyReq (Creds userId token)) = do
+lobby :: (Lobby m, Registry m, Game m) => LobbyType -> LobbyReq -> m LobbyResp
+lobby lobbyType (LobbyReq (Creds userId token)) = do
   validateUser userId token
-  gameStart <- queueUser userId
+  gameStart <- queueUser lobbyType userId
   step <- getStep (_gameStartGameId gameStart) userId
   return $ LobbyResp (StepJSON step) gameStart
 
@@ -60,8 +66,8 @@ validateUser' userId token = do
 getUser' :: (RegistryState m, Failure m) => UserId -> m (Name, Token)
 getUser' = try getUserFailure . getUserById
 
-queueUser' :: (LobbyState m, Failure m) => UserId -> m GameStart
-queueUser' = try transferUserFailure . transferUser
+queueUser' :: (LobbyState m, Failure m) => LobbyType -> UserId -> m GameStart
+queueUser' lt = try transferUserFailure . transferUser lt
 
 getStep' :: (MonadIO m, MonadReader Env m) => GameId -> UserId -> m Step
 getStep' gameId userId = do
@@ -92,7 +98,11 @@ instance UserStore AppHandler where
   getUser = getUser'
 
 instance LobbyState AppHandler where
-  transferUser = callback (_lobbyObjectTransferUser . _envLobbyObject)
+  transferUser lt uid = do
+    let get = case lt of
+          LobbyPractice -> _envPracticeLobbyObject
+          LobbyArena -> _envArenaLobbyObject
+    callback (_lobbyObjectTransferUser . get) uid
 
 instance RegistryState AppHandler where
   getUserById = callback (_registryObjectGetUserById . _envRegistryObject)

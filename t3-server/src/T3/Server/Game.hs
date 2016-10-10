@@ -20,7 +20,7 @@ import T3.Game.Types (Win(..), Lose(..), Step(..), Final(..))
 import T3.Bot.Random (randomLoc)
 import T3.Server.Types
 
-import T3.Server.PracticeDispatcher (botId)
+import T3.Server.Dispatcher (botId)
 
 class Monad m => Exit m where
   exit :: m ()
