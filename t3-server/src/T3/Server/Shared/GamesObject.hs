@@ -11,7 +11,7 @@ import Control.Concurrent.Chan
 import T3.Server.Gen (genUserId', genHashCode')
 import T3.Server.Types
 
-type GameMap = Map.Map GameId GameRec
+type GameMap = Map.Map GameId GameRecord
 
 newGamesObject' :: MonadIO m => m GamesObject
 newGamesObject' = do
@@ -24,10 +24,10 @@ newGamesObject' = do
     , _gamesObjectRemoveGame = removeGame w
     }
 
-insertGame :: TVar GameMap -> (GameId, GameRec) -> IO ()
+insertGame :: TVar GameMap -> (GameId, GameRecord) -> IO ()
 insertGame w (gameId, rec) = atomically $ modifyTVar w (Map.insert gameId rec)
 
-findGame :: TVar GameMap -> GameId -> IO (Maybe GameRec)
+findGame :: TVar GameMap -> GameId -> IO (Maybe GameRecord)
 findGame w i = atomically $ do
   m <- readTVar w
   return $ Map.lookup i m

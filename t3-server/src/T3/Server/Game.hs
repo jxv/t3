@@ -50,7 +50,7 @@ main = do
 
 initialStep' :: (MonadIO m, MonadReader Env m) => Step -> m ()
 initialStep' step = do
-  (_, stepChan) <- asks _envGameObjectX
+  stepChan <- asks (_gameObjectStep . _pX . _envGameObjects)
   liftIO $ writeChan stepChan step
 
 move' :: (Bot m, HasBoard m, Exit m, Communicator m, HasGameStart m) => XO -> m Loc
@@ -90,28 +90,26 @@ tie' = do
   exit
 
 gameObj :: XO -> Env -> GameObject
-gameObj = byUser _envGameObjectX _envGameObjectO
+gameObj xo env = byUser (_pX $ _envGameObjects env) (_pO $ _envGameObjects env) xo
 
 recvLoc' :: (MonadReader Env m, MonadIO m) => XO -> m Loc
 recvLoc' xo = do
-  f <- asks (readChan . fst . gameObj xo)
+  f <- asks (readChan . _gameObjectLoc . gameObj xo)
   liftIO f
 
 sendStep' :: (MonadReader Env m, MonadIO m) => XO -> Step -> m ()
-sendStep' xo step = do
-  f <- asks (writeChan . snd . gameObj xo)
-  liftIO $ f step
+sendStep' xo = callback (writeChan . _gameObjectStep . gameObj xo)
 
 exit' :: (MonadIO m, MonadReader Env m) => m ()
 exit'= do
   env <- ask
   let games = _envGamesObject env
   let gameId = _gameStartGameId $ _envGameStart env
-  maybeGameRec <- liftIO $ _gamesObjectFindGame games gameId
-  case maybeGameRec of
-    Just (threadObject, _, _) -> do
+  mgr <- liftIO $ _gamesObjectFindGame games gameId
+  case mgr of
+    Just gr -> do
       liftIO $ _gamesObjectRemoveGame games gameId
-      liftIO $ _threadObjectKill threadObject
+      liftIO $ _threadObjectKill (_gameRecordThreadObject gr)
     Nothing -> return ()
 
 isOpenLoc' :: HasBoard m => Loc -> m Bool
@@ -125,7 +123,7 @@ insertAtLoc' loc xo = do
   let board' = insertAtLoc_ loc xo board
   putBoard board'
   let step = Step board' Nothing
-  f <- asks (writeChan . snd . gameObj (yinYang xo))
+  f <- asks (writeChan . _gameObjectStep . gameObj (yinYang xo))
   liftIO $ f step
 
 getResult' :: HasBoard m => m Result
@@ -137,8 +135,7 @@ data Env = Env
   { _envResultsObject :: ResultsObject
   , _envGamesObject :: GamesObject
   , _envGameStart :: GameStart
-  , _envGameObjectX :: GameObject
-  , _envGameObjectO :: GameObject
+  , _envGameObjects :: Pair GameObject
   }
 
 newtype Game a = Game (StateT Board (ReaderT Env IO) a)

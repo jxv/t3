@@ -20,11 +20,13 @@ module T3.Server.Types
   , PlayResp(..)
   , GameStart(..)
   , ThreadObject(..)
-  , GameObject
-  , GameRec
-  , GameEntry
+  , GameObject(..)
+  , GameRecord(..)
+  , GameEntry(..)
+  , LabeledGameObject(..)
   , FinalJSON(..)
   , StepJSON(..)
+  , Pair(..)
   , byUser
   , try
   , callback
@@ -43,6 +45,7 @@ import Servant
 
 import T3.Core (Loc, XO(..))
 import T3.Game.Types (Step(..), Final(..))
+
 
 byUser :: a -> a -> XO -> a
 byUser x _ X = x
@@ -81,6 +84,11 @@ newtype GameId = GameId Text
 newtype Move = Move (Int,Int)
   deriving (Show, Eq)
 
+data Pair a = Pair
+  { _pX :: !a
+  , _pO :: !a
+  } deriving (Show, Eq)
+
 data GameStart = GameStart
   { _gameStartGameId :: !GameId
   , _gameStartX :: !UserId
@@ -100,20 +108,34 @@ data LobbyObject = LobbyObject
   , _lobbyObjectAnnounceGame :: !(GameStart -> IO ())
   }
 
-type GameEntry = (ThreadObject, GameObject, GameObject)
+data GameEntry = GameEntry
+  { _gameEntryThreadObject :: ThreadObject
+  , _gameEntryGameObjects :: Pair GameObject
+  }
 
-type GameObject = (Chan Loc, Chan Step)
+data GameObject = GameObject
+  { _gameObjectLoc :: Chan Loc
+  , _gameObjectStep :: Chan Step
+  }
 
-type GameRec = (ThreadObject, (UserId, GameObject), (UserId, GameObject))
+data GameRecord = GameRecord
+  { _gameRecordThreadObject :: ThreadObject
+  , _gameRecordLabeled :: Pair LabeledGameObject
+  }
+
+data LabeledGameObject = LabeledGameObject
+  { _labeledGameObjectUserId :: UserId
+  , _labeledGameObjectGameObject :: GameObject
+  }
 
 data GamesObject = GamesObject
   { _gamesObjectHashCode :: !HashCode
-  , _gamesObjectInsertGame :: !((GameId, GameRec) -> IO ())
-  , _gamesObjectFindGame :: !(GameId -> IO (Maybe GameRec))
+  , _gamesObjectInsertGame :: !((GameId, GameRecord) -> IO ())
+  , _gamesObjectFindGame :: !(GameId -> IO (Maybe GameRecord))
   , _gamesObjectRemoveGame :: !(GameId -> IO ())
   }
 
-data ResultsObject = ResultsObject (IO ())
+data ResultsObject = ResultsObject { wahhh :: IO () }
 
 data ThreadObject = ThreadObject
   { _threadObjectHashCode :: !HashCode

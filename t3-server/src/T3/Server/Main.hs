@@ -32,7 +32,7 @@ class Monad m => Interthread m where
 class Monad m => Threads m where
   arenaDispatcher :: LobbyObject -> GamesObject -> (GameStart -> m GameEntry) -> m ()
   practiceDispatcher :: LobbyObject -> GamesObject -> (GameStart -> m GameEntry) -> m ()
-  game :: ResultsObject -> GamesObject -> GameStart -> GameObject -> GameObject -> m ()
+  game :: ResultsObject -> GamesObject -> GameStart -> Pair GameObject -> m ()
   control :: LobbyObject -> GamesObject -> ResultsObject -> RegistryObject -> m ()
 
 main :: (SharedObject m, Interthread m, Threads m) => m ()
@@ -46,11 +46,10 @@ main = do
   control lobby games results registry
 
 gameDispatch :: (SharedObject m, Interthread m, Threads m) => ResultsObject -> GamesObject -> GameStart -> m GameEntry
-gameDispatch results games gameStart = do
-  objectX <- newGameObject
-  objectO <- newGameObject
-  threadObject <- fork $ game results games gameStart objectX objectO
-  return (threadObject, objectX, objectO)
+gameDispatch results games gs = do
+  objs@(Pair x o) <- Pair <$> newGameObject <*> newGameObject
+  th <- fork $ game results games gs objs
+  return $ GameEntry th (Pair x o)
 
 newtype Server a = Server { runServer :: IO a }
   deriving (Functor, Applicative, Monad, MonadIO)
@@ -74,5 +73,5 @@ instance SharedObject Server where
 instance Threads Server where
   arenaDispatcher _ _ _ = return ()
   practiceDispatcher lobby games dispatch = PD.run PD.main (PD.Env lobby games (runServer . dispatch))
-  game results games gameStart gameObjectX gameObjectO = Game.run Game.main (Game.Env results games gameStart gameObjectX gameObjectO)
+  game results games gameStart gameObjs = Game.run Game.main (Game.Env results games gameStart gameObjs)
   control lobby games results registry = Control.main (Control.Env 8080 lobby games results registry)

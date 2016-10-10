@@ -66,16 +66,18 @@ queueUser' = try transferUserFailure . transferUser
 getStep' :: (MonadIO m, MonadReader Env m) => GameId -> UserId -> m Step
 getStep' gameId userId = do
   findGameObject <- asks (_gamesObjectFindGame . _envGamesObject)
-  maybeGameRec <- liftIO $ findGameObject gameId
-  case maybeGameRec of
+  mgr <- liftIO $ findGameObject gameId
+  case mgr of
     Nothing -> error "Can't find Game by GameId"
-    Just (_, gameObjectX, gameObjectO) -> do
-      case stepByUserId userId gameObjectX <|> stepByUserId userId gameObjectO of
+    Just gr -> do
+      let x = stepByUserId userId (_pX $ _gameRecordLabeled gr)
+      let o = stepByUserId userId (_pO $ _gameRecordLabeled gr)
+      case x <|> o of
         Nothing -> error "Can't find User in Game by UserId"
         Just recvStep -> liftIO recvStep
 
-stepByUserId :: UserId -> (UserId, GameObject) -> Maybe (IO Step)
-stepByUserId userId (userId', (_, g)) =
+stepByUserId :: UserId -> LabeledGameObject -> Maybe (IO Step)
+stepByUserId userId (LabeledGameObject userId' (GameObject _ g)) =
   if userId == userId'
     then Just $ readChan g
     else Nothing

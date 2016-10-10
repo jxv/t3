@@ -25,10 +25,10 @@ class Monad m => GameDispatch m where
   dispatchGame :: GameStart -> m ()
 
 class Monad m => Dispatch m where
-  dispatch :: GameStart -> m (ThreadObject, GameObject, GameObject)
+  dispatch :: GameStart -> m GameEntry
 
 class Monad m => Games m where
-  insertGame :: (GameId, GameRec) -> m ()
+  insertGame :: (GameId, GameRecord) -> m ()
 
 class Monad m => Lobby m where
   dequeueUser :: GameId -> m (Maybe UserId)
@@ -52,8 +52,8 @@ step = do
 
 dispatchGame' :: (Dispatch m, Games m) => GameStart -> m ()
 dispatchGame' gs@(GameStart gameId userX userO) = do
-  (threadObject, gameObjectX, gameObjectO) <- dispatch gs
-  insertGame (gameId, (threadObject, (userX, gameObjectX), (userO, gameObjectO)))
+  (GameEntry threadObject (Pair gameObjectX gameObjectO)) <- dispatch gs
+  insertGame (gameId, GameRecord threadObject $ Pair (LabeledGameObject userX gameObjectX) (LabeledGameObject userO gameObjectO))
 
 popUser' :: (LobbyControl m, Lobby m, Delay m) => GameId -> m UserId
 popUser' gameId = do
@@ -65,7 +65,7 @@ popUser' gameId = do
 data Env = Env
   { _envLobbyObject :: LobbyObject
   , _envGamesObject :: GamesObject
-  , _envDispatch :: GameStart -> IO (ThreadObject, GameObject, GameObject)
+  , _envDispatch :: GameStart -> IO GameEntry
   }
 
 newtype PracticeDispatcher a = PracticeDispatcher (ReaderT Env IO a)

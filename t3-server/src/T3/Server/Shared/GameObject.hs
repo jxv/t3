@@ -12,4 +12,4 @@ import T3.Server.Gen (genUserId', genHashCode')
 import T3.Server.Types
 
 newGameObject' :: MonadIO m => m GameObject
-newGameObject' = liftIO $ (,) <$> newChan <*> newChan
+newGameObject' = liftIO $ GameObject <$> newChan <*> newChan
