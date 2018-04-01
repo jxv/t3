@@ -1,4 +1,4 @@
-#t3
+# t3
 
 [![Build Status](https://travis-ci.org/jxv/t3.svg?branch=master)](https://travis-ci.org/jxv/t3)
 
@@ -7,10 +7,10 @@
 ### Register
 
 Request:
-`POST /api/register`
+`POST /register`
 ```json
 {
-  "name":"<user-name>"
+    "name": "<user-name>"
 }
 ```
 
@@ -18,23 +18,23 @@ Response:
 `200`
 ```json
 {
-  "creds": {
-    "name":"<user-name>",
-    "key":"<user-key>",
-  }
+    "creds": {
+        "userId": "<user-id>",
+        "token": "<user-token>"
+    }
 }
 ```
 
-### Random bot
+### Random bot (Not stored)
 
 Request:
-`POST /api/random`
+`POST /practice-lobby`
 ```json
 {
-  "creds": {
-    "name":"<user-name>",
-    "key":"<user-key>",
-  }
+    "creds": {
+        "userId": "<user-id>",
+        "token": "<user-token>"
+    }
 }
 ```
 
@@ -42,35 +42,33 @@ Response:
 `200`
 ```json
 {
-  "state": {
-    "final":null,
-    "board": [
-      [" "," "," "],
-      [" "," "," "],
-      [" "," "," "]
-    ],
-  },
-  "users": {
-    "x":"<user-name>",
-    "o":"random"
-  },
-  "matchInfo": {
-    "matchId":"<match-id>",
-    "matchToken":"<match-token>",
-  }
+    "start": {
+        "gameId": "<game-id>",
+        "o": "<user-id>",
+        "x": "<user-id>"
+    },
+    "step": {
+        "final": null,
+        "board": [
+            [" "," "," "],
+            [" "," "," "],
+            [" "," "," "]
+        ]
+    }
 }
+
 ```
 
 ### Start
 
 Request:
-`POST /api/start`
+`POST /lobby`
 ```json
 {
-  "creds": {
-    "name":"<user-name>",
-    "key":"<user-key>",
-  }
+    "creds": {
+        "userId": "<user-id>",
+        "token": "<user-token>"
+    }
 }
 ```
 
@@ -78,101 +76,99 @@ Response:
 `200`
 ```json
 {
-  "state": {
-    "final":null,
-    "board": [
-      [" "," "," "],
-      [" "," "," "],
-      [" "," "," "]
-    ],
-  },
-  "users": {
-    "x":"<user-name>",
-    "o":"<opponent-user-name>"
-  },
-  "matchInfo": {
-    "matchId":"<match-id>",
-    "matchToken":"<match-token>",
-  }
+    "start": {
+        "gameId": "<game-id>",
+        "o": "<user-id-1>",
+        "x": "<user-id-2>"
+    },
+    "step": {
+        "final": null,
+        "board": [
+            [" "," "," "],
+            [" "," "," "],
+            [" "," "," "]
+        ]
+    }
 }
 ```
 
 ### Play
 
 Request:
-`POST /api/play/<match-id>/<match-token>`
+`POST /play`
 ```json
 {
-  "creds": {
-    "name":"<user-name>",
-    "key":"<user-key>",
-  },
-  "loc": {
-    "x": 1,
-    "y": 1
-  }
+    "creds": {
+        "userId": "<user-id>",
+        "token": "<user-token>"
+    },
+    "gameId": "<game-id>",
+    "loc": {
+        "x": 1,
+        "y": 1
+    }
 }
 
 ```
 
-Response:
+Response (Unfinished):
 `200`
 ```json
 {
-  "state": {
-    "final":null,
-    "board": [
-      [" "," "," "],
-      [" ","X"," "],
-      [" "," "," "]
-    ],
-  }
+    "step": {
+       "final": null,
+       "board": [
+           [" "," "," "],
+           [" ","X"," "],
+           [" "," "," "]
+      ],
+    }
 }
 ```
 
-#### Final Response
-
-Response:
+Response (Finished):
 `200`
 ```json
 {
-  "state": {
-    "final":"Won",
-    "board": [
-      ["X","O"," "],
-      ["X","X","O"],
-      ["O"," ","X"]
-    ],
-  }
+    "step": {
+        "final":"Won",
+        "board": [
+            ["X","O"," "],
+            ["X","X","O"],
+            ["O"," ","X"]
+        ]
+    }
 }
 ```
 
-### Match Playbacks
+### Game result(s)
 
 Request:
-`GET /api/match/<match-id>`
+`POST /result`
+
+```json
+{
+    "gameId": "<game-id>"
+}
+```
 
 Response:
 `200`
 ```json
 {
-  "users": {
-    "o":"<user-name-1>",
-    "x":"<user-name-2>"
-  },
-  "actions": [
-    {"xO":"X", "loc": {"x":0, "y":0}},
-    {"xO":"O", "loc": {"x":1, "y":1}},
-    {"xO":"X", "loc": {"x":2, "y":2}},
-    {"xO":"O", "loc": {"x":1, "y":0}},
-    {"xO":"X", "loc": {"x":2, "y":1}},
-    {"xO":"O", "loc": {"x":1, "y":2}}
-  ],
-  "result": {
-    "tag":"decision",
-    "winner":"O",
-    "loser":"X"
-  },
-  "matchId":"<match-id>"
+    "result": {
+        "start": {
+            "gameId": "<game-id>",
+            "o": "<user-id-1>",
+            "x": "<user-id-2>"
+        },
+        "board": [
+            ["X"," "," "],
+            ["O","X"," "],
+            [" ","O","X"]
+        ],
+        "loser": "O",
+        "winner": "X"
+    }
 }
 ```
